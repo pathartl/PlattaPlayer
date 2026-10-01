@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "ghidra-mpvis": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["D:\\Tools\\ghidra\\bridge_mcp_ghidra.py", "--transport", "stdio"],
+      "env": {
+        "GHIDRA_MCP_URL": "http://127.0.0.1:8090"
+      }
+    }
+  }
+}

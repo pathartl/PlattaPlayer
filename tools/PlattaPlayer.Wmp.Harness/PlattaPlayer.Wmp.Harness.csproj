@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- DEV-ONLY reverse-engineering harness. This project is NEVER shipped: it is not referenced by
+       PlattaPlayer.App, it is not staged into the app's plugins\ folder, and it does not implement
+       IVisualizerPlugin (so even a stray copy in plugins\ would be skipped by the loader).
+
+       It drives the REAL Windows Media Player visualizations to produce ground-truth frames:
+         * Alchemy  -> mpvis.DLL, a registered in-proc COM server ({0AA02E8D-F851-4CB0-9F64-BBA9BE7A983D}).
+         * Bars and Waves / Battery -> internal classes in wmp.dll with no COM registration; their class
+           factories are located by anchoring on the CLSID bytes in .rdata (see WmpInternalFactory).
+       Both target DLLs are x64, so this must build and run as x64. -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- WinForms only for AxHost: capture-timedlevel hosts the real WMP ActiveX control. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <IsPublishable>false</IsPublishable>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>PlattaPlayer.Wmp.Harness</RootNamespace>
+    <AssemblyName>PlattaPlayer.Wmp.Harness</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PlattaPlayer.Visualizations.Wmp\PlattaPlayer.Visualizations.Wmp.csproj" />
+    <!-- calibrate-timedlevel runs the app's own analysis (BASS FFT2048) over the capture's test signal. -->
+    <PackageReference Include="ManagedBass" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\src\PlattaPlayer.App\native\bass.dll" Condition="Exists('..\..\src\PlattaPlayer.App\native\bass.dll')"
+          Link="bass.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
