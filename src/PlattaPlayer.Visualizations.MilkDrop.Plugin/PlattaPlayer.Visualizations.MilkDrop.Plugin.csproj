@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The Avalonia-coupled MilkDrop visualizer plugin: the OpenGL control surface plus the
+       IVisualizerPlugin that exposes it. References only the plugin contract (Abstractions),
+       Avalonia, and the platform-free MilkDrop engine — never the App. Built as a drop-in plugin
+       assembly that the App copies into its app-relative plugins\ folder. -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlattaPlayer.Visualizations.Abstractions\PlattaPlayer.Visualizations.Abstractions.csproj" />
+    <ProjectReference Include="..\PlattaPlayer.Visualizations.MilkDrop\PlattaPlayer.Visualizations.MilkDrop.csproj" />
+  </ItemGroup>
+
+</Project>

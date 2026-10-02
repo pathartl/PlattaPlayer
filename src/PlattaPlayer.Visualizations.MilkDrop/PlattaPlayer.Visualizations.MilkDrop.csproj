@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- A self-contained MilkDrop (MilkDrop2 / "butterchurn") visualizer engine ported to managed
+       C#. Deliberately has NO Avalonia or platform dependency: it computes preset state and emits
+       draw data through a small GL abstraction (IGlInterface) that the app head implements, so the
+       same engine can drive the future mobile head. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlattaPlayer.Core\PlattaPlayer.Core.csproj" />
+  </ItemGroup>
+
+</Project>
