@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- N64 USF codec plugin: plays USF / miniUSF rips on lazyusf2 (a Mupen64Plus-derived N64 emulator,
+       lazyusf2.dll) and reads/writes their PSF tags. References only the codec contract, and is staged into the
+       app's plugins\ folder like the other plugins, together with lazyusf2.dll. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- LibraryImport, and the emulator renders straight into the host's buffer. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlattaPlayer.Codecs.Abstractions\PlattaPlayer.Codecs.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PlattaPlayer.Codecs.Usf.Harness" />
+  </ItemGroup>
+
+  <!-- lazyusf2.dll (GPL-2.0-or-later, built by native\lazyusf2\build.ps1, not checked in). Without it USF files
+       still appear in the library with their tags, but don't play. -->
+  <ItemGroup>
+    <None Include="native\lazyusf2.dll" Condition="Exists('native\lazyusf2.dll')" CopyToOutputDirectory="PreserveNewest" Link="lazyusf2.dll" />
+    <None Include="THIRD-PARTY-NOTICES.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

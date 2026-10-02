@@ -1,0 +1,29 @@
+usf_upload_section trusted the chunk headers of the file: a ROM chunk longer than the data left was
+copied anyway (reading past the section), a ROM chunk could start anywhere (writing far outside the
+ROM buffer, or looping forever growing it), and a save state chunk could write past the save state
+buffer. Downloaded rips are untrusted input, so refuse such chunks as invalid data.
+
+diff --git a/usf/usf.c b/usf/usf.c
+index 5685238..15422ab 100644
+--- a/usf/usf.c
++++ b/usf/usf.c
+@@ -105,6 +105,10 @@ int usf_upload_section(void * state, const uint8_t * data, size_t size)
+             if ( size < 4 ) return -1;
+             start = get_le32( data ); data += 4; size -= 4;
+ 
++            /* Refuse chunks that overrun the section or lie beyond the largest N64 cartridge (64 MiB). */
++            if ( size < len ) return -1;
++            if ( (uint64_t)start + len > 0x4000000 ) return -1;
++
+             if ( start + len > USF_STATE->g_rom_size )
+             {
+                 void * new_rom;
+@@ -149,6 +153,8 @@ int usf_upload_section(void * state, const uint8_t * data, size_t size)
+             start = get_le32( data ); data += 4; size -= 4;
+ 
+             if ( size < len ) return -1;
++            /* Refuse chunks that would write past the save state buffer. */
++            if ( (uint64_t)start + len > USF_STATE->save_state_size ) return -1;
+             memcpy( USF_STATE->save_state + start, data, len );
+             data += len; size -= len;
+ 

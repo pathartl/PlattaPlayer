@@ -1,0 +1,17 @@
+HleForwardTask has no return statement, yet its callers branch on the result, so under MSVC they act on
+whatever was left in RAX. Forwarding to another RSP is disabled here, so report "not forwarded" (non-zero),
+as Mupen64Plus does when it has no fallback RSP.
+
+diff --git a/rsp_hle/plugin.c b/rsp_hle/plugin.c
+index 7779886..2b460a8 100644
+--- a/rsp_hle/plugin.c
++++ b/rsp_hle/plugin.c
+@@ -126,5 +126,6 @@ void HleShowCFB(void* user_defined)
+ 
+ int HleForwardTask(void* user_defined)
+ {
+-    /* disabled */
++    /* disabled: report the task as not forwarded */
++    return -1;
+ }
+\ No newline at end of file

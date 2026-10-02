@@ -1,0 +1,14 @@
+; The public interface of usf/usf.h (lazyusf2 doesn't mark its functions for export). Rendering goes through
+; lazyusf2_exports.c, which keeps the emulator's rounding-mode changes from reaching the caller.
+LIBRARY lazyusf2
+EXPORTS
+	usf_get_state_size
+	usf_clear
+	usf_set_compare
+	usf_set_fifo_full
+	usf_set_hle_audio
+	usf_upload_section
+	usf_shutdown
+	pp_usf_render
+	pp_usf_render_resampled
+	pp_usf_restart
