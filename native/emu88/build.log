@@ -1,0 +1,471 @@
+From https://github.com/dsp56300/gearmulator
+ * branch              376d06a4c60a8e55957755ddaca16e6a4cadfeb4 -> FETCH_HEAD
+HEAD is now at 376d06a4 dsp56300: advance submodule to 4ebb896d
+Submodule 'dlg' (https://github.com/nyorain/dlg.git) registered for path 'source/3rdparty/freetype/subprojects/dlg'
+Cloning into 'D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/3rdparty/freetype/subprojects/dlg'...
+From https://github.com/nyorain/dlg
+ * branch            72dfcc858c040c54a6a0b88fcb7e70ee186d3167 -> FETCH_HEAD
+Submodule path 'source/3rdparty/freetype/subprojects/dlg': checked out '72dfcc858c040c54a6a0b88fcb7e70ee186d3167'
+Submodule 'plutovg' (https://github.com/sammycage/plutovg.git) registered for path 'source/3rdparty/lunasvg/plutovg'
+Cloning into 'D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/3rdparty/lunasvg/plutovg'...
+From https://github.com/sammycage/plutovg
+ * branch            5e4712cf873b0c7829a4a6157763e2ad3ac49164 -> FETCH_HEAD
+Submodule path 'source/3rdparty/lunasvg/plutovg': checked out '5e4712cf873b0c7829a4a6157763e2ad3ac49164'
+-- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.26300.
+-- Architecture: x64
+-- Compiler Arguments: /DWIN32 /D_WINDOWS /GR /EHsc /permissive- /MP /W3 /D_CRT_SECURE_NO_WARNINGS
+-- Compiler Arguments (Release): /O2 /Ob2 /DNDEBUG /O2 /GS- /fp:fast /Oy /GT /GL /Zi /Oi /Ot
+-- Compiler Arguments (Debug): /Zi /Ob0 /Od /RTC1
+-- Build Configration: Release
+CMake Warning (deprecated) at .src/gearmulator/source/cpu/dsp56300/source/asmjit/CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+This warning is for project developers.  Use -Wno-author or -Wno-deprecated
+to suppress it.
+
+** AsmJit Summary **
+   ASMJIT_DIR=D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/cpu/dsp56300/source/asmjit
+   ASMJIT_TEST=FALSE
+   ASMJIT_TARGET_TYPE=STATIC
+   ASMJIT_DEPS=
+   ASMJIT_LIBS=asmjit
+   ASMJIT_CFLAGS=-DASMJIT_STATIC
+   ASMJIT_PRIVATE_CFLAGS=-MP;-GF;-Zc:__cplusplus;-Zc:inline;-Zc:strictStrings;-Zc:threadSafeInit-;-W4;-DASMJIT_STATIC
+   ASMJIT_PRIVATE_CFLAGS_DBG=-GS
+   ASMJIT_PRIVATE_CFLAGS_REL=-GS-;-O2;-Oi
+-- Could NOT find PkgConfig (missing: PKG_CONFIG_EXECUTABLE) 
+-- Found Freetype::Freetype - Freetype font engine enabled
+-- Found lunasvg::lunasvg - SVG plugin enabled
+-- Found Lua::Lua - Lua bindings enabled with Lua compiled as C++
+CMake Warning at .src/gearmulator/source/cmake/findvst2.cmake:10 (message):
+  rclone.conf not found, unable to copy VST2 SDK
+Call Stack (most recent call first):
+  .src/gearmulator/source/CMakeLists.txt:69 (include)
+
+
+-- Custom-chip JIT through asmjit: 1
+-- Custom-chip JIT through wasmJit: FALSE
+-- Configuring done (0.2s)
+-- Generating done (0.8s)
+-- Build files have been written to: D:/Repositories/PlattaPlayer/native/emu88/.build
+MSBuild version 18.10.1-1.26427.6+3cd27c13e for .NET Framework
+
+  Checking File Globs
+  1>Checking Build System
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/cpu/mc68k/CMakeLists.txt
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/cpu/h8500/CMakeLists.txt
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/ronaldo/custom_chips/la32/CMakeLists.txt
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/framework/baseLib/CMakeLists.txt
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/cpu/dsp56300/source/asmjit/CMakeLists.txt
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/cpu/mcs96/CMakeLists.txt
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/ronaldo/custom_chips/gp/CMakeLists.txt
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/cpu/sh2/CMakeLists.txt
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/ronaldo/custom_chips/rcc/CMakeLists.txt
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/ronaldo/custom_chips/lp/CMakeLists.txt
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/3rdparty/libresample/CMakeLists.txt
+  gpt.cpp
+  hdi08.cpp
+  logging.cpp
+  mc68k.cpp
+  peripheralBase.cpp
+  port.cpp
+  qsm.cpp
+  qspi.cpp
+  sim.cpp
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/cpu/dsp56300/source/vtuneSdk/CMakeLists.txt
+  la32.cpp
+  adler32.cpp
+  binarystream.cpp
+  commandline.cpp
+  gp.cpp
+  configFile.cpp
+  event.cpp
+  filesystem.cpp
+  logging.cpp
+  lzo1x.cpp
+  md5.cpp
+  os.cpp
+  propertyMap.cpp
+  gp_effects.cpp
+  cpu.cpp
+  lp.cpp
+  archtraits.cpp
+  rc4.cpp
+  sha1.cpp
+  assembler.cpp
+  exec.cpp
+  periph.cpp
+  builder.cpp
+  codeholder.cpp
+  codewriter.cpp
+  compiler.cpp
+  constpool.cpp
+  cpuinfo.cpp
+  emithelper.cpp
+  emitter.cpp
+  adc.cpp
+  periphAdcSerial.cpp
+  chip.cpp
+  cpu.cpp
+  emitterutils.cpp
+  environment.cpp
+  errorhandler.cpp
+  periphTimers.cpp
+  filterkit.c
+  disasm.cpp
+  dtc.cpp
+  exec.cpp
+  rcc.cpp
+  formatter.cpp
+  frt.cpp
+  func.cpp
+  h8532_regs.cpp
+  h8570_regs.cpp
+  sha256.cpp
+  funcargscontext.cpp
+  intc.cpp
+  isp_regs.cpp
+  rccBus.cpp
+  globals.cpp
+  inst.cpp
+  ports.cpp
+  pwm.cpp
+  sci.cpp
+  jitallocator.cpp
+  timing.cpp
+  jitruntime.cpp
+  tmr.cpp
+  wdt.cpp
+  resample.c
+  resamplesubs.c
+  ittnotify_static.c
+  adc.cpp
+  bsc.cpp
+  bsc7034.cpp
+  cmt.cpp
+  cpu.cpp
+  disasm.cpp
+  dmac.cpp
+  dmac7034.cpp
+  exec.cpp
+  intc.cpp
+  itu.cpp
+  mtu.cpp
+  ports.cpp
+  ports7034.cpp
+  ports7042.cpp
+  sci.cpp
+  wdt.cpp
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\ronaldo\custom_chips\gp\gp.cpp(616,29): warning C4146: unary minus operator applied to unsigned type, result still unsigned [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\ronaldo\custom_chips\gp\gpLib.vcxproj]
+  jitprofiling.c
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat-macros(454,12): warning C4244: '=': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  (compiling source file '../../../../.src/gearmulator/source/cpu/mc68k/mc68k.cpp')
+  
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat-macros(456,12): warning C4244: '=': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  (compiling source file '../../../../.src/gearmulator/source/cpu/mc68k/mc68k.cpp')
+  
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat-macros(664,40): warning C4244: 'argument': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  (compiling source file '../../../../.src/gearmulator/source/cpu/mc68k/mc68k.cpp')
+  
+  logger.cpp
+  operand.cpp
+  osutils.cpp
+  ralocal.cpp
+  rapass.cpp
+  rastack.cpp
+  string.cpp
+  support.cpp
+  target.cpp
+  resample.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\3rdparty\libresample\Release\resample.lib
+  type.cpp
+  virtmem.cpp
+  la32Lib.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\ronaldo\custom_chips\la32\Release\la32Lib.lib
+  lpLib.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\ronaldo\custom_chips\lp\Release\lpLib.lib
+  zone.cpp
+  gpLib.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\ronaldo\custom_chips\gp\Release\gpLib.lib
+  zonehash.cpp
+  vtuneSdk.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\dsp56300\source\vtuneSdk\Release\vtuneSdk.lib
+  zonelist.cpp
+  zonestack.cpp
+  m68kcpu.c
+  m68kdasm.c
+  m68kfpu.c
+  m68kops.c
+  softfloat.c
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat-macros(454,12): warning C4244: '=': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  (compiling source file '../../../../.src/gearmulator/source/cpu/mc68k/Musashi/m68kcpu.c')
+  
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat-macros(454,12): warning C4244: '=': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  (compiling source file '../../../../.src/gearmulator/source/cpu/mc68k/Musashi/m68kops.c')
+  
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat-macros(456,12): warning C4244: '=': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  (compiling source file '../../../../.src/gearmulator/source/cpu/mc68k/Musashi/m68kcpu.c')
+  
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat-macros(456,12): warning C4244: '=': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  (compiling source file '../../../../.src/gearmulator/source/cpu/mc68k/Musashi/m68kops.c')
+  
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat-macros(664,40): warning C4244: 'function': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  (compiling source file '../../../../.src/gearmulator/source/cpu/mc68k/Musashi/m68kcpu.c')
+  
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat-macros(664,40): warning C4244: 'function': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  (compiling source file '../../../../.src/gearmulator/source/cpu/mc68k/Musashi/m68kops.c')
+  
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat-macros(454,12): warning C4244: '=': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  (compiling source file '../../../../.src/gearmulator/source/cpu/mc68k/Musashi/softfloat/softfloat.c')
+  
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat-macros(456,12): warning C4244: '=': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  (compiling source file '../../../../.src/gearmulator/source/cpu/mc68k/Musashi/softfloat/softfloat.c')
+  
+  zonetree.cpp
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat-macros(454,12): warning C4244: '=': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  (compiling source file '../../../../.src/gearmulator/source/cpu/mc68k/Musashi/m68kfpu.c')
+  
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat-macros(456,12): warning C4244: '=': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  (compiling source file '../../../../.src/gearmulator/source/cpu/mc68k/Musashi/m68kfpu.c')
+  
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat-macros(664,40): warning C4244: 'function': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  (compiling source file '../../../../.src/gearmulator/source/cpu/mc68k/Musashi/m68kfpu.c')
+  
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat-macros(664,40): warning C4244: 'function': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  (compiling source file '../../../../.src/gearmulator/source/cpu/mc68k/Musashi/softfloat/softfloat.c')
+  
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat.c(94,6): warning C4244: '=': conversion from 'bits64' to 'int32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat.c(908,53): warning C4244: 'function': conversion from 'uint64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat.c(918,57): warning C4244: 'function': conversion from 'uint64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat.c(1551,9): warning C4244: '=': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat.c(1697,13): warning C4146: unary minus operator applied to unsigned type, result still unsigned [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat.c(1703,10): warning C4244: '=': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat.c(1717,22): warning C4146: unary minus operator applied to unsigned type, result still unsigned [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat.c(1974,6): warning C4244: '=': conversion from 'bits64' to 'int32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat.c(2104,9): warning C4244: '=': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat.c(2612,10): warning C4146: unary minus operator applied to unsigned type, result still unsigned [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat.c(2637,22): warning C4146: unary minus operator applied to unsigned type, result still unsigned [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat.c(2676,35): warning C4244: 'function': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat.c(2893,6): warning C4244: '=': conversion from 'bits64' to 'int32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat.c(3015,43): warning C4244: 'function': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(5882,12): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(5885,12): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(5889,26): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat.c(3890,6): warning C4244: '=': conversion from 'bits64' to 'int32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat.c(4034,9): warning C4244: '=': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(6252,12): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(6255,12): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(6259,26): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\softfloat\softfloat.c(4717,37): warning C4244: 'function': conversion from 'bits64' to 'bits32', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(6616,12): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(6619,12): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(7024,12): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(7025,12): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(13359,23): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(13360,31): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(13362,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(13363,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(13570,23): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(13571,31): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(13573,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(13574,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(13781,23): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(13782,31): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(13784,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(13785,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(13992,23): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(13993,31): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(13995,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(13996,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(14203,23): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(14204,31): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(14206,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(14207,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(14414,23): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(14415,31): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(14417,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(14418,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(14625,23): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(14626,31): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(14628,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(14629,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(14836,23): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(14837,31): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(14839,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(14840,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(15047,23): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(15048,31): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(15050,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(15051,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(15258,23): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(15259,31): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(15261,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(15262,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(15469,23): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(15470,31): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(15472,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(15473,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  rccLib.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\ronaldo\custom_chips\rcc\Release\rccLib.lib
+  zonevector.cpp
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(24260,14): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(24277,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(24384,14): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(24401,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(24508,14): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(24525,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(24632,14): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(24649,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(24756,14): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(24773,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(24880,14): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(24897,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(25004,14): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(25021,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(25128,14): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(25145,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(25252,14): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(25269,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(25376,14): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(25393,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(25500,14): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\mc68k\Musashi\m68kops.c(25517,13): warning C4244: '=': conversion from 'uint64' to 'uint', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/cpu/dsp56300/source/dsp56kBase/CMakeLists.txt
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\cpu\sh2\adc.cpp(407,24): warning C4018: '>=': signed/unsigned mismatch [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\sh2\sh2.vcxproj]
+  armformatter.cpp
+  a64assembler.cpp
+m68kcpu.obj : warning LNK4006: m68040_fpu_op1 already defined in m68kfpu.obj; second definition ignored [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+m68kcpu.obj : warning LNK4006: m68040_fpu_op0 already defined in m68kfpu.obj; second definition ignored [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\68kEmu.vcxproj]
+  mcs96.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mcs96\Release\mcs96.lib
+  a64builder.cpp
+  a64compiler.cpp
+  a64emithelper.cpp
+  a64formatter.cpp
+  a64func.cpp
+  a64instapi.cpp
+  68kEmu.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\mc68k\Release\68kEmu.lib
+  a64instdb.cpp
+  a64operand.cpp
+  a64rapass.cpp
+  x86assembler.cpp
+  x86builder.cpp
+  x86compiler.cpp
+  x86emithelper.cpp
+  x86formatter.cpp
+  x86func.cpp
+  audioworkgroup.cpp
+  conditionvariable.cpp
+  dspassert.cpp
+  logging.cpp
+  mmuhelper.cpp
+  mutex.cpp
+  profiler.cpp
+  threadtools.cpp
+  x86instdb.cpp
+  trigger.cpp
+  win8sync.cpp
+  x86instapi.cpp
+  x86operand.cpp
+  x86rapass.cpp
+  sh2.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\sh2\Release\sh2.lib
+  h8500.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\h8500\Release\h8500.lib
+  baseLib.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\baseLib\Release\baseLib.lib
+  dsp56kBase.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\dsp56300\source\dsp56kBase\Release\dsp56kBase.lib
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/framework/synthLib/CMakeLists.txt
+  songReset.cpp
+  smfReader.cpp
+  rcpDecoder.cpp
+  rcpTrack.cpp
+  analogFilter.cpp
+  audiobuffer.cpp
+  dac.cpp
+  device.cpp
+  deviceException.cpp
+  lv2PresetExport.cpp
+  midiBufferParser.cpp
+  midiClock.cpp
+  midiRateLimiter.cpp
+  midiRoutingMatrix.cpp
+  midiToSysex.cpp
+  midiTranslator.cpp
+  os.cpp
+  plugin.cpp
+  mameResamplers.cpp
+  resampler.cpp
+  resamplerInOut.cpp
+  romLoader.cpp
+  sounddiverLibLoader.cpp
+  sysexRemoteControl.cpp
+  sysexToMidi.cpp
+  vstpreset.cpp
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\framework\synthLib\midi\rcpTrack.cpp(317,109): warning C4244: 'argument': conversion from 'const uint16_t' to 'uint8_t', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\synthLib\synthLib.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\framework\synthLib\midi\rcpTrack.cpp(350,81): warning C4244: 'argument': conversion from 'const uint16_t' to 'uint8_t', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\synthLib\synthLib.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\framework\synthLib\midi\rcpTrack.cpp(389,95): warning C4244: 'argument': conversion from 'const uint16_t' to 'uint8_t', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\synthLib\synthLib.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\framework\synthLib\midi\rcpTrack.cpp(401,45): warning C4244: '=': conversion from 'const uint16_t' to 'uint8_t', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\synthLib\synthLib.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\framework\synthLib\midi\rcpTrack.cpp(409,43): warning C4244: '=': conversion from 'const uint16_t' to 'uint8_t', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\synthLib\synthLib.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\framework\synthLib\midi\rcpTrack.cpp(460,45): warning C4244: '=': conversion from 'const uint16_t' to 'uint8_t', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\synthLib\synthLib.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\framework\synthLib\midi\rcpTrack.cpp(469,88): warning C4244: 'argument': conversion from 'const uint16_t' to 'uint8_t', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\synthLib\synthLib.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\framework\synthLib\midi\rcpTrack.cpp(478,43): warning C4244: '=': conversion from 'const uint16_t' to 'uint8_t', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\synthLib\synthLib.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\framework\synthLib\midi\rcpTrack.cpp(487,82): warning C4244: 'argument': conversion from 'const uint16_t' to 'uint8_t', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\synthLib\synthLib.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\framework\synthLib\midi\rcpTrack.cpp(497,82): warning C4244: 'argument': conversion from 'const uint16_t' to 'uint8_t', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\synthLib\synthLib.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\framework\synthLib\midi\rcpTrack.cpp(536,85): warning C4244: 'argument': conversion from 'const uint16_t' to 'uint8_t', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\synthLib\synthLib.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\framework\synthLib\midi\rcpTrack.cpp(544,85): warning C4244: 'argument': conversion from 'const uint16_t' to 'uint8_t', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\synthLib\synthLib.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\framework\synthLib\midi\rcpTrack.cpp(555,86): warning C4244: 'argument': conversion from 'const uint16_t' to 'uint8_t', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\synthLib\synthLib.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\framework\synthLib\midi\rcpTrack.cpp(564,85): warning C4244: 'argument': conversion from 'const uint16_t' to 'uint8_t', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\synthLib\synthLib.vcxproj]
+D:\Repositories\PlattaPlayer\native\emu88\.src\gearmulator\source\framework\synthLib\midi\rcpTrack.cpp(573,85): warning C4244: 'argument': conversion from 'const uint16_t' to 'uint8_t', possible loss of data [D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\synthLib\synthLib.vcxproj]
+  wavReader.cpp
+  wavWriter.cpp
+  asmjit.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\cpu\dsp56300\source\asmjit\Release\asmjit.lib
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/ronaldo/custom_chips/mt32reverb/CMakeLists.txt
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/ronaldo/custom_chips/xp/CMakeLists.txt
+  mt32reverb.cpp
+  xp_dsp.cpp
+  xp_dsp_program.cpp
+  xp_dsp_naive.cpp
+  xp.cpp
+  xp_host.cpp
+  xp_voice.cpp
+  rcpTempo.cpp
+  mt32ReverbLib.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\ronaldo\custom_chips\mt32reverb\Release\mt32ReverbLib.lib
+  synthLib.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\synthLib\Release\synthLib.lib
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/framework/hardwareLib/CMakeLists.txt
+  xpLib.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\ronaldo\custom_chips\xp\Release\xpLib.lib
+  am29f.cpp
+  i2c.cpp
+  i2cFlash.cpp
+  hd44780.cpp
+  lcd.cpp
+  lcdfonts.cpp
+  sciMidi.cpp
+  sed1200.cpp
+  sed1335.cpp
+  hardwareLib.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\framework\hardwareLib\Release\hardwareLib.lib
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/.src/gearmulator/source/ronaldo/88emu/88lib/CMakeLists.txt
+  analogOutput.cpp
+  analogModels.cpp
+  c_interface.cpp
+  deviceModel.cpp
+  cm32p.cpp
+  cm64.cpp
+  laBoard.cpp
+  miig5.cpp
+  nu10b.cpp
+  hardwareDevice.cpp
+  rom.cpp
+  romloader.cpp
+  romInventory.cpp
+  romScanner.cpp
+  sc55Board.cpp
+  sc55_submcu.cpp
+  sc88.cpp
+  sc8820.cpp
+  sc8850.cpp
+  sc8850_submcu.cpp
+  sc88_submcu.cpp
+  sc88pro.cpp
+  88lib.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\gearmulator\ronaldo\88emu\88lib\Release\88lib.lib
+  Building Custom Rule D:/Repositories/PlattaPlayer/native/emu88/CMakeLists.txt
+  emu88_exports.cpp
+     Creating library D:/Repositories/PlattaPlayer/native/emu88/.build/Release/emu88.lib and object D:/Repositories/PlattaPlayer/native/emu88/.build/Release/emu88.exp
+  Generating code
+  Finished generating code
+  emu88.vcxproj -> D:\Repositories\PlattaPlayer\native\emu88\.build\out\emu88.dll
+emu88.dll -> D:\Repositories\PlattaPlayer\src\PlattaPlayer.App\native

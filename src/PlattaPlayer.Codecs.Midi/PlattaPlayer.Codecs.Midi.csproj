@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- MIDI codec plugin: plays MIDI on an emulated Roland sound module (gearmulator's 88emu, emu88.dll), a
+       SoundFont (MeltySynth) or a Windows MIDI port, and reads/writes PlattaPlayer's embedded MIDI tags and
+       M3U album files. References only the codec contract, and is staged into the app's plugins\ folder like
+       the other plugins, together with MeltySynth and emu88.dll. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Emulation/: the emulator renders straight into the host's buffer. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Copy MeltySynth beside the plugin so the staging step can ship it. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlattaPlayer.Codecs.Abstractions\PlattaPlayer.Codecs.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MeltySynth" />
+  </ItemGroup>
+
+  <!-- emu88.dll (GPL-3.0, built by native\emu88\build.ps1, not checked in). Without it the emulated devices
+       are simply not offered. -->
+  <ItemGroup>
+    <None Include="native\emu88.dll" Condition="Exists('native\emu88.dll')" CopyToOutputDirectory="PreserveNewest" Link="emu88.dll" />
+  </ItemGroup>
+
+</Project>
