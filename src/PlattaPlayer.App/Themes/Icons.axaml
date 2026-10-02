@@ -1,0 +1,46 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Line icons on a 24×24 grid, drawn by controls:LineIcon with a 1.6 round stroke (or filled for the
+         transport glyphs). Taken from the design mockups; circles/rects are written as arcs/paths. -->
+
+    <StreamGeometry x:Key="IconLogo">M3,12 a9,9 0 1 0 18,0 a9,9 0 1 0 -18,0 Z M8,12 a4,4 0 1 0 8,0 a4,4 0 1 0 -8,0 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconSearch">M4.5,11 a6.5,6.5 0 1 0 13,0 a6.5,6.5 0 1 0 -13,0 Z M20,20 l-4.2,-4.2</StreamGeometry>
+    <StreamGeometry x:Key="IconArtist">M8.5,8.5 a3.5,3.5 0 1 0 7,0 a3.5,3.5 0 1 0 -7,0 Z M5,20 c0.8,-3.6 3.6,-5.5 7,-5.5 s6.2,1.9 7,5.5</StreamGeometry>
+    <StreamGeometry x:Key="IconAlbum">M5,3.5 h14 a1.5,1.5 0 0 1 1.5,1.5 v14 a1.5,1.5 0 0 1 -1.5,1.5 h-14 a1.5,1.5 0 0 1 -1.5,-1.5 v-14 a1.5,1.5 0 0 1 1.5,-1.5 Z M8.5,12 a3.5,3.5 0 1 0 7,0 a3.5,3.5 0 1 0 -7,0 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconSong">M9,18 V6 l10,-2 v12 M4,18 a2.5,2.5 0 1 0 5,0 a2.5,2.5 0 1 0 -5,0 Z M14,16 a2.5,2.5 0 1 0 5,0 a2.5,2.5 0 1 0 -5,0 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconGenre">M4,12 h3 l2,-6 l3,12 l3,-9 l2,3 h3</StreamGeometry>
+    <StreamGeometry x:Key="IconComposer">M5,19 l9,-9 M14,10 l2,-6 l4,4 l-6,2</StreamGeometry>
+    <StreamGeometry x:Key="IconFolder">M3.5,7.5 a2,2 0 0 1 2,-2 h4 l2,2 h7 a2,2 0 0 1 2,2 v8 a2,2 0 0 1 -2,2 h-13 a2,2 0 0 1 -2,-2 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconPlaylist">M4,7 h11 M4,12 h11 M4,17 h7 M15.5,17 a2,2 0 1 0 4,0 a2,2 0 1 0 -4,0 Z M19.5,17 V8</StreamGeometry>
+    <StreamGeometry x:Key="IconSettings">M9,12 a3,3 0 1 0 6,0 a3,3 0 1 0 -6,0 Z M12,3 v2.5 M12,18.5 V21 M3,12 h2.5 M18.5,12 H21 M5.6,5.6 l1.8,1.8 M16.6,16.6 l1.8,1.8 M5.6,18.4 l1.8,-1.8 M16.6,7.4 l1.8,-1.8</StreamGeometry>
+    <StreamGeometry x:Key="IconRecent">M3.5,12 a8.5,8.5 0 1 0 17,0 a8.5,8.5 0 1 0 -17,0 Z M12,7.5 V12 l3,2</StreamGeometry>
+    <StreamGeometry x:Key="IconTag">M4,4 h7 l9,9 l-7,7 l-9,-9 Z M7.5,8.5 a1,1 0 1 0 2,0 a1,1 0 1 0 -2,0 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconGrid">M5,4 h5 a1,1 0 0 1 1,1 v5 a1,1 0 0 1 -1,1 h-5 a1,1 0 0 1 -1,-1 v-5 a1,1 0 0 1 1,-1 Z M14,4 h5 a1,1 0 0 1 1,1 v5 a1,1 0 0 1 -1,1 h-5 a1,1 0 0 1 -1,-1 v-5 a1,1 0 0 1 1,-1 Z M5,13 h5 a1,1 0 0 1 1,1 v5 a1,1 0 0 1 -1,1 h-5 a1,1 0 0 1 -1,-1 v-5 a1,1 0 0 1 1,-1 Z M14,13 h5 a1,1 0 0 1 1,1 v5 a1,1 0 0 1 -1,1 h-5 a1,1 0 0 1 -1,-1 v-5 a1,1 0 0 1 1,-1 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconList">M8,6 h12 M8,12 h12 M8,18 h12 M4,6 h0.01 M4,12 h0.01 M4,18 h0.01</StreamGeometry>
+    <StreamGeometry x:Key="IconShuffle">M3,6 h3.5 c2,0 3.2,1 4.3,2.7 l2.4,3.6 c1.1,1.7 2.3,2.7 4.3,2.7 H21 M18,12 l3,3 l-3,3 M3,18 h3.5 c1.4,0 2.4,-0.5 3.2,-1.4 M14,7.4 c0.8,-0.9 1.8,-1.4 3.2,-1.4 H21 M18,3 l3,3 l-3,3</StreamGeometry>
+    <StreamGeometry x:Key="IconPrevious">M18,5 v14 L8,12 Z M6,5 v14</StreamGeometry>
+    <StreamGeometry x:Key="IconNext">M6,5 v14 l10,-7 Z M18,5 v14</StreamGeometry>
+    <StreamGeometry x:Key="IconPlay">M7,4.5 v15 l12.5,-7.5 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconPause">M7,4.5 h2 a1,1 0 0 1 1,1 v13 a1,1 0 0 1 -1,1 h-2 a1,1 0 0 1 -1,-1 v-13 a1,1 0 0 1 1,-1 Z M15,4.5 h2 a1,1 0 0 1 1,1 v13 a1,1 0 0 1 -1,1 h-2 a1,1 0 0 1 -1,-1 v-13 a1,1 0 0 1 1,-1 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconRepeat">M4,11 V9 a3,3 0 0 1 3,-3 h13 M17,3 l3,3 l-3,3 M20,13 v2 a3,3 0 0 1 -3,3 H4 M7,21 l-3,-3 l3,-3</StreamGeometry>
+    <!-- Repeat-one: the repeat glyph with a small "1" in the middle. -->
+    <StreamGeometry x:Key="IconRepeatOne">M4,11 V9 a3,3 0 0 1 3,-3 h13 M17,3 l3,3 l-3,3 M20,13 v2 a3,3 0 0 1 -3,3 H4 M7,21 l-3,-3 l3,-3 M11,10.5 l1.5,-1 v5.5</StreamGeometry>
+    <StreamGeometry x:Key="IconLyrics">M4,6 h16 M4,11 h11 M4,16 h7 M15,16.5 a2.5,2.5 0 1 0 5,0 a2.5,2.5 0 1 0 -5,0 Z M20,16.5 V9.5 l-2,0.8</StreamGeometry>
+    <StreamGeometry x:Key="IconQueue">M4,6 h12 M4,11 h12 M4,16 h7 M15,14.5 v5 l4,-2.5 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconVolume">M4,9.5 h3.5 L12,5.5 v13 l-4.5,-4 H4 Z M15.5,9 a4,4 0 0 1 0,6 M18,6.5 a7.5,7.5 0 0 1 0,11</StreamGeometry>
+    <StreamGeometry x:Key="IconVolumeMute">M4,9.5 h3.5 L12,5.5 v13 l-4.5,-4 H4 Z M16,9.5 l5,5 M21,9.5 l-5,5</StreamGeometry>
+    <StreamGeometry x:Key="IconExpand">M14,4 h6 v6 M20,4 l-7,7 M10,20 H4 v-6 M4,20 l7,-7</StreamGeometry>
+    <StreamGeometry x:Key="IconCollapse">M4,14 h6 v6 M10,14 l-7,7 M20,10 h-6 V4 M14,10 l7,-7</StreamGeometry>
+    <StreamGeometry x:Key="IconChevronRight">M9,5 l7,7 l-7,7</StreamGeometry>
+    <StreamGeometry x:Key="IconChevronLeft">M15,5 l-7,7 l7,7</StreamGeometry>
+    <StreamGeometry x:Key="IconMore">M3.8,12 a1.2,1.2 0 1 0 2.4,0 a1.2,1.2 0 1 0 -2.4,0 Z M10.8,12 a1.2,1.2 0 1 0 2.4,0 a1.2,1.2 0 1 0 -2.4,0 Z M17.8,12 a1.2,1.2 0 1 0 2.4,0 a1.2,1.2 0 1 0 -2.4,0 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconSparkle">M12,3 v4 M12,17 v4 M3,12 h4 M17,12 h4 M6,6 l2.5,2.5 M15.5,15.5 L18,18 M6,18 l2.5,-2.5 M15.5,8.5 L18,6</StreamGeometry>
+
+    <!-- Caption glyphs, on a 10×10 grid with a 1px stroke (Windows 11 style). -->
+    <StreamGeometry x:Key="CaptionMinimize">M0,5.5 h10</StreamGeometry>
+    <StreamGeometry x:Key="CaptionMaximize">M0.5,0.5 h9 v9 h-9 Z</StreamGeometry>
+    <StreamGeometry x:Key="CaptionRestore">M0.5,2.5 h7 v7 h-7 Z M2.5,2.5 V0.5 h7 v7 h-2</StreamGeometry>
+    <StreamGeometry x:Key="CaptionClose">M0.5,0.5 l9,9 M9.5,0.5 l-9,9</StreamGeometry>
+
+</ResourceDictionary>

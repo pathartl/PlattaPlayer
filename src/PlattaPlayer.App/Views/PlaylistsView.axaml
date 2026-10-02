@@ -1,0 +1,49 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PlattaPlayer.App.ViewModels"
+             xmlns:items="using:PlattaPlayer.App.ViewModels.Items"
+             x:Class="PlattaPlayer.App.Views.PlaylistsView"
+             x:DataType="vm:PlaylistsViewModel">
+
+    <Grid RowDefinitions="Auto,Auto,*" Margin="32,24">
+        <TextBlock Grid.Row="0" Text="Playlists" Classes="PageTitle" />
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,16">
+            <TextBox Width="240" PlaceholderText="New playlist name"
+                     Text="{Binding NewPlaylistName, Mode=TwoWay}" />
+            <Button Content="Create" Command="{Binding CreatePlaylistCommand}"
+                    Background="{StaticResource AccentBrush}" Foreground="{StaticResource OnAccentBrush}" Padding="16,8" CornerRadius="4" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="2" Text="No playlists yet. Create one above."
+                   Classes="Secondary" FontSize="15" IsVisible="{Binding IsEmpty}" />
+
+        <ScrollViewer Grid.Row="2">
+            <ItemsControl ItemsSource="{Binding Playlists}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="items:PlaylistItemViewModel">
+                        <Border Classes="Card" Margin="0,0,0,8">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <TextBlock Grid.Column="0" Text="&#xE8FD;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                           FontSize="20" Foreground="{StaticResource AccentBrush}"
+                                           VerticalAlignment="Center" Margin="4,0,12,0" />
+                                <Button Grid.Column="1" Background="Transparent" BorderThickness="0"
+                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="0"
+                                        Command="{Binding $parent[ItemsControl].((vm:PlaylistsViewModel)DataContext).OpenPlaylistCommand}"
+                                        CommandParameter="{Binding}">
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                                </Button>
+                                <Button Grid.Column="2" Content="&#xE74D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                        Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}"
+                                        BorderThickness="0" Padding="8" ToolTip.Tip="Delete"
+                                        Command="{Binding $parent[ItemsControl].((vm:PlaylistsViewModel)DataContext).DeletePlaylistCommand}"
+                                        CommandParameter="{Binding}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

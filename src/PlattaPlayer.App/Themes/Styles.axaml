@@ -1,0 +1,655 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ctrl="using:PlattaPlayer.App.Controls"
+        xmlns:conv="using:PlattaPlayer.App.Converters">
+
+    <!-- ===================================================================================== Motion -->
+    <!-- Hover transitions are 120–160ms; nothing bounces. -->
+    <Style Selector="Button, RadioButton, ToggleButton">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.14" />
+                <BrushTransition Property="Foreground" Duration="0:0:0.14" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================================== Type -->
+    <Style Selector="TextBlock.H1, TextBlock.PageTitle">
+        <Setter Property="FontSize" Value="40" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="LetterSpacing" Value="-0.8" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="TextBlock.PageTitle">
+        <Setter Property="Margin" Value="0,0,0,16" />
+    </Style>
+    <Style Selector="TextBlock.DisplayXl">
+        <Setter Property="FontSize" Value="64" />
+        <Setter Property="LineHeight" Value="74" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="LetterSpacing" Value="-1.92" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="TextBlock.Display">
+        <Setter Property="FontSize" Value="52" />
+        <Setter Property="LineHeight" Value="62" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="LetterSpacing" Value="-1.56" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="TextBlock.SectionTitle, TextBlock.H2">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="TextBlock.SectionTitle">
+        <Setter Property="Margin" Value="0,8,0,12" />
+    </Style>
+    <Style Selector="TextBlock.Secondary">
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+    </Style>
+    <Style Selector="TextBlock.Meta">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+    </Style>
+    <!-- Uppercase section labels (nav rail) and eyebrows (album header). Text is written in upper case. -->
+    <Style Selector="TextBlock.Caption">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="LetterSpacing" Value="0.88" />
+        <Setter Property="Foreground" Value="{StaticResource TextTertiaryBrush}" />
+    </Style>
+    <Style Selector="TextBlock.Eyebrow">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="LetterSpacing" Value="1.1" />
+        <Setter Property="Foreground" Value="#99FFFFFF" />
+    </Style>
+    <Style Selector="TextBlock.Mono">
+        <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
+    </Style>
+
+    <!-- ===================================================================================== Surfaces -->
+    <!-- Glass: frosted panel (nav rail, transport). The blur comes from the visualizer plugin painting a
+         blurred copy of itself behind registered BlurTargets; this is the tint on top. -->
+    <Style Selector="Border.Glass">
+        <Setter Property="Background" Value="{StaticResource GlassBrush}" />
+    </Style>
+    <Style Selector="Border.GlassLite">
+        <Setter Property="Background" Value="{StaticResource GlassLiteBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderSubtleBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+    </Style>
+    <Style Selector="Border.Card">
+        <Setter Property="Background" Value="{StaticResource GlassLiteBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <!-- Outlined mono badge for audio data ("FLAC", "24-bit / 96 kHz"). .Accent only for BIT-PERFECT /
+         active states such as SYNCED · LRC. -->
+    <Style Selector="Border.Badge">
+        <Setter Property="Height" Value="22" />
+        <Setter Property="Padding" Value="8,0" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{StaticResource BadgeBorderBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.Badge > TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="LetterSpacing" Value="0.22" />
+        <Setter Property="Foreground" Value="{StaticResource BadgeTextBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.Badge.Accent">
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+    </Style>
+    <Style Selector="Border.Badge.Accent > TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+    </Style>
+
+    <!-- Square art slot: art is contain-fit inside, never cropped; the letterbox fills any gap. -->
+    <Style Selector="Border.ArtSlot">
+        <Setter Property="Background" Value="{StaticResource LetterboxBrush}" />
+        <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+    <Style Selector="Border.ArtSlot > Panel > Image">
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- ===================================================================================== Buttons -->
+    <!-- A bare, chrome-less button for clickable blocks (cards, tiles, art). Hover is handled by its content. -->
+    <Style Selector="Button.Plain">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter Name="PART_ContentPresenter"
+                                  Background="{TemplateBinding Background}"
+                                  CornerRadius="{TemplateBinding CornerRadius}"
+                                  Content="{TemplateBinding Content}"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  Padding="{TemplateBinding Padding}"
+                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <!-- Glass-lite card (artist cards). .Playing gets the accent border. -->
+    <Style Selector="Button.Card">
+        <Setter Property="Background" Value="{StaticResource GlassLiteBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="16" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Top" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter Name="PART_ContentPresenter"
+                                  Background="{TemplateBinding Background}"
+                                  BorderBrush="{TemplateBinding BorderBrush}"
+                                  BorderThickness="{TemplateBinding BorderThickness}"
+                                  CornerRadius="{TemplateBinding CornerRadius}"
+                                  Content="{TemplateBinding Content}"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  Padding="{TemplateBinding Padding}"
+                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="Button.Card:pointerover">
+        <Setter Property="Background" Value="#14FFFFFF" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderStrongBrush}" />
+    </Style>
+    <Style Selector="Button.Card.Playing">
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+    </Style>
+
+    <!-- List rows (artist list view): flat, hover fill only. -->
+    <Style Selector="Button.Row">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter Name="PART_ContentPresenter"
+                                  Background="{TemplateBinding Background}"
+                                  CornerRadius="{TemplateBinding CornerRadius}"
+                                  Content="{TemplateBinding Content}"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  Padding="{TemplateBinding Padding}"
+                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="Button.Row:pointerover">
+        <Setter Property="Background" Value="{StaticResource HoverBrush}" />
+    </Style>
+
+    <!-- Windows caption buttons: 46×32, 10px 1px-stroke glyphs. -->
+    <Style Selector="Button.Caption">
+        <Setter Property="Width" Value="46" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#B8FFFFFF" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.Caption:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource CaptionHoverBrush}" />
+    </Style>
+    <Style Selector="Button.Caption:pointerover">
+        <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}" />
+    </Style>
+    <Style Selector="Button.Caption.Close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource CaptionCloseHoverBrush}" />
+    </Style>
+    <Style Selector="Button.Caption:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#0DFFFFFF" />
+    </Style>
+
+    <!-- Icon-only buttons: 36px in dense bars, .Lg = 44px elsewhere. .Active = accent (repeat on, lyrics open). -->
+    <Style Selector="Button.Icon, ToggleButton.Icon">
+        <Setter Property="Width" Value="36" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="{StaticResource TextControlBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.Icon.Lg, ToggleButton.Icon.Lg">
+        <Setter Property="Width" Value="44" />
+        <Setter Property="Height" Value="44" />
+    </Style>
+    <Style Selector="Button.Icon:pointerover /template/ ContentPresenter#PART_ContentPresenter, ToggleButton.Icon:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource CaptionHoverBrush}" />
+    </Style>
+    <Style Selector="Button.Icon:pointerover, ToggleButton.Icon:pointerover">
+        <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}" />
+    </Style>
+    <Style Selector="Button.Icon:pressed /template/ ContentPresenter#PART_ContentPresenter, ToggleButton.Icon:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#0DFFFFFF" />
+    </Style>
+    <Style Selector="ToggleButton.Icon:checked /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.Icon.Active, ToggleButton.Icon:checked, Button.Icon.Active:pointerover, ToggleButton.Icon:checked:pointerover">
+        <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+    </Style>
+    <Style Selector="Button.Icon:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.Icon:disabled">
+        <Setter Property="Foreground" Value="{StaticResource TextDisabledBrush}" />
+    </Style>
+
+    <!-- Play/Pause: solid light circle, 42px in the transport bar, .Lg = 60px in Now Playing. -->
+    <Style Selector="Button.PlayCircle">
+        <Setter Property="Width" Value="42" />
+        <Setter Property="Height" Value="42" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="CornerRadius" Value="30" />
+        <Setter Property="Background" Value="{StaticResource SolidLightBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource OnLightBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.PlayCircle.Lg">
+        <Setter Property="Width" Value="60" />
+        <Setter Property="Height" Value="60" />
+    </Style>
+    <Style Selector="Button.PlayCircle:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#FFFFFF" />
+        <Setter Property="Foreground" Value="{StaticResource OnLightBrush}" />
+    </Style>
+    <Style Selector="Button.PlayCircle:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#DADADE" />
+    </Style>
+
+    <!-- Pills: accent (Play / Play all) and outlined glass (Shuffle). 44px tall. -->
+    <Style Selector="Button.PillAccent, Button.PillOutline">
+        <Setter Property="Height" Value="44" />
+        <Setter Property="CornerRadius" Value="22" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.PillAccent">
+        <Setter Property="Padding" Value="18,0,22,0" />
+        <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource OnAccentBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="Button.PillAccent:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource AccentHoverBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource OnAccentBrush}" />
+    </Style>
+    <Style Selector="Button.PillAccent:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#5FD9BB" />
+    </Style>
+    <Style Selector="Button.PillOutline">
+        <Setter Property="Padding" Value="16,0,20,0" />
+        <Setter Property="Background" Value="{StaticResource GlassLiteBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderStrongBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Button.PillOutline:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#14FFFFFF" />
+        <Setter Property="BorderBrush" Value="#3DFFFFFF" />
+        <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}" />
+    </Style>
+
+    <!-- Glass-lite pills floating over the visualizer in Now Playing ("‹ Library", preset switcher). -->
+    <Style Selector="Button.GlassPill">
+        <Setter Property="Height" Value="40" />
+        <Setter Property="Padding" Value="10,0,16,0" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Background" Value="{StaticResource GlassLiteBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.GlassPill:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#14FFFFFF" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderStrongBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}" />
+    </Style>
+    <Style Selector="Border.GlassPill">
+        <Setter Property="Height" Value="40" />
+        <Setter Property="Padding" Value="6,0" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Background" Value="{StaticResource GlassLiteBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <!-- Quiet outlined button (Sort control). -->
+    <Style Selector="Button.Outline">
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Padding" Value="14,0" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Background" Value="{StaticResource GlassLiteBrush}" />
+        <Setter Property="Foreground" Value="#DBFFFFFF" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.Outline:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#14FFFFFF" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderStrongBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}" />
+    </Style>
+
+    <!-- Segmented toggle (Grid / List). -->
+    <Style Selector="RadioButton.Segment">
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#B3FFFFFF" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}">
+                    <ContentPresenter Content="{TemplateBinding Content}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="RadioButton.Segment:pointerover">
+        <Setter Property="Background" Value="{StaticResource HoverBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}" />
+    </Style>
+    <Style Selector="RadioButton.Segment:checked">
+        <Setter Property="Background" Value="#1AFFFFFF" />
+        <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}" />
+    </Style>
+
+    <!-- Filter chips (All / Albums / EPs / Live): the selected chip is a solid light pill. -->
+    <Style Selector="RadioButton.Chip">
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Padding" Value="14,0" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource TextControlBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ChipBorderBrush}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="1" CornerRadius="16" Padding="{TemplateBinding Padding}">
+                    <ContentPresenter Content="{TemplateBinding Content}" VerticalAlignment="Center" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="RadioButton.Chip:pointerover">
+        <Setter Property="Background" Value="{StaticResource HoverBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}" />
+    </Style>
+    <Style Selector="RadioButton.Chip:checked">
+        <Setter Property="Background" Value="{StaticResource SolidLightBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource OnLightBrush}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+
+    <!-- Inline clickable names (artist/album links). Looks like text, navigates on click. -->
+    <Style Selector="Button.Link">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter Content="{TemplateBinding Content}"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  Foreground="{TemplateBinding Foreground}"
+                                  Background="Transparent"
+                                  Padding="0" />
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="Button.Link.Strong">
+        <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}" />
+        <Setter Property="FontWeight" Value="Medium" />
+    </Style>
+    <Style Selector="Button.Link:pointerover">
+        <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}" />
+    </Style>
+    <Style Selector="Button.Link:pointerover TextBlock">
+        <Setter Property="TextDecorations" Value="Underline" />
+    </Style>
+
+    <!-- Legacy cover tiles (Home / Albums pages). -->
+    <Style Selector="Button.Tile">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="10" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Top" />
+    </Style>
+    <Style Selector="Button.Tile:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource HoverBrush}" />
+    </Style>
+
+    <!-- Fluent sets the presenter's Foreground per state (pointerover/pressed/checked), which would override
+         the colours above for the icons inside. Keep the presenter following the button's own Foreground. -->
+    <Style Selector="Button.Caption:pointerover /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.Caption:pressed /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.Icon:pointerover /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.Icon:pressed /template/ ContentPresenter#PART_ContentPresenter,
+                     ToggleButton.Icon:pointerover /template/ ContentPresenter#PART_ContentPresenter,
+                     ToggleButton.Icon:pressed /template/ ContentPresenter#PART_ContentPresenter,
+                     ToggleButton.Icon:checked /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.PlayCircle:pressed /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.PillAccent:pressed /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.PillOutline:pressed /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.GlassPill:pressed /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.Outline:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{Binding $parent[TemplatedControl].Foreground}" />
+    </Style>
+
+    <!-- ===================================================================================== Nav rail -->
+    <!-- 40px items with a 20px icon; active = selected fill, 3px accent bar on the left, accent icon. -->
+    <Style Selector="RadioButton.NavItem, Button.NavItem">
+        <Setter Property="Height" Value="40" />
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource TextNavBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel>
+                    <Border Background="{TemplateBinding Background}" CornerRadius="6"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalContentAlignment="Stretch"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <Border Name="PART_ActiveBar" Width="3" Margin="0,10" CornerRadius="2"
+                            HorizontalAlignment="Left" Background="{StaticResource AccentBrush}"
+                            IsVisible="False" />
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="RadioButton.NavItem:pointerover, Button.NavItem:pointerover">
+        <Setter Property="Background" Value="{StaticResource HoverBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}" />
+    </Style>
+    <Style Selector="RadioButton.NavItem:checked">
+        <Setter Property="Background" Value="{StaticResource SelectedBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}" />
+    </Style>
+    <Style Selector="RadioButton.NavItem:checked /template/ Border#PART_ActiveBar">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="RadioButton.NavItem:checked ctrl|LineIcon">
+        <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+    </Style>
+
+    <!-- Library search: 38px field with a leading search glyph. -->
+    <Style Selector="TextBox.Search">
+        <Setter Property="Height" Value="38" />
+        <Setter Property="MinHeight" Value="38" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Padding" Value="36,0,12,0" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <!-- ===================================================================================== Sliders -->
+    <!-- Seek / volume: a 4px rounded track, Foreground-coloured fill, 12px white thumb. Arrow keys step by
+         SmallChange (5s on seek bars). -->
+    <Style Selector="Slider.Seek, Slider.Volume">
+        <Setter Property="MinHeight" Value="16" />
+        <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <!-- The fill is drawn from the value fraction rather than by the Track's repeat buttons, which
+                     Avalonia 12 arranges at zero width under a custom template. The Track still owns the
+                     thumb, dragging and click-to-page. -->
+                <Grid Name="PART_Root" Background="Transparent" MinHeight="16">
+                    <Border Height="4" CornerRadius="2" VerticalAlignment="Center"
+                            Background="{StaticResource TrackRemainderBrush}" IsHitTestVisible="False" />
+                    <Border Height="4" CornerRadius="2" VerticalAlignment="Center" HorizontalAlignment="Left"
+                            Background="{TemplateBinding Foreground}" IsHitTestVisible="False">
+                        <Border.Width>
+                            <MultiBinding Converter="{x:Static conv:SliderFillConverter.Instance}">
+                                <Binding Path="Value" RelativeSource="{RelativeSource TemplatedParent}" />
+                                <Binding Path="Minimum" RelativeSource="{RelativeSource TemplatedParent}" />
+                                <Binding Path="Maximum" RelativeSource="{RelativeSource TemplatedParent}" />
+                                <Binding Path="Bounds.Width" RelativeSource="{RelativeSource TemplatedParent}" />
+                            </MultiBinding>
+                        </Border.Width>
+                    </Border>
+                    <Track Name="PART_Track" Orientation="Horizontal"
+                           Minimum="{TemplateBinding Minimum}"
+                           Maximum="{TemplateBinding Maximum}"
+                           Value="{TemplateBinding Value, Mode=TwoWay}"
+                           IsDirectionReversed="{TemplateBinding IsDirectionReversed}">
+                        <Track.DecreaseButton>
+                            <RepeatButton Name="PART_DecreaseButton" Focusable="False">
+                                <RepeatButton.Template>
+                                    <ControlTemplate><Border Background="Transparent" /></ControlTemplate>
+                                </RepeatButton.Template>
+                            </RepeatButton>
+                        </Track.DecreaseButton>
+                        <Track.IncreaseButton>
+                            <RepeatButton Name="PART_IncreaseButton" Focusable="False">
+                                <RepeatButton.Template>
+                                    <ControlTemplate><Border Background="Transparent" /></ControlTemplate>
+                                </RepeatButton.Template>
+                            </RepeatButton>
+                        </Track.IncreaseButton>
+                        <Thumb Name="thumb" Width="12" Height="12">
+                            <Thumb.Template>
+                                <ControlTemplate>
+                                    <Ellipse Width="12" Height="12" Fill="#FFFFFF" />
+                                </ControlTemplate>
+                            </Thumb.Template>
+                        </Thumb>
+                    </Track>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="Slider.Volume">
+        <Setter Property="Foreground" Value="{StaticResource SolidLightBrush}" />
+    </Style>
+    <Style Selector="Slider.Seek:disabled /template/ Thumb#thumb">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <!-- The volume thumb only appears on hover, keeping the bar a quiet line like the mockup. -->
+    <Style Selector="Slider.Volume /template/ Thumb#thumb">
+        <Setter Property="Opacity" Value="0" />
+    </Style>
+    <Style Selector="Slider.Volume:pointerover /template/ Thumb#thumb, Slider.Volume:focus-within /template/ Thumb#thumb">
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+
+    <!-- Legacy slider look for pages not restyled (Settings / visualization flyout). -->
+    <Style Selector="Slider">
+        <Setter Property="MinHeight" Value="0" />
+    </Style>
+
+    <!-- ===================================================================================== Track rows -->
+    <!-- 44px rows in a glass-lite panel; hover = the hover token. The playing row is styled by the row template
+         (selected fill, accent title, indicator), independent of keyboard selection. -->
+    <Style Selector="ListBox.Rows">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="ListBox.Rows ListBoxItem">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="ListBox.Rows ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource HoverBrush}" />
+    </Style>
+    <Style Selector="ListBox.Rows ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource HoverBrush}" />
+    </Style>
+    <Style Selector="ListBox.Rows ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource SelectedBrush}" />
+    </Style>
+    <Style Selector="Border.PlayingRow">
+        <Setter Property="Background" Value="{StaticResource SelectedBrush}" />
+    </Style>
+
+</Styles>

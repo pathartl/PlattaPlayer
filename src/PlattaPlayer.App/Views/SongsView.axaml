@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PlattaPlayer.App.ViewModels"
+             xmlns:items="using:PlattaPlayer.App.ViewModels.Items"
+             xmlns:conv="using:PlattaPlayer.App.Converters"
+             x:Class="PlattaPlayer.App.Views.SongsView"
+             x:DataType="vm:SongsViewModel">
+
+    <Grid RowDefinitions="Auto,*" Margin="40,32,24,0">
+        <TextBlock Grid.Row="0" Text="{Binding Heading}" Classes="PageTitle" TextTrimming="CharacterEllipsis" />
+
+        <TextBlock Grid.Row="1" Text="No songs yet. Add a local folder in Settings."
+                   Classes="Secondary" FontSize="15">
+            <TextBlock.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="IsEmpty" />
+                    <Binding Path="!IsFiltered" />
+                </MultiBinding>
+            </TextBlock.IsVisible>
+        </TextBlock>
+        <TextBlock Grid.Row="1" Text="Nothing in your library matches that search."
+                   Classes="Secondary" FontSize="15">
+            <TextBlock.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="IsEmpty" />
+                    <Binding Path="IsFiltered" />
+                </MultiBinding>
+            </TextBlock.IsVisible>
+        </TextBlock>
+
+        <ListBox Grid.Row="1" ItemsSource="{Binding Tracks}" Background="Transparent"
+                 SelectionMode="Single" IsVisible="{Binding !IsEmpty}">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="items:TrackItemViewModel">
+                    <Grid ColumnDefinitions="44,*,Auto,64" Height="44" Background="Transparent"
+                          DoubleTapped="OnRowDoubleTapped" ContextRequested="OnRowContextRequested">
+                        <Panel Grid.Column="0" Width="36" Height="36" VerticalAlignment="Center">
+                            <Border Background="{StaticResource SurfaceBrush}" CornerRadius="4">
+                                <TextBlock Text="&#xE8D6;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                           FontSize="14" Foreground="{StaticResource TextTertiaryBrush}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <Image Source="{Binding CoverPath, Converter={x:Static conv:CoverImageConverter.Instance}}"
+                                   Stretch="UniformToFill">
+                                <Image.Clip><RectangleGeometry Rect="0,0,36,36" RadiusX="4" RadiusY="4" /></Image.Clip>
+                            </Image>
+                        </Panel>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0" Spacing="1">
+                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                                       Foreground="{StaticResource TextPrimaryBrush}" />
+                            <Button Classes="Link" CommandParameter="{Binding ArtistId}"
+                                    Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).GoToArtistCommand}">
+                                <TextBlock Text="{Binding Artist}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                            </Button>
+                        </StackPanel>
+                        <Button Grid.Column="2" Classes="Link" MaxWidth="220" Margin="0,0,16,0" VerticalAlignment="Center"
+                                CommandParameter="{Binding AlbumId}"
+                                Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).GoToAlbumCommand}">
+                            <TextBlock Text="{Binding AlbumTitle}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                        </Button>
+                        <TextBlock Grid.Column="3" Text="{Binding Duration}" Classes="Secondary" FontSize="12"
+                                   VerticalAlignment="Center" TextAlignment="Right" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>

@@ -1,0 +1,263 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PlattaPlayer.App.ViewModels"
+             xmlns:models="using:PlattaPlayer.Core.Models"
+             xmlns:codecs="using:PlattaPlayer.Codecs.Abstractions"
+             xmlns:items="using:PlattaPlayer.App.ViewModels.Items"
+             x:Class="PlattaPlayer.App.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Border.SwatchRing">
+            <Setter Property="Width" Value="34" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="CornerRadius" Value="17" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="Border.SwatchRing.Selected">
+            <Setter Property="BorderBrush" Value="{StaticResource TextStrongBrush}" />
+        </Style>
+        <!-- A source's reindex arrow spins while that source is scanning. -->
+        <Style Selector="TextBlock.Spinning">
+            <Style.Animations>
+                <Animation Duration="0:0:1" IterationCount="INFINITE">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="RotateTransform.Angle" Value="0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="RotateTransform.Angle" Value="360" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*" Margin="32,24">
+        <TextBlock Grid.Row="0" Text="Settings" Classes="PageTitle" Margin="0,0,0,16" />
+
+        <ScrollViewer Grid.Row="1">
+        <StackPanel Spacing="8">
+            <TextBlock Text="Sources" Classes="SectionTitle" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="&#xE8B7;  Add local folder" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                        Click="OnAddLocalFolder" Background="{StaticResource AccentBrush}"
+                        Foreground="{StaticResource OnAccentBrush}" Padding="16,8" CornerRadius="4"
+                        IsEnabled="{Binding !IsSyncing}" />
+                <Button Content="&#xE72C;  Rescan all" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                        Command="{Binding RescanAllCommand}" Background="{StaticResource SurfaceBrush}"
+                        Foreground="{StaticResource TextPrimaryBrush}" Padding="16,8" CornerRadius="4"
+                        IsEnabled="{Binding !IsSyncing}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding SyncStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock Text="&#xE895;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                           FontSize="13" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding SyncStatus}" Classes="Secondary" FontSize="13" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <TextBlock Text="Appearance" Classes="SectionTitle" Margin="0,12,0,0" />
+            <Border Classes="Card">
+                <StackPanel Spacing="8" MaxWidth="420" HorizontalAlignment="Left">
+                    <TextBlock Text="Accent color" Classes="Secondary" FontSize="13" />
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ItemsControl ItemsSource="{Binding AccentSwatches}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="6" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:AccentSwatch">
+                                <Button Background="Transparent" BorderThickness="0" Padding="0" CornerRadius="17"
+                                        ToolTip.Tip="{Binding Name}"
+                                        Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).SelectAccentCommand}"
+                                        CommandParameter="{Binding}">
+                                    <!-- Selection ring around the swatch dot. -->
+                                    <Border Classes="SwatchRing" Classes.Selected="{Binding IsSelected}">
+                                        <Ellipse Width="24" Height="24" Fill="{Binding Brush}" />
+                                    </Border>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <!-- Custom color: a hue-wheel dot that opens the full picker. -->
+                    <Button Background="Transparent" BorderThickness="0" Padding="0" CornerRadius="17"
+                            ToolTip.Tip="Custom color…">
+                        <Border Classes="SwatchRing" Classes.Selected="{Binding IsCustomAccent}">
+                            <Ellipse Width="24" Height="24">
+                                <Ellipse.Fill>
+                                    <ConicGradientBrush>
+                                        <GradientStop Offset="0" Color="#FF0000" />
+                                        <GradientStop Offset="0.167" Color="#FFFF00" />
+                                        <GradientStop Offset="0.333" Color="#00FF00" />
+                                        <GradientStop Offset="0.5" Color="#00FFFF" />
+                                        <GradientStop Offset="0.667" Color="#0000FF" />
+                                        <GradientStop Offset="0.833" Color="#FF00FF" />
+                                        <GradientStop Offset="1" Color="#FF0000" />
+                                    </ConicGradientBrush>
+                                </Ellipse.Fill>
+                            </Ellipse>
+                        </Border>
+                        <Button.Flyout>
+                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                <ColorView Color="{Binding AccentColorValue, Mode=TwoWay}"
+                                           IsAlphaEnabled="False" IsAlphaVisible="False"
+                                           IsColorPaletteVisible="False" IsAccentColorsVisible="False" />
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                    </StackPanel>
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                        <Border Grid.Column="0" Width="24" Height="24" CornerRadius="12" VerticalAlignment="Center"
+                                Background="{StaticResource AccentBrush}" />
+                        <TextBox Grid.Column="1" Text="{Binding AccentHex}" PlaceholderText="#RRGGBB" MaxLength="7"
+                                 FontFamily="{StaticResource MonoFont}" />
+                        <Button Grid.Column="2" Content="Reset" Command="{Binding ResetAccentCommand}"
+                                Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                Padding="12,8" CornerRadius="4" />
+                    </Grid>
+                    <TextBlock Classes="Secondary" FontSize="12" TextWrapping="Wrap"
+                               Text="Pick a swatch or enter any hex color. Used for playing/active state, sliders and primary buttons." />
+                </StackPanel>
+            </Border>
+
+            <!-- Codec plugin settings, e.g. the MIDI codec's default device: one section per setting. -->
+            <ItemsControl ItemsSource="{Binding CodecSettings}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="items:CodecSettingViewModel">
+                        <StackPanel Spacing="12" Margin="0,12,0,0">
+                            <TextBlock Text="{Binding Title}" Classes="SectionTitle" />
+                            <Border Classes="Card">
+                                <StackPanel Spacing="8" MaxWidth="420" HorizontalAlignment="Left">
+                                    <TextBlock Text="{Binding Label}" Classes="Secondary" FontSize="13" />
+                                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                        <ComboBox Grid.Column="0" HorizontalAlignment="Stretch"
+                                                  ItemsSource="{Binding Choices}"
+                                                  SelectedItem="{Binding Selected}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate x:DataType="codecs:CodecChoice">
+                                                    <TextBlock Text="{Binding Label}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <ItemsControl Grid.Column="1" ItemsSource="{Binding Folders}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Horizontal" Spacing="8" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="codecs:CodecFolder">
+                                                    <Button Content="&#xE838;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                                            Click="OnOpenCodecFolder" Tag="{Binding Path}"
+                                                            ToolTip.Tip="{Binding Label, StringFormat='Open {0}'}"
+                                                            Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                                            Padding="12,8" CornerRadius="4" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <Button Grid.Column="2" Content="&#xE72C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                                Command="{Binding RefreshCommand}" ToolTip.Tip="Rescan"
+                                                Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                                Padding="12,8" CornerRadius="4" />
+                                    </Grid>
+                                    <TextBlock Classes="Secondary" FontSize="12" TextWrapping="Wrap"
+                                               Text="{Binding Description}" IsVisible="{Binding HasDescription}" />
+                                    <ItemsControl ItemsSource="{Binding Folders}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="codecs:CodecFolder">
+                                                <TextBlock Classes="Secondary" FontSize="12" TextWrapping="Wrap" Text="{Binding Path}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="Visualizer" Classes="SectionTitle" Margin="0,12,0,0" />
+            <Border Classes="Card">
+                <StackPanel Spacing="8" MaxWidth="420" HorizontalAlignment="Left">
+                    <TextBlock Text="Full-window visualizer" Classes="Secondary" FontSize="13" />
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding Visualization.AvailableVisualizers}"
+                              SelectedItem="{Binding Visualization.ActiveVisualizer}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayName}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBlock Classes="Secondary" FontSize="12" TextWrapping="Wrap"
+                               Text="Choose which animated background plays behind the app while audio is playing." />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="Jellyfin server" Classes="SectionTitle" Margin="0,12,0,0" />
+            <Border Classes="Card">
+                <StackPanel Spacing="8" MaxWidth="420" HorizontalAlignment="Left">
+                    <TextBox Text="{Binding JellyfinServerUrl}" PlaceholderText="Server URL (e.g. http://192.168.1.10:8096)"
+                             IsEnabled="{Binding !IsConnecting}" />
+                    <TextBox Text="{Binding JellyfinUsername}" PlaceholderText="Username"
+                             IsEnabled="{Binding !IsConnecting}" />
+                    <TextBox Text="{Binding JellyfinPassword}" PlaceholderText="Password" PasswordChar="•"
+                             IsEnabled="{Binding !IsConnecting}" />
+                    <Button Content="&#xE703;  Connect" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                            Command="{Binding ConnectJellyfinCommand}" Background="{StaticResource AccentBrush}"
+                            Foreground="{StaticResource OnAccentBrush}" Padding="16,8" CornerRadius="4" HorizontalAlignment="Left"
+                            IsEnabled="{Binding !IsConnecting}" />
+                    <TextBlock Text="{Binding JellyfinStatus}" Classes="Secondary" FontSize="13"
+                               IsVisible="{Binding JellyfinStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    <CheckBox Content="Show waveform on the seek bar" Margin="0,4,0,0"
+                              IsChecked="{Binding ShowRemoteWaveforms}" />
+                    <TextBlock Classes="Secondary" FontSize="12" TextWrapping="Wrap"
+                               Text="Downloads each track a second time in the background to draw it. Takes effect from the next track." />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="Configured sources" Classes="SectionTitle" Margin="0,12,0,0" />
+            <TextBlock Text="No sources configured yet." Classes="Secondary" FontSize="14"
+                       IsVisible="{Binding !Sources.Count}" />
+            <ItemsControl ItemsSource="{Binding Sources}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="items:SourceItemViewModel">
+                        <Border Classes="Card" Margin="0,0,0,8">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                <TextBlock Grid.Column="0" Text="&#xE8B7;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                           FontSize="20" Foreground="{StaticResource AccentBrush}"
+                                           VerticalAlignment="Center" Margin="4,0,12,0" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding Type}" Classes="Secondary" FontSize="12" />
+                                </StackPanel>
+                                <Button Grid.Column="2" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                        Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}"
+                                        BorderThickness="0" Padding="8" ToolTip.Tip="Reindex this source"
+                                        IsEnabled="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).IsSyncing, Converter={x:Static BoolConverters.Not}}"
+                                        Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).RescanSourceCommand}"
+                                        CommandParameter="{Binding}">
+                                    <TextBlock Text="&#xE72C;" Classes.Spinning="{Binding IsSyncing}"
+                                               RenderTransformOrigin="50%,50%">
+                                        <TextBlock.RenderTransform>
+                                            <RotateTransform />
+                                        </TextBlock.RenderTransform>
+                                    </TextBlock>
+                                </Button>
+                                <Button Grid.Column="3" Content="&#xE74D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                        Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}"
+                                        BorderThickness="0" Padding="8" ToolTip.Tip="Remove"
+                                        Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).RemoveSourceCommand}"
+                                        CommandParameter="{Binding}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

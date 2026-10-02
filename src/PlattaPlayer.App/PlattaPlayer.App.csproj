@@ -1,0 +1,176 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- Windows desktop head: Windows TFM gives access to SMTC. Future macOS/Linux/mobile
+         heads are separate projects referencing the same shared net10.0 libraries. -->
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Controls.ItemsRepeater" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" />
+    <PackageReference Include="Avalonia.Controls.ColorPicker" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Bundled fonts (Geist / Geist Mono, SIL OFL — see Assets/Fonts/OFL.txt). -->
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <!-- Native BASS library. ManagedBass is only the managed wrapper; the platform-native bass.dll
+       must be obtained from un4seen.com and dropped into the native\ folder (e.g. native\bass.dll
+       for 64-bit Windows). Whatever is present there is copied next to the executable at build. -->
+  <ItemGroup>
+    <None Include="native\**\*" Condition="Exists('native')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlattaPlayer.Core\PlattaPlayer.Core.csproj" />
+    <ProjectReference Include="..\PlattaPlayer.Data\PlattaPlayer.Data.csproj" />
+    <ProjectReference Include="..\PlattaPlayer.Sources.Local\PlattaPlayer.Sources.Local.csproj" />
+    <ProjectReference Include="..\PlattaPlayer.Sources.Jellyfin\PlattaPlayer.Sources.Jellyfin.csproj" />
+    <ProjectReference Include="..\PlattaPlayer.Playback\PlattaPlayer.Playback.csproj" />
+    <ProjectReference Include="..\PlattaPlayer.Platform.Windows\PlattaPlayer.Platform.Windows.csproj" />
+    <ProjectReference Include="..\PlattaPlayer.Visualizations.Abstractions\PlattaPlayer.Visualizations.Abstractions.csproj" />
+    <ProjectReference Include="..\PlattaPlayer.Codecs.Abstractions\PlattaPlayer.Codecs.Abstractions.csproj" />
+  </ItemGroup>
+
+  <!-- Built-in visualizers and codecs ship as drop-in plugins, exactly like third-party ones. They are NOT
+       referenced for compilation (the App only knows the IVisualizerPlugin / ICodecPlugin contracts); these
+       references exist solely to build the plugin assemblies and order them before the staging step below. -->
+  <ItemGroup>
+    <ProjectReference Include="..\PlattaPlayer.Visualizations.MilkDrop.Plugin\PlattaPlayer.Visualizations.MilkDrop.Plugin.csproj"
+                      ReferenceOutputAssembly="false" Private="false" />
+    <ProjectReference Include="..\PlattaPlayer.Visualizations.Wmp.BarsAndWaves.Plugin\PlattaPlayer.Visualizations.Wmp.BarsAndWaves.Plugin.csproj"
+                      ReferenceOutputAssembly="false" Private="false" />
+    <ProjectReference Include="..\PlattaPlayer.Visualizations.Wmp.Alchemy.Plugin\PlattaPlayer.Visualizations.Wmp.Alchemy.Plugin.csproj"
+                      ReferenceOutputAssembly="false" Private="false" />
+    <ProjectReference Include="..\PlattaPlayer.Visualizations.Wmp.Battery.Plugin\PlattaPlayer.Visualizations.Wmp.Battery.Plugin.csproj"
+                      ReferenceOutputAssembly="false" Private="false" />
+    <ProjectReference Include="..\PlattaPlayer.Visualizations.PSP.Plugin\PlattaPlayer.Visualizations.PSP.Plugin.csproj"
+                      ReferenceOutputAssembly="false" Private="false" />
+    <ProjectReference Include="..\PlattaPlayer.Codecs.Spc\PlattaPlayer.Codecs.Spc.csproj"
+                      ReferenceOutputAssembly="false" Private="false" />
+    <ProjectReference Include="..\PlattaPlayer.Codecs.Midi\PlattaPlayer.Codecs.Midi.csproj"
+                      ReferenceOutputAssembly="false" Private="false" />
+    <ProjectReference Include="..\PlattaPlayer.Codecs.Usf\PlattaPlayer.Codecs.Usf.csproj"
+                      ReferenceOutputAssembly="false" Private="false" />
+  </ItemGroup>
+
+  <!-- Stage each built-in plugin into an app-relative plugins\<id>\ folder, the same layout external
+       drop-ins use. For each plugin we copy: the plugin assembly, its .deps.json (so the loader's
+       AssemblyDependencyResolver can locate the plugin's private engine dll, which sits alongside), and
+       the engine dll. Shared assemblies (Core, Abstractions, Avalonia) are deliberately NOT copied: the
+       plugin loader unifies those with the copies the host already has loaded. -->
+  <Target Name="StageVisualizerPlugins" AfterTargets="Build">
+    <!-- Plugins are discovered by scanning this folder, so a retired plugin keeps being offered from a
+         stale staged copy until the folder is removed. An incremental build will never delete it on its
+         own, which would make retiring a plugin a silent no-op on any machine that has built before. -->
+    <ItemGroup>
+      <_RetiredPluginDirs Include="$(OutDir)plugins\PlattaPlayer.Visualizations.Wmp.Bars.Plugin" />
+      <_RetiredPluginDirs Include="$(OutDir)plugins\PlattaPlayer.Visualizations.Wmp.Waves.Plugin" />
+      <_RetiredPluginDirs Include="$(OutDir)plugins\PlattaPlayer.Visualizations.Wmp.Plugin" />
+      <!-- Renamed to ...Wmp.Alchemy.Plugin; the folder name is what the loader keys on. -->
+      <_RetiredPluginDirs Include="$(OutDir)plugins\PlattaPlayer.Visualizations.Wmp.Ambience.Plugin" />
+      <!-- The approximate GPU Battery, replaced by the verified port in ...Wmp.Battery.Plugin. -->
+      <_RetiredPluginDirs Include="$(OutDir)plugins\PlattaPlayer.Visualizations.WmpFx.Battery.Plugin" />
+    </ItemGroup>
+    <RemoveDir Directories="@(_RetiredPluginDirs)" ContinueOnError="true" />
+    <!-- emu88.dll used to sit next to the exe; it now ships inside the MIDI codec plugin's folder. -->
+    <Delete Files="$(OutDir)emu88.dll" ContinueOnError="true" />
+
+    <MSBuild Projects="..\PlattaPlayer.Visualizations.MilkDrop.Plugin\PlattaPlayer.Visualizations.MilkDrop.Plugin.csproj" Targets="GetTargetPath" RemoveProperties="RuntimeIdentifier;SelfContained">
+      <Output TaskParameter="TargetOutputs" ItemName="_MilkdropDll" />
+    </MSBuild>
+    <MSBuild Projects="..\PlattaPlayer.Visualizations.Wmp.BarsAndWaves.Plugin\PlattaPlayer.Visualizations.Wmp.BarsAndWaves.Plugin.csproj" Targets="GetTargetPath" RemoveProperties="RuntimeIdentifier;SelfContained">
+      <Output TaskParameter="TargetOutputs" ItemName="_WmpBarsAndWavesDll" />
+    </MSBuild>
+    <MSBuild Projects="..\PlattaPlayer.Visualizations.Wmp.Alchemy.Plugin\PlattaPlayer.Visualizations.Wmp.Alchemy.Plugin.csproj" Targets="GetTargetPath" RemoveProperties="RuntimeIdentifier;SelfContained">
+      <Output TaskParameter="TargetOutputs" ItemName="_WmpAlchemyDll" />
+    </MSBuild>
+    <MSBuild Projects="..\PlattaPlayer.Visualizations.Wmp.Battery.Plugin\PlattaPlayer.Visualizations.Wmp.Battery.Plugin.csproj" Targets="GetTargetPath" RemoveProperties="RuntimeIdentifier;SelfContained">
+      <Output TaskParameter="TargetOutputs" ItemName="_WmpBatteryDll" />
+    </MSBuild>
+    <MSBuild Projects="..\PlattaPlayer.Visualizations.PSP.Plugin\PlattaPlayer.Visualizations.PSP.Plugin.csproj" Targets="GetTargetPath" RemoveProperties="RuntimeIdentifier;SelfContained">
+      <Output TaskParameter="TargetOutputs" ItemName="_PspDll" />
+    </MSBuild>
+    <MSBuild Projects="..\PlattaPlayer.Codecs.Spc\PlattaPlayer.Codecs.Spc.csproj" Targets="GetTargetPath" RemoveProperties="RuntimeIdentifier;SelfContained">
+      <Output TaskParameter="TargetOutputs" ItemName="_SpcDll" />
+    </MSBuild>
+    <MSBuild Projects="..\PlattaPlayer.Codecs.Midi\PlattaPlayer.Codecs.Midi.csproj" Targets="GetTargetPath" RemoveProperties="RuntimeIdentifier;SelfContained">
+      <Output TaskParameter="TargetOutputs" ItemName="_MidiDll" />
+    </MSBuild>
+    <MSBuild Projects="..\PlattaPlayer.Codecs.Usf\PlattaPlayer.Codecs.Usf.csproj" Targets="GetTargetPath" RemoveProperties="RuntimeIdentifier;SelfContained">
+      <Output TaskParameter="TargetOutputs" ItemName="_UsfDll" />
+    </MSBuild>
+    <ItemGroup>
+      <_MilkdropFiles Include="@(_MilkdropDll)" />
+      <_MilkdropFiles Include="@(_MilkdropDll->'%(RootDir)%(Directory)%(Filename).deps.json')" />
+      <_MilkdropFiles Include="%(_MilkdropDll.RootDir)%(_MilkdropDll.Directory)PlattaPlayer.Visualizations.MilkDrop.dll" />
+
+      <!-- The WMP plugins each ship a private copy of the shared, platform-free WMP engine dll. -->
+      <_WmpBarsAndWavesFiles Include="@(_WmpBarsAndWavesDll)" />
+      <_WmpBarsAndWavesFiles Include="@(_WmpBarsAndWavesDll->'%(RootDir)%(Directory)%(Filename).deps.json')" />
+      <_WmpBarsAndWavesFiles Include="%(_WmpBarsAndWavesDll.RootDir)%(_WmpBarsAndWavesDll.Directory)PlattaPlayer.Visualizations.Wmp.dll" />
+
+      <_WmpAlchemyFiles Include="@(_WmpAlchemyDll)" />
+      <_WmpAlchemyFiles Include="@(_WmpAlchemyDll->'%(RootDir)%(Directory)%(Filename).deps.json')" />
+      <_WmpAlchemyFiles Include="%(_WmpAlchemyDll.RootDir)%(_WmpAlchemyDll.Directory)PlattaPlayer.Visualizations.Wmp.dll" />
+
+      <_WmpBatteryFiles Include="@(_WmpBatteryDll)" />
+      <_WmpBatteryFiles Include="@(_WmpBatteryDll->'%(RootDir)%(Directory)%(Filename).deps.json')" />
+      <_WmpBatteryFiles Include="%(_WmpBatteryDll.RootDir)%(_WmpBatteryDll.Directory)PlattaPlayer.Visualizations.Wmp.dll" />
+
+      <!-- Code only: the PSP plugin extracts its textures/images from the user's firmware at runtime. -->
+      <_PspFiles Include="@(_PspDll)" />
+      <_PspFiles Include="@(_PspDll->'%(RootDir)%(Directory)%(Filename).deps.json')" />
+      <_PspFiles Include="%(_PspDll.RootDir)%(_PspDll.Directory)PlattaPlayer.Visualizations.PSP.dll" />
+
+      <!-- The SPC codec is a single, dependency-free assembly (plus the ares licence notice it carries). -->
+      <_SpcFiles Include="@(_SpcDll)" />
+      <_SpcFiles Include="@(_SpcDll->'%(RootDir)%(Directory)%(Filename).deps.json')" />
+      <_SpcFiles Include="%(_SpcDll.RootDir)%(_SpcDll.Directory)THIRD-PARTY-NOTICES.md" />
+      <!-- The MIDI codec ships MeltySynth (SoundFont synth) and, when it has been built, the native emu88.dll
+           (emulated sound modules), which it loads from beside itself. -->
+      <_MidiFiles Include="@(_MidiDll)" />
+      <_MidiFiles Include="@(_MidiDll->'%(RootDir)%(Directory)%(Filename).deps.json')" />
+      <_MidiFiles Include="%(_MidiDll.RootDir)%(_MidiDll.Directory)MeltySynth.dll" />
+      <_MidiFiles Include="%(_MidiDll.RootDir)%(_MidiDll.Directory)emu88.dll"
+                  Condition="Exists('%(_MidiDll.RootDir)%(_MidiDll.Directory)emu88.dll')" />
+      <!-- The USF codec ships the native lazyusf2.dll (N64 emulation) when it has been built, and its licence
+           notice. -->
+      <_UsfFiles Include="@(_UsfDll)" />
+      <_UsfFiles Include="@(_UsfDll->'%(RootDir)%(Directory)%(Filename).deps.json')" />
+      <_UsfFiles Include="%(_UsfDll.RootDir)%(_UsfDll.Directory)THIRD-PARTY-NOTICES.md" />
+      <_UsfFiles Include="%(_UsfDll.RootDir)%(_UsfDll.Directory)lazyusf2.dll"
+                 Condition="Exists('%(_UsfDll.RootDir)%(_UsfDll.Directory)lazyusf2.dll')" />
+    </ItemGroup>
+    <!-- Subfolder is named after the plugin assembly so the loader treats only the plugin dll (not the
+         engine dll beside it) as a load candidate (its "<subfolder>.dll" convention). -->
+    <Copy SourceFiles="@(_MilkdropFiles)" DestinationFolder="$(OutDir)plugins\PlattaPlayer.Visualizations.MilkDrop.Plugin" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_WmpBarsAndWavesFiles)" DestinationFolder="$(OutDir)plugins\PlattaPlayer.Visualizations.Wmp.BarsAndWaves.Plugin" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_WmpAlchemyFiles)" DestinationFolder="$(OutDir)plugins\PlattaPlayer.Visualizations.Wmp.Alchemy.Plugin" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_WmpBatteryFiles)" DestinationFolder="$(OutDir)plugins\PlattaPlayer.Visualizations.Wmp.Battery.Plugin" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_PspFiles)" DestinationFolder="$(OutDir)plugins\PlattaPlayer.Visualizations.PSP.Plugin" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_SpcFiles)" DestinationFolder="$(OutDir)plugins\PlattaPlayer.Codecs.Spc" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_MidiFiles)" DestinationFolder="$(OutDir)plugins\PlattaPlayer.Codecs.Midi" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_UsfFiles)" DestinationFolder="$(OutDir)plugins\PlattaPlayer.Codecs.Usf" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

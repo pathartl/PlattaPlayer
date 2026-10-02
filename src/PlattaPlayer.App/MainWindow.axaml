@@ -1,0 +1,213 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:PlattaPlayer.App.ViewModels"
+        xmlns:items="using:PlattaPlayer.App.ViewModels.Items"
+        xmlns:conv="using:PlattaPlayer.App.Converters"
+        xmlns:ctrl="using:PlattaPlayer.App.Controls"
+        xmlns:views="using:PlattaPlayer.App.Views"
+        xmlns:chrome="using:Avalonia.Controls.Chrome"
+        mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="900"
+        x:Class="PlattaPlayer.App.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="PlattaPlayer"
+        Width="1440" Height="900"
+        MinWidth="1024" MinHeight="640"
+        Background="{StaticResource WindowBackgroundBrush}"
+        WindowDecorations="BorderOnly"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="32"
+        WindowStartupLocation="CenterScreen"
+        Foreground="{StaticResource TextPrimaryBrush}"
+        FontFamily="{StaticResource UiFont}"
+        FontSize="14">
+
+    <!-- 1px hairline outline around the frameless window; dropped when maximized/fullscreen (code-behind). -->
+    <Border Name="RootBorder"
+            BorderBrush="{StaticResource WindowBorderBrush}"
+            BorderThickness="1"
+            ClipToBounds="True">
+    <Panel>
+
+        <!-- ===== Visualizer: always the background =====
+             The active plugin's control is placed in VisualizerHost by code-behind. Library screens run it at
+             60% under a 28% black scrim; Now Playing at full intensity. -->
+        <Panel Name="VisualizerHost" IsVisible="{Binding IsVisualizerVisible}" Opacity="{Binding VisualizerOpacity}">
+            <Panel.Transitions>
+                <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.2" /></Transitions>
+            </Panel.Transitions>
+        </Panel>
+        <Border Background="{StaticResource VizScrimLibraryBrush}" IsHitTestVisible="False"
+                IsVisible="{Binding IsLibraryVisible}" />
+
+        <Grid RowDefinitions="32,*,Auto">
+
+            <!-- ===== Title bar (no background of its own: the visualizer shows through) ===== -->
+            <Grid Grid.Row="0" Name="TitleBar" Background="Transparent" ColumnDefinitions="*,Auto"
+                  chrome:WindowDecorationProperties.ElementRole="TitleBar">
+                <StackPanel Orientation="Horizontal" Spacing="10" Margin="14,0,0,0"
+                            VerticalAlignment="Center" IsHitTestVisible="False">
+                    <ctrl:LineIcon Data="{StaticResource IconLogo}" Size="16" StrokeThickness="2"
+                                   Foreground="{StaticResource AccentBrush}" />
+                    <TextBlock Text="PlattaPlayer" FontSize="12" Foreground="#B8FFFFFF" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Name="MinimizeButton" Classes="Caption" ToolTip.Tip="Minimize"
+                            AutomationProperties.Name="Minimize"
+                            chrome:WindowDecorationProperties.ElementRole="MinimizeButton">
+                        <ctrl:LineIcon Data="{StaticResource CaptionMinimize}" Size="10" GridSize="10" StrokeThickness="1" />
+                    </Button>
+                    <Button Name="MaximizeButton" Classes="Caption" ToolTip.Tip="Maximize"
+                            AutomationProperties.Name="Maximize"
+                            chrome:WindowDecorationProperties.ElementRole="MaximizeButton">
+                        <ctrl:LineIcon Name="MaximizeGlyph" Data="{StaticResource CaptionMaximize}"
+                                       Size="10" GridSize="10" StrokeThickness="1" />
+                    </Button>
+                    <Button Name="CloseButton" Classes="Caption Close" ToolTip.Tip="Close"
+                            AutomationProperties.Name="Close"
+                            chrome:WindowDecorationProperties.ElementRole="CloseButton">
+                        <ctrl:LineIcon Data="{StaticResource CaptionClose}" Size="10" GridSize="10" StrokeThickness="1" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- ===== Library: nav rail + content ===== -->
+            <Grid Grid.Row="1" ColumnDefinitions="232,*">
+
+                <Border Name="NavRail" Classes="Glass" IsVisible="{Binding IsLibraryVisible}"
+                        BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,1,1,0">
+                    <DockPanel Margin="12,12,12,16">
+
+                        <!-- Search -->
+                        <Panel DockPanel.Dock="Top">
+                            <TextBox Name="SearchBox" Classes="Search" Text="{Binding SearchText}"
+                                     PlaceholderText="Search artists, albums, songs"
+                                     AutomationProperties.Name="Search library">
+                                <TextBox.KeyBindings>
+                                    <KeyBinding Gesture="Enter" Command="{Binding SearchCommand}" />
+                                </TextBox.KeyBindings>
+                            </TextBox>
+                            <ctrl:LineIcon Data="{StaticResource IconSearch}" Size="16" Margin="12,0,0,0"
+                                           HorizontalAlignment="Left" VerticalAlignment="Center"
+                                           Foreground="#99FFFFFF" IsHitTestVisible="False" />
+                        </Panel>
+
+                        <!-- Pinned bottom: tag editor + settings -->
+                        <StackPanel DockPanel.Dock="Bottom" Spacing="2">
+                            <RadioButton Classes="NavItem" Command="{Binding NavigateCommand}" CommandParameter="TagEditor"
+                                         IsChecked="{Binding SelectedSection, Mode=OneWay, Converter={x:Static conv:StringEqualsConverter.Instance}, ConverterParameter=TagEditor}">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <ctrl:LineIcon Data="{StaticResource IconTag}" />
+                                    <TextBlock Text="Tag editor" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </RadioButton>
+                            <RadioButton Classes="NavItem" Command="{Binding NavigateCommand}" CommandParameter="Settings"
+                                         IsChecked="{Binding SelectedSection, Mode=OneWay, Converter={x:Static conv:StringEqualsConverter.Instance}, ConverterParameter=Settings}">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <ctrl:LineIcon Data="{StaticResource IconSettings}" />
+                                    <TextBlock Text="Settings" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </RadioButton>
+                        </StackPanel>
+
+                        <ScrollViewer Margin="0,22,0,12" HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel Spacing="22">
+
+                                <!-- Library -->
+                                <StackPanel Spacing="2">
+                                    <TextBlock Classes="Caption" Text="LIBRARY" Margin="12,0,0,6" />
+                                    <RadioButton Classes="NavItem" Command="{Binding NavigateCommand}" CommandParameter="Artists"
+                                                 IsChecked="{Binding SelectedSection, Mode=OneWay, Converter={x:Static conv:StringEqualsConverter.Instance}, ConverterParameter=Artists}">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <ctrl:LineIcon Data="{StaticResource IconArtist}" />
+                                            <TextBlock Grid.Column="1" Text="Artists" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="2" Classes="Mono" Text="{Binding ArtistCount}" FontSize="11"
+                                                       Foreground="{StaticResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </RadioButton>
+                                    <RadioButton Classes="NavItem" Command="{Binding NavigateCommand}" CommandParameter="Albums"
+                                                 IsChecked="{Binding SelectedSection, Mode=OneWay, Converter={x:Static conv:StringEqualsConverter.Instance}, ConverterParameter=Albums}">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <ctrl:LineIcon Data="{StaticResource IconAlbum}" />
+                                            <TextBlock Grid.Column="1" Text="Albums" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="2" Classes="Mono" Text="{Binding AlbumCount}" FontSize="11"
+                                                       Foreground="{StaticResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </RadioButton>
+                                    <RadioButton Classes="NavItem" Command="{Binding NavigateCommand}" CommandParameter="Songs"
+                                                 IsChecked="{Binding SelectedSection, Mode=OneWay, Converter={x:Static conv:StringEqualsConverter.Instance}, ConverterParameter=Songs}">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <ctrl:LineIcon Data="{StaticResource IconSong}" />
+                                            <TextBlock Grid.Column="1" Text="Songs" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="2" Classes="Mono" Text="{Binding TrackCount}" FontSize="11"
+                                                       Foreground="{StaticResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </RadioButton>
+                                    <RadioButton Classes="NavItem" Command="{Binding NavigateCommand}" CommandParameter="Home"
+                                                 IsChecked="{Binding SelectedSection, Mode=OneWay, Converter={x:Static conv:StringEqualsConverter.Instance}, ConverterParameter=Home}">
+                                        <StackPanel Orientation="Horizontal" Spacing="12">
+                                            <ctrl:LineIcon Data="{StaticResource IconRecent}" />
+                                            <TextBlock Text="Recent" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </RadioButton>
+                                </StackPanel>
+
+                                <!-- Playlists -->
+                                <StackPanel Spacing="2">
+                                    <Button Classes="Link" Margin="12,0,0,6" Command="{Binding NavigateCommand}" CommandParameter="Playlists"
+                                            ToolTip.Tip="Manage playlists" Foreground="{StaticResource TextTertiaryBrush}">
+                                        <TextBlock Classes="Caption" Text="PLAYLISTS" Foreground="{Binding $parent[Button].Foreground}" />
+                                    </Button>
+                                    <ItemsControl ItemsSource="{Binding Playlists}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate><StackPanel Spacing="2" /></ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="items:PlaylistItemViewModel">
+                                                <RadioButton Classes="NavItem"
+                                                             Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).OpenPlaylistCommand}"
+                                                             CommandParameter="{Binding}">
+                                                    <RadioButton.IsChecked>
+                                                        <MultiBinding Converter="{x:Static conv:EqualsMultiConverter.Instance}" Mode="OneWay">
+                                                            <Binding Path="SectionKey" />
+                                                            <Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).SelectedSection" />
+                                                        </MultiBinding>
+                                                    </RadioButton.IsChecked>
+                                                    <Grid ColumnDefinitions="Auto,*">
+                                                        <ctrl:LineIcon Data="{StaticResource IconPlaylist}" />
+                                                        <TextBlock Grid.Column="1" Text="{Binding Name}" Margin="12,0,0,0"
+                                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    </Grid>
+                                                </RadioButton>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Button Classes="NavItem" Command="{Binding NavigateCommand}" CommandParameter="Playlists"
+                                            IsVisible="{Binding !Playlists.Count}">
+                                        <StackPanel Orientation="Horizontal" Spacing="12">
+                                            <ctrl:LineIcon Data="{StaticResource IconPlaylist}" />
+                                            <TextBlock Text="New playlist…" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </DockPanel>
+                </Border>
+
+                <ContentControl Grid.Column="1" Content="{Binding CurrentPage}" IsVisible="{Binding IsLibraryVisible}" />
+            </Grid>
+
+            <!-- ===== Transport bar ===== -->
+            <views:TransportBar Grid.Row="2" Name="TransportBar" IsVisible="{Binding IsLibraryVisible}" />
+
+            <!-- ===== Now Playing: the visualizer gets the stage ===== -->
+            <views:NowPlayingView Grid.Row="1" Grid.RowSpan="2" Name="NowPlayingView"
+                                  IsVisible="{Binding IsNowPlayingOpen}" />
+        </Grid>
+
+    </Panel>
+    </Border>
+</Window>

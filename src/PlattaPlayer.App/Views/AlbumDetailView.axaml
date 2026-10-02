@@ -1,0 +1,153 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PlattaPlayer.App.ViewModels"
+             xmlns:items="using:PlattaPlayer.App.ViewModels.Items"
+             xmlns:conv="using:PlattaPlayer.App.Converters"
+             xmlns:ctrl="using:PlattaPlayer.App.Controls"
+             x:Class="PlattaPlayer.App.Views.AlbumDetailView"
+             x:DataType="vm:AlbumDetailViewModel">
+
+    <Grid RowDefinitions="Auto,*" Margin="40,24,24,0">
+
+        <!-- Breadcrumb: Artists › Artist › Album -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="6">
+            <Button Classes="Link" Foreground="#9EFFFFFF" Command="{Binding OpenArtistsCommand}">
+                <TextBlock Text="Artists" FontSize="13" />
+            </Button>
+            <ctrl:LineIcon Data="{StaticResource IconChevronRight}" Size="14" Foreground="#66FFFFFF" VerticalAlignment="Center" />
+            <Button Classes="Link" Foreground="#9EFFFFFF" Command="{Binding OpenArtistCommand}">
+                <TextBlock Text="{Binding AlbumArtist}" FontSize="13" />
+            </Button>
+            <ctrl:LineIcon Data="{StaticResource IconChevronRight}" Size="14" Foreground="#66FFFFFF" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding AlbumTitle}" FontSize="13" Foreground="#EBFFFFFF" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <Grid Name="Columns" Grid.Row="1" Margin="0,24,0,0" ColumnDefinitions="Auto,*">
+
+            <!-- Left: art (never cropped, never covered) + format badges. Outside the ScrollViewer so it stays put. -->
+            <StackPanel Grid.Column="0" Spacing="20" Margin="0,0,48,32" VerticalAlignment="Top">
+                <Border Name="ArtSlot" Classes="ArtSlot" Width="400" Height="400" CornerRadius="6">
+                    <Panel>
+                        <ctrl:LineIcon Data="{StaticResource IconAlbum}" Size="64" Foreground="{StaticResource TextDisabledBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       IsVisible="{Binding CoverPath, Converter={x:Static ObjectConverters.IsNull}}" />
+                        <Image Source="{Binding CoverPath, Converter={x:Static conv:CoverImageConverter.Instance}, ConverterParameter=1200}" />
+                    </Panel>
+                </Border>
+                <ItemsControl ItemsSource="{Binding Badges}" Width="{Binding #ArtSlot.Width}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><WrapPanel ItemSpacing="6" LineSpacing="6" /></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <Border Classes="Badge"><TextBlock Text="{Binding}" /></Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+            <!-- Right: header and actions stay fixed; only the track list scrolls. -->
+            <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*" RowSpacing="24">
+                <StackPanel Grid.Row="0" Spacing="10">
+                    <TextBlock Classes="Eyebrow" Text="{Binding Eyebrow}" />
+                    <TextBlock Classes="Display" Text="{Binding AlbumTitle}" TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Classes="Link Strong" FontSize="14" Command="{Binding OpenArtistCommand}">
+                            <TextBlock Text="{Binding AlbumArtist}" />
+                        </Button>
+                        <ItemsControl ItemsSource="{Binding Details}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="8" /></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="·" FontSize="14" Foreground="#B3FFFFFF" />
+                                        <TextBlock Text="{Binding}" FontSize="14" Foreground="#B3FFFFFF" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10">
+                    <Button Classes="PillAccent" Command="{Binding PlayAllCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <ctrl:LineIcon Data="{StaticResource IconPlay}" Size="18" IsFilled="True" StrokeThickness="0" />
+                            <TextBlock Text="Play" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="PillOutline" Command="{Binding ShuffleCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <ctrl:LineIcon Data="{StaticResource IconShuffle}" Size="18" />
+                            <TextBlock Text="Shuffle" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- Track list: double-click or Enter plays the track and queues the rest of the album. -->
+                <Border Grid.Row="2" Classes="GlassLite" Padding="8" Margin="0,0,0,32" VerticalAlignment="Top">
+                    <ListBox Name="TrackList" Classes="Rows" ItemsSource="{Binding Rows}"
+                             SelectionMode="Single" KeyDown="OnTrackListKeyDown"
+                             AutomationProperties.Name="Tracks">
+                        <ListBox.DataTemplates>
+                            <DataTemplate x:DataType="vm:DiscHeader">
+                                <TextBlock Classes="Caption" Text="{Binding Text}" Margin="12,14,0,6" />
+                            </DataTemplate>
+                            <DataTemplate x:DataType="items:TrackItemViewModel">
+                                <Panel Height="44" Background="Transparent"
+                                       DoubleTapped="OnRowDoubleTapped" ContextRequested="OnRowContextRequested">
+                                    <!-- Playing row: selected fill. -->
+                                    <Border Background="{StaticResource SelectedBrush}" CornerRadius="6">
+                                        <Border.IsVisible>
+                                            <MultiBinding Converter="{x:Static conv:EqualsMultiConverter.Instance}">
+                                                <Binding Path="Id" />
+                                                <Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).NowPlaying.TrackId" />
+                                            </MultiBinding>
+                                        </Border.IsVisible>
+                                    </Border>
+                                    <Grid ColumnDefinitions="40,*,120,64" Margin="12,0">
+                                        <TextBlock Classes="Mono" Text="{Binding Number}" FontSize="12"
+                                                   Foreground="#99FFFFFF" VerticalAlignment="Center">
+                                            <TextBlock.IsVisible>
+                                                <MultiBinding Converter="{x:Static conv:EqualsMultiConverter.Not}">
+                                                    <Binding Path="Id" />
+                                                    <Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).NowPlaying.TrackId" />
+                                                </MultiBinding>
+                                            </TextBlock.IsVisible>
+                                        </TextBlock>
+                                        <ctrl:NowPlayingIndicator VerticalAlignment="Center" HorizontalAlignment="Left"
+                                                                  BarBrush="{StaticResource AccentBrush}"
+                                                                  IsActive="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).NowPlaying.IsPlaying}">
+                                            <ctrl:NowPlayingIndicator.IsVisible>
+                                                <MultiBinding Converter="{x:Static conv:EqualsMultiConverter.Instance}">
+                                                    <Binding Path="Id" />
+                                                    <Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).NowPlaying.TrackId" />
+                                                </MultiBinding>
+                                            </ctrl:NowPlayingIndicator.IsVisible>
+                                        </ctrl:NowPlayingIndicator>
+                                        <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="14" Margin="12,0"
+                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis">
+                                            <TextBlock.Foreground>
+                                                <MultiBinding Converter="{x:Static conv:PlayingBrushConverter.Primary}">
+                                                    <Binding Path="Id" />
+                                                    <Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).NowPlaying.TrackId" />
+                                                </MultiBinding>
+                                            </TextBlock.Foreground>
+                                        </TextBlock>
+                                        <TextBlock Grid.Column="2" Classes="Mono" Text="{Binding Quality}" FontSize="11"
+                                                   Foreground="{StaticResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="3" Classes="Mono" Text="{Binding Duration}" FontSize="12"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   VerticalAlignment="Center" TextAlignment="Right" />
+                                    </Grid>
+                                </Panel>
+                            </DataTemplate>
+                        </ListBox.DataTemplates>
+                    </ListBox>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

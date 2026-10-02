@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The public contract a visualizer plugin implements. Kept tiny and portable (net10.0, no
+       platform/App dependency) so external plugin authors reference only this + Avalonia + Core,
+       never the whole App. This is the seam both the built-in plugins and the external drop-in
+       loader plug into. -->
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlattaPlayer.Core\PlattaPlayer.Core.csproj" />
+  </ItemGroup>
+
+</Project>

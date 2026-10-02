@@ -1,0 +1,304 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PlattaPlayer.App.ViewModels"
+             xmlns:conv="using:PlattaPlayer.App.Converters"
+             xmlns:ctrl="using:PlattaPlayer.App.Controls"
+             x:Class="PlattaPlayer.App.Views.NowPlayingView"
+             x:DataType="vm:MainWindowViewModel">
+
+    <UserControl.Styles>
+        <!-- Idle mode: after ~3s without mouse movement every control fades out except the art and title. -->
+        <Style Selector=":is(Control).Chrome">
+            <Setter Property="Transitions">
+                <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.4" /></Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Panel#Root.Idle :is(Control).Chrome">
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+
+        <!-- Lyric lines: past 38%, current 38px/600 white, next 74%, later 52%. -->
+        <Style Selector="TextBlock.Lyric">
+            <Setter Property="FontSize" Value="26" />
+            <Setter Property="LineHeight" Value="32.5" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Foreground" Value="#85FFFFFF" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Foreground" Duration="0:0:0.25" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="TextBlock.Lyric.Past">
+            <Setter Property="Foreground" Value="#61FFFFFF" />
+        </Style>
+        <Style Selector="TextBlock.Lyric.Next, TextBlock.Lyric.Unsynced">
+            <Setter Property="Foreground" Value="#BDFFFFFF" />
+        </Style>
+        <Style Selector="TextBlock.Lyric.Current">
+            <Setter Property="FontSize" Value="38" />
+            <Setter Property="LineHeight" Value="47.5" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="LetterSpacing" Value="-0.38" />
+            <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}" />
+        </Style>
+        <Style Selector="Button.LyricLine:pointerover TextBlock.Lyric">
+            <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Panel Name="Root" Background="Transparent">
+
+        <!-- Functional dark fades (the only gradients on UI): bottom for the track info, right for lyrics. -->
+        <Border Width="760" HorizontalAlignment="Right" Background="{StaticResource LyricsFadeBrush}"
+                IsHitTestVisible="False" IsVisible="{Binding IsLyricsOpen}" />
+        <Border Height="380" VerticalAlignment="Bottom" Background="{StaticResource NowPlayingBottomFadeBrush}"
+                IsHitTestVisible="False" />
+
+        <!-- Top: back to library, visualizer preset switcher -->
+        <Grid Classes="Chrome" Margin="24,8,24,0" VerticalAlignment="Top" ColumnDefinitions="Auto,*,Auto">
+            <Button Classes="GlassPill" Command="{Binding CloseNowPlayingCommand}"
+                    ToolTip.Tip="Back to library (Ctrl+Enter)" AutomationProperties.Name="Back to library">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ctrl:LineIcon Data="{StaticResource IconChevronLeft}" Size="16" />
+                    <TextBlock Text="Library" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+
+            <Border Grid.Column="2" Classes="GlassPill">
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                    <Button Classes="Icon" Width="32" Height="32" CornerRadius="16"
+                            Command="{Binding Visualization.PreviousPresetCommand}"
+                            ToolTip.Tip="Previous preset ([)" AutomationProperties.Name="Previous preset">
+                        <ctrl:LineIcon Data="{StaticResource IconChevronLeft}" Size="14" />
+                    </Button>
+                    <Button Classes="Plain" Padding="6,0" VerticalAlignment="Center" Cursor="Hand"
+                            ToolTip.Tip="Visualizer settings" AutomationProperties.Name="Visualizer settings">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <ctrl:LineIcon Data="{StaticResource IconSparkle}" Size="16" StrokeThickness="2"
+                                           Foreground="{StaticResource AccentBrush}" />
+                            <TextBlock Text="{Binding Visualization.PresetLabel}" FontSize="13" MaxWidth="260"
+                                       TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <Button.Flyout>
+                            <Flyout Placement="BottomEdgeAlignedRight">
+                                <StackPanel Width="260" Spacing="14" Margin="4">
+                                    <TextBlock Text="Visualizer" FontWeight="SemiBold" />
+                                    <StackPanel Spacing="4">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Text="Auto-advance every" Classes="Secondary" FontSize="13" />
+                                            <TextBlock Grid.Column="1" Classes="Secondary Mono" FontSize="12"
+                                                       Text="{Binding Visualization.PresetDuration, StringFormat='{}{0:0}s'}" />
+                                        </Grid>
+                                        <Slider Classes="Seek" Minimum="0" Maximum="60" SmallChange="1"
+                                                Value="{Binding Visualization.PresetDuration, Mode=TwoWay}" />
+                                    </StackPanel>
+                                    <StackPanel Spacing="4">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Text="Crossfade" Classes="Secondary" FontSize="13" />
+                                            <TextBlock Grid.Column="1" Classes="Secondary Mono" FontSize="12"
+                                                       Text="{Binding Visualization.BlendDuration, StringFormat='{}{0:0.0}s'}" />
+                                        </Grid>
+                                        <Slider Classes="Seek" Minimum="0" Maximum="10" SmallChange="0.5"
+                                                Value="{Binding Visualization.BlendDuration, Mode=TwoWay}" />
+                                    </StackPanel>
+                                    <Button Classes="Outline" HorizontalAlignment="Left"
+                                            Command="{Binding Visualization.RandomPresetCommand}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <ctrl:LineIcon Data="{StaticResource IconShuffle}" Size="16" />
+                                            <TextBlock Text="Random preset" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                    <Button Classes="Icon" Width="32" Height="32" CornerRadius="16"
+                            Command="{Binding Visualization.NextPresetCommand}"
+                            ToolTip.Tip="Next preset (])" AutomationProperties.Name="Next preset">
+                        <ctrl:LineIcon Data="{StaticResource IconChevronRight}" Size="14" />
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Lyrics column: 120px from the top, 80px from the right, min(600px, 44%) wide. -->
+        <Panel Name="LyricsColumn" HorizontalAlignment="Right" Margin="0,120,80,190" Width="600"
+               IsVisible="{Binding IsLyricsOpen}">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,26"
+                            IsVisible="{Binding Lyrics.HasLyrics}">
+                    <Border Classes="Badge" Classes.Accent="{Binding Lyrics.IsSynced}">
+                        <TextBlock Text="{Binding Lyrics.Badge}" />
+                    </Border>
+                    <TextBlock Text="Click a line to seek" FontSize="12" Foreground="#99FFFFFF"
+                               VerticalAlignment="Center" IsVisible="{Binding Lyrics.IsSynced}" />
+                </StackPanel>
+
+                <!-- No lyrics -->
+                <StackPanel DockPanel.Dock="Top" Spacing="8" IsVisible="{Binding Lyrics.HasNoLyrics}">
+                    <TextBlock Text="No lyrics found" FontSize="26" FontWeight="Medium" Foreground="#85FFFFFF" />
+                    <TextBlock FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"
+                               Text="Put a .lrc file with the same name next to the track to see synced lyrics here." />
+                </StackPanel>
+
+                <ScrollViewer Name="LyricsScroll" HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Hidden" IsVisible="{Binding Lyrics.HasLyrics}">
+                    <ItemsControl Name="LyricsList" ItemsSource="{Binding Lyrics.Lines}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><StackPanel Spacing="18" /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:LyricLineViewModel">
+                                <Button Classes="Plain LyricLine" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                        Command="{Binding $parent[UserControl].((vm:MainWindowViewModel)DataContext).Lyrics.SeekToLineCommand}"
+                                        CommandParameter="{Binding}"
+                                        Cursor="Hand">
+                                    <TextBlock Classes="Lyric" Text="{Binding Text}"
+                                               Classes.Past="{Binding IsPast}" Classes.Current="{Binding IsCurrent}"
+                                               Classes.Next="{Binding IsNext}"
+                                               Classes.Unsynced="{Binding !$parent[UserControl].((vm:MainWindowViewModel)DataContext).Lyrics.IsSynced}" />
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+        </Panel>
+
+        <!-- Bottom: art, title, badges, seek bar and controls. -->
+        <StackPanel Margin="40,0,40,28" VerticalAlignment="Bottom" Spacing="22">
+            <StackPanel Orientation="Horizontal" Spacing="28">
+                <Button Classes="Plain" VerticalAlignment="Bottom"
+                        Command="{Binding GoToAlbumCommand}" CommandParameter="{Binding NowPlaying.AlbumId}"
+                        ToolTip.Tip="Open album" AutomationProperties.Name="Open album">
+                    <Border Classes="ArtSlot" Width="240" Height="240" CornerRadius="6">
+                        <Panel>
+                            <Image Name="CoverImage"
+                                   Source="{Binding NowPlaying.CoverPath, Converter={x:Static conv:CoverImageConverter.Instance}, ConverterParameter=720}" />
+                        </Panel>
+                    </Border>
+                </Button>
+
+                <StackPanel VerticalAlignment="Bottom" Spacing="10" Margin="0,0,0,4">
+                    <TextBlock Name="TitleText" Text="{Binding NowPlaying.Title}" FontSize="44" LineHeight="46"
+                               FontWeight="SemiBold" LetterSpacing="-0.88" TextTrimming="CharacterEllipsis"
+                               Foreground="{StaticResource TextPrimaryBrush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Classes="Link Strong" FontSize="16"
+                                Command="{Binding GoToArtistCommand}" CommandParameter="{Binding NowPlaying.ArtistId}">
+                            <TextBlock Text="{Binding NowPlaying.Artist}" />
+                        </Button>
+                        <TextBlock Text="·" FontSize="16" Foreground="#C7FFFFFF"
+                                   IsVisible="{Binding NowPlaying.Album, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                        <Button Classes="Link" FontSize="16" Foreground="#C7FFFFFF"
+                                Command="{Binding GoToAlbumCommand}" CommandParameter="{Binding NowPlaying.AlbumId}">
+                            <TextBlock Text="{Binding NowPlaying.Album}" />
+                        </Button>
+                        <TextBlock Text="·" FontSize="16" Foreground="#C7FFFFFF"
+                                   IsVisible="{Binding NowPlaying.Year, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                        <TextBlock Text="{Binding NowPlaying.Year}" FontSize="16" Foreground="#C7FFFFFF" />
+                    </StackPanel>
+                    <WrapPanel Classes="Chrome" Margin="0,4,0,0" ItemSpacing="6" LineSpacing="6">
+                        <Border Classes="Badge" IsVisible="{Binding NowPlaying.Codec, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                            <TextBlock Text="{Binding NowPlaying.Codec}" />
+                        </Border>
+                        <Border Classes="Badge" IsVisible="{Binding NowPlaying.DepthRate, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                            <TextBlock Text="{Binding NowPlaying.DepthRate}" />
+                        </Border>
+                        <Border Classes="Badge">
+                            <TextBlock Text="{Binding NowPlaying.OutputMode}" />
+                        </Border>
+                        <Border Classes="Badge Accent" IsVisible="{Binding NowPlaying.IsBitPerfect}">
+                            <TextBlock Text="BIT-PERFECT" />
+                        </Border>
+                    </WrapPanel>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Full-width seek bar -->
+            <Grid Classes="Chrome" ColumnDefinitions="40,*,40">
+                <TextBlock Classes="Mono" Text="{Binding NowPlaying.PositionText}" FontSize="11"
+                           Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                <!-- Same margin as the slider, so the envelope spans the full track. -->
+                <ctrl:WaveformStrip Grid.Column="1" Margin="0,0,12,0" Waveform="{Binding NowPlaying.Waveform}" />
+                <Slider Grid.Column="1" Classes="Seek" Margin="0,0,12,0"
+                        Minimum="0" Maximum="{Binding NowPlaying.DurationSeconds}" SmallChange="5" LargeChange="30"
+                        Value="{Binding NowPlaying.PositionSeconds, Mode=TwoWay}" AutomationProperties.Name="Seek" />
+                <TextBlock Grid.Column="2" Classes="Mono" Text="{Binding NowPlaying.DurationText}" FontSize="11"
+                           Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" TextAlignment="Right" />
+            </Grid>
+
+            <!-- Controls -->
+            <Grid Classes="Chrome" ColumnDefinitions="*,Auto,*">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Button Classes="Icon Lg" ToolTip.Tip="More" AutomationProperties.Name="More options">
+                        <ctrl:LineIcon Data="{StaticResource IconMore}" />
+                        <Button.Flyout>
+                            <MenuFlyout Placement="TopEdgeAlignedLeft">
+                                <MenuItem Header="Go to album" Command="{Binding GoToAlbumCommand}" CommandParameter="{Binding NowPlaying.AlbumId}" />
+                                <MenuItem Header="Go to artist" Command="{Binding GoToArtistCommand}" CommandParameter="{Binding NowPlaying.ArtistId}" />
+                                <MenuItem Header="Next visualizer preset" Command="{Binding Visualization.NextPresetCommand}" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14">
+                    <Button Classes="Icon Lg" Classes.Active="{Binding NowPlaying.ShuffleEnabled}"
+                            Command="{Binding NowPlaying.ToggleShuffleCommand}"
+                            ToolTip.Tip="Shuffle" AutomationProperties.Name="Shuffle">
+                        <ctrl:LineIcon Data="{StaticResource IconShuffle}" />
+                    </Button>
+                    <Button Classes="Icon Lg" Command="{Binding NowPlaying.PreviousCommand}"
+                            ToolTip.Tip="Previous (Ctrl+←)" AutomationProperties.Name="Previous">
+                        <ctrl:LineIcon Data="{StaticResource IconPrevious}" Size="18" IsFilled="True" />
+                    </Button>
+                    <Button Classes="PlayCircle Lg" Command="{Binding NowPlaying.PlayPauseCommand}"
+                            ToolTip.Tip="Play/Pause (Space)" AutomationProperties.Name="Play/Pause">
+                        <Panel>
+                            <ctrl:LineIcon Data="{StaticResource IconPause}" Size="22" IsFilled="True" StrokeThickness="0"
+                                           IsVisible="{Binding NowPlaying.IsPlaying}" />
+                            <ctrl:LineIcon Data="{StaticResource IconPlay}" Size="22" IsFilled="True" StrokeThickness="0"
+                                           Margin="3,0,0,0" IsVisible="{Binding !NowPlaying.IsPlaying}" />
+                        </Panel>
+                    </Button>
+                    <Button Classes="Icon Lg" Command="{Binding NowPlaying.NextCommand}"
+                            ToolTip.Tip="Next (Ctrl+→)" AutomationProperties.Name="Next">
+                        <ctrl:LineIcon Data="{StaticResource IconNext}" Size="18" IsFilled="True" />
+                    </Button>
+                    <Button Classes="Icon Lg" Classes.Active="{Binding NowPlaying.IsRepeatOn}"
+                            Command="{Binding NowPlaying.CycleRepeatCommand}"
+                            ToolTip.Tip="{Binding NowPlaying.RepeatLabel}" AutomationProperties.Name="Repeat">
+                        <Panel>
+                            <ctrl:LineIcon Data="{StaticResource IconRepeat}" IsVisible="{Binding !NowPlaying.IsRepeatOne}" />
+                            <ctrl:LineIcon Data="{StaticResource IconRepeatOne}" IsVisible="{Binding NowPlaying.IsRepeatOne}" />
+                        </Panel>
+                    </Button>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+                    <Button Classes="Icon Lg" Classes.Active="{Binding IsLyricsOpen}"
+                            Command="{Binding ToggleLyricsCommand}"
+                            ToolTip.Tip="Lyrics (Ctrl+L)" AutomationProperties.Name="Lyrics">
+                        <ctrl:LineIcon Data="{StaticResource IconLyrics}" />
+                    </Button>
+                    <Button Classes="Icon Lg" Command="{Binding NowPlaying.ToggleMuteCommand}"
+                            ToolTip.Tip="Mute" AutomationProperties.Name="Mute">
+                        <Panel>
+                            <ctrl:LineIcon Data="{StaticResource IconVolume}" IsVisible="{Binding !NowPlaying.IsMuted}" />
+                            <ctrl:LineIcon Data="{StaticResource IconVolumeMute}" IsVisible="{Binding NowPlaying.IsMuted}" />
+                        </Panel>
+                    </Button>
+                    <Slider Classes="Volume" Width="96" Minimum="0" Maximum="100" SmallChange="5"
+                            Value="{Binding NowPlaying.Volume, Mode=TwoWay}" AutomationProperties.Name="Volume" />
+                    <Button Classes="Icon Lg" Command="{Binding CloseNowPlayingCommand}" Margin="4,0,0,0"
+                            ToolTip.Tip="Back to library (Ctrl+Enter)" AutomationProperties.Name="Back to library">
+                        <ctrl:LineIcon Data="{StaticResource IconCollapse}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </Panel>
+</UserControl>

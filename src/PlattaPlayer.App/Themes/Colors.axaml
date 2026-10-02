@@ -1,0 +1,126 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Design tokens (see the design brief's tokens.css). The UI is flat translucent glass floating over the
+         full-window visualizer: no drop shadows, no gradient fills except the two Now Playing fades. -->
+
+    <!-- Type: Geist / Geist Mono are bundled under Assets/Fonts (SIL OFL). Mono is for audio/tech data,
+         durations and counts. -->
+    <FontFamily x:Key="UiFont">avares://PlattaPlayer.App/Assets/Fonts#Geist</FontFamily>
+    <FontFamily x:Key="MonoFont">avares://PlattaPlayer.App/Assets/Fonts#Geist Mono</FontFamily>
+    <!-- Fluent reads this key for every control's default font. -->
+    <FontFamily x:Key="ContentControlThemeFontFamily">avares://PlattaPlayer.App/Assets/Fonts#Geist</FontFamily>
+
+    <!-- Ground: the window background when the visualizer is off. -->
+    <Color x:Key="WindowBackgroundColor">#000000</Color>
+
+    <!-- Text -->
+    <Color x:Key="TextPrimaryColor">#F4F4F6</Color>
+    <Color x:Key="TextStrongColor">#FFFFFF</Color>
+    <Color x:Key="TextSecondaryColor">#A8FFFFFF</Color>   <!-- 0.66 -->
+    <Color x:Key="TextTertiaryColor">#80FFFFFF</Color>    <!-- 0.50 -->
+    <Color x:Key="TextDisabledColor">#52FFFFFF</Color>    <!-- 0.32 -->
+    <Color x:Key="TextControlColor">#D1FFFFFF</Color>     <!-- 0.82: icon buttons -->
+    <Color x:Key="TextNavColor">#BDFFFFFF</Color>         <!-- 0.74: inactive nav items -->
+
+    <!-- Accent (mint). Only for active/playing state and the BIT-PERFECT badge. -->
+    <Color x:Key="AccentColor">#6FF2D2</Color>
+    <Color x:Key="OnAccentColor">#04130F</Color>
+
+    <!-- Glass surfaces -->
+    <Color x:Key="GlassColor">#750A0A0E</Color>           <!-- rgba(10,10,14,0.46) -->
+    <Color x:Key="GlassLiteColor">#0BFFFFFF</Color>       <!-- 0.045 -->
+    <Color x:Key="BorderSubtleColor">#12FFFFFF</Color>    <!-- 0.07 -->
+    <Color x:Key="BorderColor">#1AFFFFFF</Color>          <!-- 0.10 -->
+    <Color x:Key="BorderStrongColor">#29FFFFFF</Color>    <!-- 0.16 -->
+    <Color x:Key="HoverColor">#0FFFFFFF</Color>           <!-- 0.06 -->
+    <Color x:Key="SelectedColor">#14FFFFFF</Color>        <!-- 0.08 -->
+    <Color x:Key="LetterboxColor">#09FFFFFF</Color>       <!-- 0.035: fill behind non-square art -->
+
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{StaticResource WindowBackgroundColor}" />
+    <SolidColorBrush x:Key="WindowBorderBrush" Color="{StaticResource BorderColor}" />
+
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
+    <SolidColorBrush x:Key="TextStrongBrush" Color="{StaticResource TextStrongColor}" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
+    <SolidColorBrush x:Key="TextTertiaryBrush" Color="{StaticResource TextTertiaryColor}" />
+    <SolidColorBrush x:Key="TextDisabledBrush" Color="{StaticResource TextDisabledColor}" />
+    <SolidColorBrush x:Key="TextControlBrush" Color="{StaticResource TextControlColor}" />
+    <SolidColorBrush x:Key="TextNavBrush" Color="{StaticResource TextNavColor}" />
+
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="#8FF5DC" />
+    <SolidColorBrush x:Key="OnAccentBrush" Color="{StaticResource OnAccentColor}" />
+
+    <SolidColorBrush x:Key="GlassBrush" Color="{StaticResource GlassColor}" />
+    <SolidColorBrush x:Key="GlassLiteBrush" Color="{StaticResource GlassLiteColor}" />
+    <SolidColorBrush x:Key="BorderSubtleBrush" Color="{StaticResource BorderSubtleColor}" />
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
+    <SolidColorBrush x:Key="BorderStrongBrush" Color="{StaticResource BorderStrongColor}" />
+    <SolidColorBrush x:Key="HoverBrush" Color="{StaticResource HoverColor}" />
+    <SolidColorBrush x:Key="SelectedBrush" Color="{StaticResource SelectedColor}" />
+    <SolidColorBrush x:Key="LetterboxBrush" Color="{StaticResource LetterboxColor}" />
+    <SolidColorBrush x:Key="CardBorderBrush" Color="#14FFFFFF" />   <!-- 0.08 -->
+    <SolidColorBrush x:Key="BadgeBorderBrush" Color="#2EFFFFFF" />  <!-- 0.18 -->
+    <SolidColorBrush x:Key="BadgeTextBrush" Color="#C7FFFFFF" />    <!-- 0.78 -->
+    <SolidColorBrush x:Key="ChipBorderBrush" Color="#24FFFFFF" />   <!-- 0.14 -->
+    <SolidColorBrush x:Key="InputBackgroundBrush" Color="#0DFFFFFF" /> <!-- 0.05 -->
+    <SolidColorBrush x:Key="TrackRemainderBrush" Color="#29FFFFFF" /> <!-- 0.16: unplayed part of sliders -->
+    <SolidColorBrush x:Key="SolidLightBrush" Color="#F4F4F6" />     <!-- play circle, selected chip -->
+    <SolidColorBrush x:Key="OnLightBrush" Color="#0A0A0C" />
+
+    <!-- Visualizer intensity per context. -->
+    <x:Double x:Key="VizOpacityLibrary">0.6</x:Double>
+    <SolidColorBrush x:Key="VizScrimLibraryBrush" Color="#47000000" /> <!-- rgba(0,0,0,0.28) -->
+
+    <!-- Caption buttons -->
+    <SolidColorBrush x:Key="CaptionHoverBrush" Color="#14FFFFFF" />
+    <SolidColorBrush x:Key="CaptionCloseHoverBrush" Color="#C42B1C" />
+
+    <!-- Now Playing fades: the only gradients allowed on UI. -->
+    <LinearGradientBrush x:Key="NowPlayingBottomFadeBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Offset="0" Color="#00000000" />
+        <GradientStop Offset="1" Color="#B8000000" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="LyricsFadeBrush" StartPoint="0%,0%" EndPoint="100%,0%">
+        <GradientStop Offset="0" Color="#00000000" />
+        <GradientStop Offset="0.45" Color="#8C000000" />
+        <GradientStop Offset="1" Color="#A6000000" />
+    </LinearGradientBrush>
+
+    <!-- Legacy keys still used by pages not yet restyled (Home, Songs, Albums, Playlists, Settings, Tag
+         Editor), mapped onto the new tokens so those pages pick up the glass look. -->
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#0DFFFFFF" />
+    <SolidColorBrush x:Key="SurfaceHoverBrush" Color="{StaticResource HoverColor}" />
+    <SolidColorBrush x:Key="SurfaceActiveBrush" Color="{StaticResource SelectedColor}" />
+    <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="{StaticResource GlassColor}" />
+
+    <!-- Slim sliders: 4px track, 12px white thumb, accent fill. -->
+    <GridLength x:Key="SliderPreContentMargin">0</GridLength>
+    <GridLength x:Key="SliderPostContentMargin">0</GridLength>
+    <x:Double x:Key="SliderHorizontalHeight">16</x:Double>
+    <x:Double x:Key="SliderTrackThemeHeight">4</x:Double>
+    <x:Double x:Key="SliderHorizontalThumbWidth">12</x:Double>
+    <x:Double x:Key="SliderHorizontalThumbHeight">12</x:Double>
+    <CornerRadius x:Key="SliderThumbCornerRadius">6</CornerRadius>
+    <SolidColorBrush x:Key="SliderThumbBackground" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="SliderThumbBackgroundPressed" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="SliderThumbBackgroundDisabled" Color="{StaticResource TextDisabledColor}" />
+    <SolidColorBrush x:Key="SliderTrackFill" Color="#29FFFFFF" />
+    <SolidColorBrush x:Key="SliderTrackFillPointerOver" Color="#33FFFFFF" />
+    <SolidColorBrush x:Key="SliderTrackFillPressed" Color="#33FFFFFF" />
+    <SolidColorBrush x:Key="SliderTrackValueFill" Color="{StaticResource AccentColor}" />
+    <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="{StaticResource AccentColor}" />
+    <SolidColorBrush x:Key="SliderTrackValueFillPressed" Color="{StaticResource AccentColor}" />
+
+    <!-- Flyouts / menus / tooltips read as dark glass. -->
+    <SolidColorBrush x:Key="FlyoutPresenterBackground" Color="#E6101014" />
+    <SolidColorBrush x:Key="FlyoutBorderThemeBrush" Color="{StaticResource BorderColor}" />
+    <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="#E6101014" />
+    <SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush" Color="{StaticResource BorderColor}" />
+    <SolidColorBrush x:Key="ToolTipBackground" Color="#F0101014" />
+    <SolidColorBrush x:Key="ToolTipBorderBrush" Color="{StaticResource BorderColor}" />
+    <SolidColorBrush x:Key="ToolTipForeground" Color="{StaticResource TextPrimaryColor}" />
+
+</ResourceDictionary>

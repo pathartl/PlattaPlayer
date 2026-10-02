@@ -1,0 +1,253 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PlattaPlayer.App.ViewModels"
+             xmlns:items="using:PlattaPlayer.App.ViewModels.Items"
+             xmlns:codecs="using:PlattaPlayer.Codecs.Abstractions"
+             xmlns:conv="using:PlattaPlayer.App.Converters"
+             x:Class="PlattaPlayer.App.Views.MetadataEditorView"
+             x:DataType="vm:MetadataEditorViewModel"
+             DragDrop.AllowDrop="True">
+
+    <UserControl.Styles>
+        <!-- Column headers without the Fluent theme's 32px sort-icon slot (sorting is off here, see
+             below), which otherwise eats into short headers like "Track" and "Disc". -->
+        <Style Selector="DataGrid#FilesGrid DataGridColumnHeader">
+            <Setter Property="Padding" Value="12,0,8,0" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            <Rectangle Name="VerticalSeparator" Grid.Column="1" Width="1" VerticalAlignment="Stretch"
+                                       Fill="{TemplateBinding SeparatorBrush}"
+                                       IsVisible="{TemplateBinding AreSeparatorsVisible}" />
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="DataGrid#FilesGrid DataGridColumnHeader TextBlock">
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*" Margin="32,24">
+        <TextBlock Grid.Row="0" Text="Tag Editor" Classes="PageTitle" Margin="0,0,0,16" />
+
+        <Grid Grid.Row="1" ColumnDefinitions="320,*" ColumnSpacing="20">
+
+            <!-- ===== Left: metadata editor panel ===== -->
+            <Border Grid.Column="0" Classes="Card" VerticalAlignment="Stretch">
+                <ScrollViewer>
+                    <!-- Right margin keeps the (overlay) scrollbar off the fields -->
+                    <StackPanel Spacing="10" Margin="0,0,16,0">
+                        <TextBlock Text="Metadata" Classes="SectionTitle" />
+
+                        <TextBlock Text="{Binding SelectionCount, StringFormat='{}{0} file(s) selected'}"
+                                   Classes="Secondary" FontSize="12"
+                                   IsVisible="{Binding HasSelection}" />
+                        <TextBlock Text="Select one or more files to edit their tags."
+                                   Classes="Secondary" FontSize="12" TextWrapping="Wrap"
+                                   IsVisible="{Binding !HasSelection}" />
+
+                        <!-- Track-level: in each file's own tags.
+                             Labels follow the selection's format (an SPC's album is its game); a field the
+                             selected formats can't store is disabled. -->
+                        <TextBlock Text="Track" Classes="Secondary" FontSize="12" FontWeight="SemiBold" Margin="0,4,0,0" />
+                        <TextBlock Text="{Binding TrackFieldsCaption}"
+                                   Classes="Secondary" FontSize="11" TextWrapping="Wrap" IsVisible="{Binding HasSelection}" />
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="{Binding TitleLabel}" Classes="Secondary" FontSize="12" />
+                            <TextBox Text="{Binding EditTitle}" IsEnabled="{Binding CanEditTitle}" PlaceholderText="{Binding TitleHint}" />
+                        </StackPanel>
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="{Binding ArtistLabel}" Classes="Secondary" FontSize="12" />
+                            <TextBox Text="{Binding Artist}" IsEnabled="{Binding CanEditArtist}" PlaceholderText="{Binding ArtistHint}" />
+                        </StackPanel>
+
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="{Binding YearLabel}" Classes="Secondary" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                <TextBox Text="{Binding Year}" IsEnabled="{Binding CanEditYear}" PlaceholderText="—" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="2">
+                                <TextBlock Text="{Binding TrackLabel}" Classes="Secondary" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                <TextBox Text="{Binding Track}" IsEnabled="{Binding CanEditTrack}" PlaceholderText="{Binding TrackHint}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Spacing="2">
+                                <TextBlock Text="{Binding DiscLabel}" Classes="Secondary" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                <TextBox Text="{Binding Disc}" IsEnabled="{Binding CanEditDisc}" PlaceholderText="—" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Album-level: the album file (e.g. the M3U beside MIDI files), or each file's own tags -->
+                        <TextBlock Text="Album" Classes="Secondary" FontSize="12" FontWeight="SemiBold" Margin="0,8,0,0" />
+                        <TextBlock Text="{Binding AlbumFileCaption}" Classes="Secondary" FontSize="11" TextWrapping="Wrap"
+                                   IsVisible="{Binding HasSelection}" />
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="{Binding AlbumLabel}" Classes="Secondary" FontSize="12" />
+                            <TextBox Text="{Binding Album}" IsEnabled="{Binding CanEditAlbum}" PlaceholderText="{Binding AlbumHint}" />
+                        </StackPanel>
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="{Binding AlbumArtistLabel}" Classes="Secondary" FontSize="12" />
+                            <TextBox Text="{Binding AlbumArtist}" IsEnabled="{Binding CanEditAlbumArtist}" PlaceholderText="—" />
+                        </StackPanel>
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="{Binding GenreLabel}" Classes="Secondary" FontSize="12" />
+                            <TextBox Text="{Binding Genre}" IsEnabled="{Binding CanEditGenre}" PlaceholderText="—" />
+                        </StackPanel>
+
+                        <TextBlock Text="Cover art" Classes="Secondary" FontSize="12" Margin="0,4,0,0" />
+                        <Panel Width="160" Height="160" HorizontalAlignment="Left"
+                               Background="{StaticResource SurfaceHoverBrush}">
+                            <TextBlock Text="&#xE91B;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                       FontSize="40" Foreground="{StaticResource TextTertiaryBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Image Stretch="UniformToFill"
+                                   Source="{Binding CoverPreviewPath, Converter={x:Static conv:CoverImageConverter.Instance}, ConverterParameter=320}" />
+                        </Panel>
+                        <TextBlock Text="{Binding CoverCaption}" Classes="Secondary" FontSize="11" TextWrapping="Wrap"
+                                   IsVisible="{Binding HasSelection}" />
+                        <Button Content="&#xE8B9;  Choose image…" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                Click="OnChooseCover" IsEnabled="{Binding CanEditCover}"
+                                Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                Padding="12,8" CornerRadius="4" HorizontalAlignment="Left" />
+
+                        <!-- Format-specific fields (e.g. an SPC's length, fade and dumper, or the SoundFont a MIDI
+                             file plays with), when the selection is all one format. -->
+                        <StackPanel Spacing="10" IsVisible="{Binding HasFormatFields}">
+                            <TextBlock Text="{Binding FormatFieldsTitle}" Classes="Secondary" FontSize="12" FontWeight="SemiBold" Margin="0,8,0,0" />
+                            <ItemsControl ItemsSource="{Binding FormatFields}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="items:FormatFieldViewModel">
+                                        <StackPanel Spacing="2" Margin="0,0,0,10">
+                                            <TextBlock Text="{Binding Label}" Classes="Secondary" FontSize="12" />
+                                            <TextBox Text="{Binding Value}" PlaceholderText="{Binding Placeholder}"
+                                                     IsVisible="{Binding IsText}" />
+                                            <ComboBox ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedOption}"
+                                                      PlaceholderText="{Binding Placeholder}" HorizontalAlignment="Stretch"
+                                                      IsVisible="{Binding IsChoice}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate x:DataType="codecs:CodecChoice">
+                                                        <TextBlock Text="{Binding Label}" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                            <TextBlock Text="{Binding Hint}" IsVisible="{Binding HasHint}"
+                                                       Classes="Secondary" FontSize="11" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <TextBlock Text="Edits show in the table as you type. Select other files to keep editing, then use “Save all” to write every change."
+                                   Classes="Secondary" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- ===== Right: file list (datatable) ===== -->
+            <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto">
+                <DockPanel Grid.Row="0" Margin="0,0,0,10">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="{Binding DirtyCount, StringFormat='{}{0} unsaved'}"
+                                   Foreground="{StaticResource AccentBrush}" FontSize="12" VerticalAlignment="Center"
+                                   IsVisible="{Binding !!DirtyCount}" />
+                        <Button Content="&#xE7A7;  Discard" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                Command="{Binding RevertCommand}"
+                                Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                Padding="12,8" CornerRadius="4" />
+                        <Button Content="&#xE74E;  Save all" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                Command="{Binding SaveCommand}" Background="{StaticResource AccentBrush}"
+                                Foreground="{StaticResource OnAccentBrush}" Padding="16,8" CornerRadius="4" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="&#xE710;  Add files…" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                Click="OnAddFiles" Background="{StaticResource SurfaceBrush}"
+                                Foreground="{StaticResource TextPrimaryBrush}" Padding="12,8" CornerRadius="4" />
+                        <Button Content="&#xE738;  Remove" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                Command="{Binding RemoveSelectedCommand}" IsEnabled="{Binding HasSelection}"
+                                Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                Padding="12,8" CornerRadius="4" />
+                        <Button Content="&#xE74D;  Clear" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                Command="{Binding ClearCommand}"
+                                Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                Padding="12,8" CornerRadius="4" />
+                        <TextBlock Text="Drag rows to set the track order." Classes="Secondary" FontSize="12"
+                                   VerticalAlignment="Center" Margin="8,0,0,0"
+                                   IsVisible="{Binding !OrderChanged}" />
+                        <TextBlock Text="Track order changed. Save to write it to the album file."
+                                   Foreground="{StaticResource AccentBrush}" FontSize="12"
+                                   VerticalAlignment="Center" Margin="8,0,0,0"
+                                   IsVisible="{Binding OrderChanged}" />
+                    </StackPanel>
+                </DockPanel>
+
+                <Border Grid.Row="1" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6">
+                    <Panel Name="GridPanel">
+                        <!-- Row order is the track order (drag to reorder), so column sorting is off:
+                             a sorted view would no longer show the order that gets saved. -->
+                        <DataGrid Name="FilesGrid" ItemsSource="{Binding Files}"
+                                  x:CompileBindings="False"
+                                  SelectionMode="Extended" IsReadOnly="True"
+                                  AutoGenerateColumns="False"
+                                  CanUserResizeColumns="True" CanUserSortColumns="False"
+                                  GridLinesVisibility="Horizontal" Background="Transparent"
+                                  SelectionChanged="OnSelectionChanged">
+                            <DataGrid.Columns>
+                                <!-- File name, with a dot marking rows that have unsaved edits -->
+                                <DataGridTemplateColumn Header="File" Width="200">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Grid ColumnDefinitions="14,*" Margin="4,0,12,0" VerticalAlignment="Center">
+                                                <Ellipse Width="7" Height="7" Fill="{StaticResource AccentBrush}"
+                                                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                         IsVisible="{Binding IsDirty}" ToolTip.Tip="Unsaved changes" />
+                                                <TextBlock Grid.Column="1" Text="{Binding FileName}"
+                                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Format" Binding="{Binding FormatName}" Width="70" />
+                                <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="2*" />
+                                <DataGridTextColumn Header="Artist" Binding="{Binding Artist}" Width="*" />
+                                <DataGridTextColumn Header="Album" Binding="{Binding Album}" Width="*" />
+                                <DataGridTextColumn Header="Album Artist" Binding="{Binding AlbumArtist}" Width="*" />
+                                <DataGridTextColumn Header="Track" Binding="{Binding Track}" Width="60" />
+                                <DataGridTextColumn Header="Disc" Binding="{Binding Disc}" Width="60" />
+                                <DataGridTextColumn Header="Year" Binding="{Binding Year}" Width="64" />
+                                <DataGridTextColumn Header="Genre" Binding="{Binding Genre}" Width="*" />
+                                <DataGridTextColumn Header="Album File" Binding="{Binding AlbumFileName}" Width="*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <!-- Insertion line while dragging rows -->
+                        <Border Name="DropIndicator" Height="2" VerticalAlignment="Top"
+                                Background="{StaticResource AccentBrush}"
+                                IsVisible="False" IsHitTestVisible="False" />
+
+                        <!-- Empty-state / drop hint -->
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8"
+                                    IsHitTestVisible="False" IsVisible="{Binding !Files.Count}">
+                            <TextBlock Text="&#xE896;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                       FontSize="40" Foreground="{StaticResource TextTertiaryBrush}"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding FormatsText, StringFormat='Drag {0} files here, or use “Add files…”.'}"
+                                       Classes="Secondary" FontSize="14" HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Panel>
+                </Border>
+
+                <TextBlock Grid.Row="2" Text="{Binding Status}" Classes="Secondary" FontSize="12" Margin="0,8,0,0"
+                           IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

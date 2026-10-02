@@ -1,0 +1,179 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PlattaPlayer.App.ViewModels"
+             xmlns:items="using:PlattaPlayer.App.ViewModels.Items"
+             xmlns:conv="using:PlattaPlayer.App.Converters"
+             xmlns:ctrl="using:PlattaPlayer.App.Controls"
+             x:Class="PlattaPlayer.App.Views.ArtistsView"
+             x:DataType="vm:ArtistsViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="TextBlock.JumpLetter">
+            <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBlock.JumpLetter.Dim">
+            <Setter Property="Foreground" Value="{StaticResource TextDisabledBrush}" />
+        </Style>
+        <Style Selector="Button.Jump:pointerover TextBlock.JumpLetter:not(.Dim)">
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid ColumnDefinitions="*,28" RowDefinitions="Auto,*" Margin="28,32,0,0">
+
+        <!-- Header: title + stats, sort and grid/list toggle -->
+        <Grid Grid.Column="0" ColumnDefinitions="*,Auto" Margin="12,0,12,28">
+            <StackPanel Spacing="6" VerticalAlignment="Bottom">
+                <TextBlock Classes="H1" Text="Artists" />
+                <TextBlock Classes="Meta" Text="{Binding Stats}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+                <Button Classes="Outline" Content="{Binding SortLabel}" AutomationProperties.Name="Sort artists">
+                    <Button.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedRight">
+                            <MenuItem Header="Name A–Z" Command="{Binding SetSortCommand}" CommandParameter="{x:Static vm:ArtistSort.NameAscending}" />
+                            <MenuItem Header="Name Z–A" Command="{Binding SetSortCommand}" CommandParameter="{x:Static vm:ArtistSort.NameDescending}" />
+                            <MenuItem Header="Most tracks" Command="{Binding SetSortCommand}" CommandParameter="{x:Static vm:ArtistSort.MostTracks}" />
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+                <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" ClipToBounds="True">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Classes="Segment" GroupName="artistsView" IsChecked="{Binding IsGridView}"
+                                     ToolTip.Tip="Grid view" AutomationProperties.Name="Grid view">
+                            <ctrl:LineIcon Data="{StaticResource IconGrid}" Size="18" />
+                        </RadioButton>
+                        <RadioButton Classes="Segment" GroupName="artistsView" IsChecked="{Binding IsListView, Mode=OneWay}"
+                                     ToolTip.Tip="List view" AutomationProperties.Name="List view">
+                            <ctrl:LineIcon Data="{StaticResource IconList}" Size="18" />
+                        </RadioButton>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <TextBlock Grid.Row="1" Margin="12,0" Text="No artists yet. Add a music folder in Settings."
+                   Classes="Secondary" FontSize="15" IsVisible="{Binding IsEmpty}" />
+
+        <!-- Grid: glass-lite cards with a row of up to four covers. Virtualized for large libraries. -->
+        <ctrl:ResponsiveCoverGrid Grid.Row="1" Name="CardGrid" ItemsSource="{Binding Artists}"
+                                  IsVisible="{Binding IsGridView}"
+                                  MinItemWidth="236" MinColumns="1" MaxColumns="8" Spacing="16"
+                                  Aspect="0" CaptionHeight="142" EdgePadding="0">
+            <ctrl:ResponsiveCoverGrid.ItemTemplate>
+                <DataTemplate x:DataType="items:ArtistItemViewModel">
+                    <Panel>
+                        <Button Classes="Card"
+                                Command="{Binding $parent[UserControl].((vm:ArtistsViewModel)DataContext).OpenArtistCommand}"
+                                CommandParameter="{Binding}" AutomationProperties.Name="{Binding Name}">
+                            <StackPanel Spacing="14">
+                                <Panel Height="54">
+                                    <ItemsControl ItemsSource="{Binding Covers}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="6" /></ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="x:String">
+                                                <Border Classes="ArtSlot" Width="54" Height="54" CornerRadius="3">
+                                                    <Panel>
+                                                        <Image Source="{Binding Converter={x:Static conv:CoverImageConverter.Instance}, ConverterParameter=120}" />
+                                                    </Panel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Border Classes="ArtSlot" Width="54" Height="54" CornerRadius="3" HorizontalAlignment="Left"
+                                            IsVisible="{Binding !Covers.Count}">
+                                        <ctrl:LineIcon Data="{StaticResource IconArtist}" Foreground="{StaticResource TextDisabledBrush}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </Panel>
+                                <StackPanel Spacing="4">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Medium"
+                                                   Foreground="{StaticResource TextStrongBrush}" TextTrimming="CharacterEllipsis" />
+                                        <ctrl:NowPlayingIndicator Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center"
+                                                                  BarBrush="{StaticResource AccentBrush}"
+                                                                  IsActive="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).NowPlaying.IsPlaying}">
+                                            <ctrl:NowPlayingIndicator.IsVisible>
+                                                <MultiBinding Converter="{x:Static conv:EqualsMultiConverter.Instance}">
+                                                    <Binding Path="Id" />
+                                                    <Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).NowPlaying.ArtistId" />
+                                                </MultiBinding>
+                                            </ctrl:NowPlayingIndicator.IsVisible>
+                                        </ctrl:NowPlayingIndicator>
+                                    </Grid>
+                                    <TextBlock Text="{Binding Meta}" FontSize="12" Foreground="#A3FFFFFF" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Button>
+                        <!-- Playing artist: accent border. -->
+                        <Border BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" CornerRadius="10"
+                                IsHitTestVisible="False">
+                            <Border.IsVisible>
+                                <MultiBinding Converter="{x:Static conv:EqualsMultiConverter.Instance}">
+                                    <Binding Path="Id" />
+                                    <Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).NowPlaying.ArtistId" />
+                                </MultiBinding>
+                            </Border.IsVisible>
+                        </Border>
+                    </Panel>
+                </DataTemplate>
+            </ctrl:ResponsiveCoverGrid.ItemTemplate>
+        </ctrl:ResponsiveCoverGrid>
+
+        <!-- List: one row per artist. -->
+        <ctrl:ResponsiveCoverGrid Grid.Row="1" Name="RowList" ItemsSource="{Binding Artists}"
+                                  IsVisible="{Binding IsListView}"
+                                  MinItemWidth="200" MinColumns="1" MaxColumns="1" Spacing="2"
+                                  Aspect="0" CaptionHeight="56" EdgePadding="0">
+            <ctrl:ResponsiveCoverGrid.ItemTemplate>
+                <DataTemplate x:DataType="items:ArtistItemViewModel">
+                    <Button Classes="Row"
+                            Command="{Binding $parent[UserControl].((vm:ArtistsViewModel)DataContext).OpenArtistCommand}"
+                            CommandParameter="{Binding}" AutomationProperties.Name="{Binding Name}">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                            <Border Classes="ArtSlot" Width="40" Height="40" CornerRadius="3">
+                                <Panel>
+                                    <Image Source="{Binding CoverPath, Converter={x:Static conv:CoverImageConverter.Instance}, ConverterParameter=100}" />
+                                </Panel>
+                            </Border>
+                            <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="14" FontWeight="Medium" Margin="14,0"
+                                       Foreground="{StaticResource TextStrongBrush}" VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
+                            <ctrl:NowPlayingIndicator Grid.Column="2" Margin="0,0,16,0" VerticalAlignment="Center"
+                                                      BarBrush="{StaticResource AccentBrush}"
+                                                      IsActive="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).NowPlaying.IsPlaying}">
+                                <ctrl:NowPlayingIndicator.IsVisible>
+                                    <MultiBinding Converter="{x:Static conv:EqualsMultiConverter.Instance}">
+                                        <Binding Path="Id" />
+                                        <Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).NowPlaying.ArtistId" />
+                                    </MultiBinding>
+                                </ctrl:NowPlayingIndicator.IsVisible>
+                            </ctrl:NowPlayingIndicator>
+                            <TextBlock Grid.Column="3" Text="{Binding Meta}" FontSize="12" Foreground="#A3FFFFFF"
+                                       VerticalAlignment="Center" />
+                        </Grid>
+                    </Button>
+                </DataTemplate>
+            </ctrl:ResponsiveCoverGrid.ItemTemplate>
+        </ctrl:ResponsiveCoverGrid>
+
+        <!-- A–Z jump bar -->
+        <ItemsControl Grid.Column="1" Grid.RowSpan="2" ItemsSource="{Binding Letters}" Margin="0,0,8,0">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:JumpLetter">
+                    <Button Classes="Plain Jump" Height="18" IsEnabled="{Binding IsAvailable}"
+                            Command="{Binding $parent[UserControl].((vm:ArtistsViewModel)DataContext).JumpToCommand}"
+                            CommandParameter="{Binding}" AutomationProperties.Name="{Binding Text}">
+                        <TextBlock Classes="JumpLetter" Classes.Dim="{Binding !IsAvailable}" Text="{Binding Text}" />
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</UserControl>

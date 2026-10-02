@@ -1,0 +1,62 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PlattaPlayer.App.ViewModels"
+             xmlns:items="using:PlattaPlayer.App.ViewModels.Items"
+             xmlns:conv="using:PlattaPlayer.App.Converters"
+             x:Class="PlattaPlayer.App.Views.PlaylistDetailView"
+             x:DataType="vm:PlaylistDetailViewModel">
+
+    <Grid RowDefinitions="Auto,Auto,*" Margin="32,24">
+        <TextBlock Grid.Row="0" Text="{Binding PlaylistName}" Classes="PageTitle" />
+
+        <Button Grid.Row="1" Content="&#xE768;  Play" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                Command="{Binding PlayAllCommand}" Background="{StaticResource AccentBrush}"
+                Foreground="{StaticResource OnAccentBrush}" Padding="20,8" CornerRadius="6" Margin="0,0,0,16"
+                HorizontalAlignment="Left" />
+
+        <ListBox Grid.Row="2" ItemsSource="{Binding Tracks}" Background="Transparent" SelectionMode="Single">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="items:TrackItemViewModel">
+                    <Grid ColumnDefinitions="44,*,Auto,64" Height="44" Background="Transparent"
+                          DoubleTapped="OnRowDoubleTapped">
+                        <Panel Grid.Column="0" Width="36" Height="36" VerticalAlignment="Center">
+                            <Border Background="{StaticResource SurfaceBrush}" CornerRadius="4">
+                                <TextBlock Text="&#xE8D6;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                           FontSize="14" Foreground="{StaticResource TextTertiaryBrush}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <Image Source="{Binding CoverPath, Converter={x:Static conv:CoverImageConverter.Instance}}"
+                                   Stretch="UniformToFill">
+                                <Image.Clip><RectangleGeometry Rect="0,0,36,36" RadiusX="4" RadiusY="4" /></Image.Clip>
+                            </Image>
+                        </Panel>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0" Spacing="1">
+                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                                       Foreground="{StaticResource TextPrimaryBrush}" />
+                            <Button Classes="Link" CommandParameter="{Binding ArtistId}"
+                                    Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).GoToArtistCommand}">
+                                <TextBlock Text="{Binding Artist}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                            </Button>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                            <Button Content="&#xE74A;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                    FontSize="12" Padding="6" Background="Transparent" ToolTip.Tip="Move up"
+                                    Command="{Binding $parent[ListBox].((vm:PlaylistDetailViewModel)DataContext).MoveUpCommand}"
+                                    CommandParameter="{Binding}" />
+                            <Button Content="&#xE74B;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                    FontSize="12" Padding="6" Background="Transparent" ToolTip.Tip="Move down"
+                                    Command="{Binding $parent[ListBox].((vm:PlaylistDetailViewModel)DataContext).MoveDownCommand}"
+                                    CommandParameter="{Binding}" />
+                            <Button Content="&#xE738;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                    FontSize="12" Padding="6" Background="Transparent" ToolTip.Tip="Remove"
+                                    Command="{Binding $parent[ListBox].((vm:PlaylistDetailViewModel)DataContext).RemoveCommand}"
+                                    CommandParameter="{Binding}" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="3" Text="{Binding Duration}" Classes="Secondary" FontSize="12"
+                                   VerticalAlignment="Center" TextAlignment="Right" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>

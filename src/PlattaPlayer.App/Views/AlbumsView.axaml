@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PlattaPlayer.App.ViewModels"
+             xmlns:items="using:PlattaPlayer.App.ViewModels.Items"
+             xmlns:conv="using:PlattaPlayer.App.Converters"
+             xmlns:ctrl="using:PlattaPlayer.App.Controls"
+             x:Class="PlattaPlayer.App.Views.AlbumsView"
+             x:DataType="vm:AlbumsViewModel">
+
+    <Grid RowDefinitions="Auto,*" Margin="32,24">
+        <TextBlock Grid.Row="0" Text="Albums" Classes="PageTitle" />
+
+        <TextBlock Grid.Row="1" Text="No albums yet. Add a local folder in Settings."
+                   Classes="Secondary" FontSize="15" IsVisible="{Binding IsEmpty}" />
+
+        <ctrl:ResponsiveCoverGrid Grid.Row="1" ItemsSource="{Binding Albums}" IsVisible="{Binding !IsEmpty}"
+                                  MinItemWidth="140" MinColumns="4" MaxColumns="6" CaptionHeight="74">
+            <ctrl:ResponsiveCoverGrid.ItemTemplate>
+                <DataTemplate x:DataType="items:AlbumItemViewModel">
+                    <Button Classes="Tile"
+                            Command="{Binding $parent[UserControl].((vm:AlbumsViewModel)DataContext).OpenAlbumCommand}"
+                            CommandParameter="{Binding}">
+                        <StackPanel Spacing="8">
+                            <Border Width="{Binding $parent[ctrl:ResponsiveCoverGrid].ImageWidth}"
+                                    Height="{Binding $parent[ctrl:ResponsiveCoverGrid].ImageHeight}"
+                                    Background="{StaticResource SurfaceBrush}" CornerRadius="6" ClipToBounds="True">
+                                <Panel>
+                                    <TextBlock Text="&#xE93C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                               FontSize="44" Foreground="{StaticResource TextTertiaryBrush}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <Image Stretch="UniformToFill">
+                                        <Image.Source>
+                                            <MultiBinding Converter="{x:Static conv:CoverImageConverter.Instance}">
+                                                <Binding Path="CoverPath" />
+                                                <Binding Path="$parent[ctrl:ResponsiveCoverGrid].DecodePixelWidth" />
+                                            </MultiBinding>
+                                        </Image.Source>
+                                    </Image>
+                                </Panel>
+                            </Border>
+                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                                       Foreground="{StaticResource TextPrimaryBrush}" />
+                            <Button Classes="Link" CommandParameter="{Binding ArtistId}"
+                                    Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).GoToArtistCommand}">
+                                <TextBlock Text="{Binding Artist}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                            </Button>
+                        </StackPanel>
+                    </Button>
+                </DataTemplate>
+            </ctrl:ResponsiveCoverGrid.ItemTemplate>
+        </ctrl:ResponsiveCoverGrid>
+    </Grid>
+</UserControl>
