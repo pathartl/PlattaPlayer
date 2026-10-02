@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The Avalonia-coupled "Bars and Waves" visualizer plugin: a CPU WriteableBitmap surface driving the
+       bit-exact BarsAndWavesEngine, plus the IVisualizerPlugin that exposes it. References only the
+       plugin contract (Abstractions), Avalonia, and the platform-free WMP engine — never the App.
+       Built as a drop-in plugin assembly the App stages into its app-relative plugins\ folder.
+
+       This replaces the retired "wmp-bars" and "wmp-waves" plugins, which were modelled on mpvis.dll's
+       now-playing-strip renderers rather than on this effect. -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlattaPlayer.Visualizations.Abstractions\PlattaPlayer.Visualizations.Abstractions.csproj" />
+    <ProjectReference Include="..\PlattaPlayer.Visualizations.Wmp\PlattaPlayer.Visualizations.Wmp.csproj" />
+  </ItemGroup>
+
+</Project>

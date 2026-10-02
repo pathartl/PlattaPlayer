@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Pure-managed reimplementations of the Windows Media Player visualizations: "Bars and Waves"
+       (four presets, from wmp.dll) and "Alchemy" (the feedback-warp engine, from mpvis.dll). Both are
+       reconstructed from the real effects and validated frame-by-frame against them by the harness in
+       tools\PlattaPlayer.Wmp.Harness — Bars and Waves is bit-exact.
+
+       Like the MilkDrop engine it deliberately has NO Avalonia or platform dependency: it renders into
+       a managed BGRA int[] framebuffer that the app head presents (via WriteableBitmap), so the same
+       engine can drive a future mobile head. Engines consume raw TimedLevel bytes rather than floats,
+       which is what lets the harness feed them and the real effects an identical input. -->
+
+  <ItemGroup>
+    <!-- Battery's preset recipes as WMP's own registry text (see Battery/Presets/RegistryDump.cs). -->
+    <EmbeddedResource Include="Battery\Presets\BatteryPresets.reg.txt"
+                      LogicalName="PlattaPlayer.Visualizations.Wmp.Battery.Presets.BatteryPresets.reg.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlattaPlayer.Core\PlattaPlayer.Core.csproj" />
+  </ItemGroup>
+
+</Project>

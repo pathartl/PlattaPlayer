@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The Avalonia-coupled WMP Battery visualizer plugin: the window-resolution OpenGL surface, the exact
+       CPU "Classic" surface, and the IVisualizerPlugins that expose them. References only the plugin
+       contract (Abstractions), Avalonia, and the platform-free WMP engine (which holds the Battery port) — never the App. Built as a drop-in
+       plugin assembly that the App copies into its app-relative plugins\ folder. -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The harness drives BatteryGlRenderer in its own offscreen GL context to check it against the CPU port. -->
+    <InternalsVisibleTo Include="PlattaPlayer.Wmp.Harness" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlattaPlayer.Visualizations.Abstractions\PlattaPlayer.Visualizations.Abstractions.csproj" />
+    <ProjectReference Include="..\PlattaPlayer.Visualizations.Wmp\PlattaPlayer.Visualizations.Wmp.csproj" />
+  </ItemGroup>
+
+</Project>
