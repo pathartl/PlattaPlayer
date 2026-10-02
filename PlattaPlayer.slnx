@@ -1,0 +1,33 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PlattaPlayer.App/PlattaPlayer.App.csproj" />
+    <Project Path="src/PlattaPlayer.Codecs.Abstractions/PlattaPlayer.Codecs.Abstractions.csproj" />
+    <Project Path="src/PlattaPlayer.Codecs.Midi/PlattaPlayer.Codecs.Midi.csproj" />
+    <Project Path="src/PlattaPlayer.Codecs.Spc/PlattaPlayer.Codecs.Spc.csproj" />
+    <Project Path="src/PlattaPlayer.Codecs.Usf/PlattaPlayer.Codecs.Usf.csproj" />
+    <Project Path="src/PlattaPlayer.Core/PlattaPlayer.Core.csproj" />
+    <Project Path="src/PlattaPlayer.Data/PlattaPlayer.Data.csproj" />
+    <Project Path="src/PlattaPlayer.Platform.Windows/PlattaPlayer.Platform.Windows.csproj" />
+    <Project Path="src/PlattaPlayer.Playback/PlattaPlayer.Playback.csproj" />
+    <Project Path="src/PlattaPlayer.Sources.Jellyfin/PlattaPlayer.Sources.Jellyfin.csproj" />
+    <Project Path="src/PlattaPlayer.Sources.Local/PlattaPlayer.Sources.Local.csproj" />
+    <Project Path="src/PlattaPlayer.Visualizations.Abstractions/PlattaPlayer.Visualizations.Abstractions.csproj" />
+    <Project Path="src/PlattaPlayer.Visualizations.MilkDrop/PlattaPlayer.Visualizations.MilkDrop.csproj" />
+    <Project Path="src/PlattaPlayer.Visualizations.MilkDrop.Plugin/PlattaPlayer.Visualizations.MilkDrop.Plugin.csproj" />
+    <Project Path="src/PlattaPlayer.Visualizations.PSP/PlattaPlayer.Visualizations.PSP.csproj" />
+    <Project Path="src/PlattaPlayer.Visualizations.PSP.Plugin/PlattaPlayer.Visualizations.PSP.Plugin.csproj" />
+    <Project Path="src/PlattaPlayer.Visualizations.Wmp/PlattaPlayer.Visualizations.Wmp.csproj" />
+    <Project Path="src/PlattaPlayer.Visualizations.Wmp.BarsAndWaves.Plugin/PlattaPlayer.Visualizations.Wmp.BarsAndWaves.Plugin.csproj" />
+    <Project Path="src/PlattaPlayer.Visualizations.Wmp.Alchemy.Plugin/PlattaPlayer.Visualizations.Wmp.Alchemy.Plugin.csproj" />
+    <Project Path="src/PlattaPlayer.Visualizations.Wmp.Battery.Plugin/PlattaPlayer.Visualizations.Wmp.Battery.Plugin.csproj" />
+  </Folder>
+  <!-- Dev-only reverse-engineering harness. Deliberately NOT referenced by the app and never staged
+       into plugins\ — it exists to drive the real WMP effects and produce ground-truth frames. -->
+  <Folder Name="/tools/">
+    <Project Path="tools/PlattaPlayer.Wmp.Harness/PlattaPlayer.Wmp.Harness.csproj" />
+    <!-- Dev-only: verifies the SPC codec bit-for-bit against snes_spc (see its reference/build.ps1). -->
+    <Project Path="tools/PlattaPlayer.Codecs.Spc.Harness/PlattaPlayer.Codecs.Spc.Harness.csproj" />
+    <!-- Dev-only: PSF tag tests and real-rip decode / speed / seek checks for the USF codec. -->
+    <Project Path="tools/PlattaPlayer.Codecs.Usf.Harness/PlattaPlayer.Codecs.Usf.Harness.csproj" />
+  </Folder>
+</Solution>
