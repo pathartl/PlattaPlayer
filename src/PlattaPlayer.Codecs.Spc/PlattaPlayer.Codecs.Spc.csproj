@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- SNES SPC codec plugin: a cycle-accurate S-SMP + S-DSP emulator (ported from ares) and ID666 tags.
+       Pure managed and platform-free; references only the codec contract, and is staged into the app's
+       plugins\ folder like the visualizer plugins. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlattaPlayer.Codecs.Abstractions\PlattaPlayer.Codecs.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PlattaPlayer.Codecs.Spc.Harness" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="THIRD-PARTY-NOTICES.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
