@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The Avalonia-coupled PSP visualizer plugin: an OpenGL surface that replays the platform-free PSP
+       engine's recorded GU commands, plus the IVisualizerPlugin that exposes it. References only the
+       plugin contract (Abstractions), Avalonia, and the PSP engine — never the App. Built as a drop-in
+       plugin assembly that the App copies into its app-relative plugins\ folder. Ships no PSP data: the
+       engine extracts it at runtime from the user's own firmware update (EBOOT.PBP in the ROMs folder). -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlattaPlayer.Visualizations.Abstractions\PlattaPlayer.Visualizations.Abstractions.csproj" />
+    <ProjectReference Include="..\PlattaPlayer.Visualizations.PSP\PlattaPlayer.Visualizations.PSP.csproj" />
+  </ItemGroup>
+
+</Project>

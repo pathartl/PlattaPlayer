@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Pure-managed port of the Sony PSP's music visualizers (flash0:/vsh/module/visualizer_plugin.prx,
+       firmware 6.61), from the decompilation in D:\Decompilation\PSP Visualizers.
+
+       Ships CODE ONLY. The textures (visualizer_plugin.rco) and the JPEGs embedded in the PRX are
+       extracted at runtime from an official PSP firmware update EBOOT.PBP the user supplies (see
+       Firmware\PspFirmwareAssets.cs): the PSAR is decrypted with a managed port of pspdecrypt's
+       KIRK/PRX code.
+
+       Like the other engines it has NO Avalonia or platform dependency. The visualizers issue the PSP's
+       libgu/libgum calls against Gu\GuContext, which records each frame as a list of baked draw commands;
+       the Avalonia plugin replays them on OpenGL. -->
+
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+</Project>
