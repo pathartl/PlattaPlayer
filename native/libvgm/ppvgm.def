@@ -1,0 +1,9 @@
+; The pp_vgm_* interface of ppvgm.cpp (libvgm's own functions stay internal to the DLL).
+LIBRARY ppvgm
+EXPORTS
+	pp_vgm_create
+	pp_vgm_volume_gain
+	pp_vgm_render
+	pp_vgm_seek
+	pp_vgm_restart
+	pp_vgm_destroy

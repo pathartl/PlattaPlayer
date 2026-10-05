@@ -72,6 +72,12 @@
                       ReferenceOutputAssembly="false" Private="false" />
     <ProjectReference Include="..\PlattaPlayer.Codecs.Usf\PlattaPlayer.Codecs.Usf.csproj"
                       ReferenceOutputAssembly="false" Private="false" />
+    <ProjectReference Include="..\PlattaPlayer.Codecs.Gsf\PlattaPlayer.Codecs.Gsf.csproj"
+                      ReferenceOutputAssembly="false" Private="false" />
+    <ProjectReference Include="..\PlattaPlayer.Codecs.Gbs\PlattaPlayer.Codecs.Gbs.csproj"
+                      ReferenceOutputAssembly="false" Private="false" />
+    <ProjectReference Include="..\PlattaPlayer.Codecs.Vgm\PlattaPlayer.Codecs.Vgm.csproj"
+                      ReferenceOutputAssembly="false" Private="false" />
   </ItemGroup>
 
   <!-- Stage each built-in plugin into an app-relative plugins\<id>\ folder, the same layout external
@@ -120,6 +126,15 @@
     <MSBuild Projects="..\PlattaPlayer.Codecs.Usf\PlattaPlayer.Codecs.Usf.csproj" Targets="GetTargetPath" RemoveProperties="RuntimeIdentifier;SelfContained">
       <Output TaskParameter="TargetOutputs" ItemName="_UsfDll" />
     </MSBuild>
+    <MSBuild Projects="..\PlattaPlayer.Codecs.Gsf\PlattaPlayer.Codecs.Gsf.csproj" Targets="GetTargetPath" RemoveProperties="RuntimeIdentifier;SelfContained">
+      <Output TaskParameter="TargetOutputs" ItemName="_GsfDll" />
+    </MSBuild>
+    <MSBuild Projects="..\PlattaPlayer.Codecs.Gbs\PlattaPlayer.Codecs.Gbs.csproj" Targets="GetTargetPath" RemoveProperties="RuntimeIdentifier;SelfContained">
+      <Output TaskParameter="TargetOutputs" ItemName="_GbsDll" />
+    </MSBuild>
+    <MSBuild Projects="..\PlattaPlayer.Codecs.Vgm\PlattaPlayer.Codecs.Vgm.csproj" Targets="GetTargetPath" RemoveProperties="RuntimeIdentifier;SelfContained">
+      <Output TaskParameter="TargetOutputs" ItemName="_VgmDll" />
+    </MSBuild>
     <ItemGroup>
       <_MilkdropFiles Include="@(_MilkdropDll)" />
       <_MilkdropFiles Include="@(_MilkdropDll->'%(RootDir)%(Directory)%(Filename).deps.json')" />
@@ -161,6 +176,22 @@
       <_UsfFiles Include="%(_UsfDll.RootDir)%(_UsfDll.Directory)THIRD-PARTY-NOTICES.md" />
       <_UsfFiles Include="%(_UsfDll.RootDir)%(_UsfDll.Directory)lazyusf2.dll"
                  Condition="Exists('%(_UsfDll.RootDir)%(_UsfDll.Directory)lazyusf2.dll')" />
+      <!-- The GSF codec ships the native mgbagsf.dll (mGBA's GBA emulation) when it has been built. -->
+      <_GsfFiles Include="@(_GsfDll)" />
+      <_GsfFiles Include="@(_GsfDll->'%(RootDir)%(Directory)%(Filename).deps.json')" />
+      <_GsfFiles Include="%(_GsfDll.RootDir)%(_GsfDll.Directory)THIRD-PARTY-NOTICES.md" />
+      <_GsfFiles Include="%(_GsfDll.RootDir)%(_GsfDll.Directory)mgbagsf.dll"
+                 Condition="Exists('%(_GsfDll.RootDir)%(_GsfDll.Directory)mgbagsf.dll')" />
+      <!-- The GBS codec is a single, dependency-free assembly (plus the SameBoy licence notice it carries). -->
+      <_GbsFiles Include="@(_GbsDll)" />
+      <_GbsFiles Include="@(_GbsDll->'%(RootDir)%(Directory)%(Filename).deps.json')" />
+      <_GbsFiles Include="%(_GbsDll.RootDir)%(_GbsDll.Directory)THIRD-PARTY-NOTICES.md" />
+      <!-- The VGM codec ships the native ppvgm.dll (libvgm's sound-chip emulation) when it has been built. -->
+      <_VgmFiles Include="@(_VgmDll)" />
+      <_VgmFiles Include="@(_VgmDll->'%(RootDir)%(Directory)%(Filename).deps.json')" />
+      <_VgmFiles Include="%(_VgmDll.RootDir)%(_VgmDll.Directory)THIRD-PARTY-NOTICES.md" />
+      <_VgmFiles Include="%(_VgmDll.RootDir)%(_VgmDll.Directory)ppvgm.dll"
+                 Condition="Exists('%(_VgmDll.RootDir)%(_VgmDll.Directory)ppvgm.dll')" />
     </ItemGroup>
     <!-- Subfolder is named after the plugin assembly so the loader treats only the plugin dll (not the
          engine dll beside it) as a load candidate (its "<subfolder>.dll" convention). -->
@@ -172,5 +203,8 @@
     <Copy SourceFiles="@(_SpcFiles)" DestinationFolder="$(OutDir)plugins\PlattaPlayer.Codecs.Spc" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(_MidiFiles)" DestinationFolder="$(OutDir)plugins\PlattaPlayer.Codecs.Midi" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(_UsfFiles)" DestinationFolder="$(OutDir)plugins\PlattaPlayer.Codecs.Usf" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_GsfFiles)" DestinationFolder="$(OutDir)plugins\PlattaPlayer.Codecs.Gsf" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_GbsFiles)" DestinationFolder="$(OutDir)plugins\PlattaPlayer.Codecs.Gbs" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_VgmFiles)" DestinationFolder="$(OutDir)plugins\PlattaPlayer.Codecs.Vgm" SkipUnchangedFiles="true" />
   </Target>
 </Project>

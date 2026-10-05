@@ -1,0 +1,11 @@
+; The pp_gsf_* interface of mgbagsf.c (mGBA's own functions stay internal to the DLL).
+LIBRARY mgbagsf
+EXPORTS
+	pp_gsf_create
+	pp_gsf_sample_rate
+	pp_gsf_render
+	pp_gsf_restart
+	pp_gsf_state_size
+	pp_gsf_save_state
+	pp_gsf_load_state
+	pp_gsf_destroy

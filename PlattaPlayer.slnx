@@ -2,9 +2,12 @@
   <Folder Name="/src/">
     <Project Path="src/PlattaPlayer.App/PlattaPlayer.App.csproj" />
     <Project Path="src/PlattaPlayer.Codecs.Abstractions/PlattaPlayer.Codecs.Abstractions.csproj" />
+    <Project Path="src/PlattaPlayer.Codecs.Gbs/PlattaPlayer.Codecs.Gbs.csproj" />
+    <Project Path="src/PlattaPlayer.Codecs.Gsf/PlattaPlayer.Codecs.Gsf.csproj" />
     <Project Path="src/PlattaPlayer.Codecs.Midi/PlattaPlayer.Codecs.Midi.csproj" />
     <Project Path="src/PlattaPlayer.Codecs.Spc/PlattaPlayer.Codecs.Spc.csproj" />
     <Project Path="src/PlattaPlayer.Codecs.Usf/PlattaPlayer.Codecs.Usf.csproj" />
+    <Project Path="src/PlattaPlayer.Codecs.Vgm/PlattaPlayer.Codecs.Vgm.csproj" />
     <Project Path="src/PlattaPlayer.Core/PlattaPlayer.Core.csproj" />
     <Project Path="src/PlattaPlayer.Data/PlattaPlayer.Data.csproj" />
     <Project Path="src/PlattaPlayer.Platform.Windows/PlattaPlayer.Platform.Windows.csproj" />
@@ -29,5 +32,11 @@
     <Project Path="tools/PlattaPlayer.Codecs.Spc.Harness/PlattaPlayer.Codecs.Spc.Harness.csproj" />
     <!-- Dev-only: PSF tag tests and real-rip decode / speed / seek checks for the USF codec. -->
     <Project Path="tools/PlattaPlayer.Codecs.Usf.Harness/PlattaPlayer.Codecs.Usf.Harness.csproj" />
+    <!-- Dev-only: PSF tag tests and real-rip decode / speed / seek checks for the GSF codec. -->
+    <Project Path="tools/PlattaPlayer.Codecs.Gsf.Harness/PlattaPlayer.Codecs.Gsf.Harness.csproj" />
+    <!-- Dev-only: verifies the GBS codec against SameBoy (see its reference/build.ps1). -->
+    <Project Path="tools/PlattaPlayer.Codecs.Gbs.Harness/PlattaPlayer.Codecs.Gbs.Harness.csproj" />
+    <!-- Dev-only: GD3 tag tests, synthetic chip-log playback and real-file decode / speed / seek checks for the VGM codec. -->
+    <Project Path="tools/PlattaPlayer.Codecs.Vgm.Harness/PlattaPlayer.Codecs.Vgm.Harness.csproj" />
   </Folder>
 </Solution>

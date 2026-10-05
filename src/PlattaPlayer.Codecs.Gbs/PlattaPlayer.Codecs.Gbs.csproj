@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Game Boy GBS codec plugin: a cycle-accurate Game Boy Color (SM83 CPU, APU, timers, PPU timing) ported from
+       SameBoy, playing GBS rips, with per-song titles and lengths from NEZplug-style M3U playlists beside them.
+       Pure managed and platform-free; references only the codec contract, and is staged into the app's plugins\
+       folder like the other plugins. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlattaPlayer.Codecs.Abstractions\PlattaPlayer.Codecs.Abstractions.csproj" />
+  </ItemGroup>
+
+  <!-- M3U album-file helpers, shared with the other plugins that keep album fields in M3Us. -->
+  <ItemGroup>
+    <Compile Include="..\Shared\AlbumFiles\*.cs" LinkBase="AlbumFiles" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PlattaPlayer.Codecs.Gbs.Harness" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="THIRD-PARTY-NOTICES.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

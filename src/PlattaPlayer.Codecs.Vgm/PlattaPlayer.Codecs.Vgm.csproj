@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- VGM codec plugin: plays VGM / VGZ sound-chip logs (Mega Drive / Genesis, Master System, arcade boards,
+       PC Engine, Neo Geo…) on libvgm's chip emulations (ppvgm.dll) and reads/writes their GD3 tags. References
+       only the codec contract, and is staged into the app's plugins\ folder like the other plugins, together
+       with ppvgm.dll. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- LibraryImport, and the emulation renders straight into the decoder's buffer. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlattaPlayer.Codecs.Abstractions\PlattaPlayer.Codecs.Abstractions.csproj" />
+  </ItemGroup>
+
+  <!-- M3U album files, shared with the other plugins that keep album fields in them. -->
+  <ItemGroup>
+    <Compile Include="..\Shared\AlbumFiles\*.cs" LinkBase="AlbumFiles" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PlattaPlayer.Codecs.Vgm.Harness" />
+  </ItemGroup>
+
+  <!-- ppvgm.dll (libvgm, built by native\libvgm\build.ps1, not checked in). Without it VGM files still appear
+       in the library with their tags, but don't play. -->
+  <ItemGroup>
+    <None Include="native\ppvgm.dll" Condition="Exists('native\ppvgm.dll')" CopyToOutputDirectory="PreserveNewest" Link="ppvgm.dll" />
+    <None Include="THIRD-PARTY-NOTICES.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

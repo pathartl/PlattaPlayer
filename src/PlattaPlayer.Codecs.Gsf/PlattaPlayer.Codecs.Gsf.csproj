@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Game Boy Advance GSF codec plugin: plays GSF / miniGSF rips on mGBA's GBA core (mgbagsf.dll) and
+       reads/writes their PSF tags. References only the codec contract, and is staged into the app's plugins\
+       folder like the other plugins, together with mgbagsf.dll. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- LibraryImport, and the emulator renders straight into the decoder's buffer. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlattaPlayer.Codecs.Abstractions\PlattaPlayer.Codecs.Abstractions.csproj" />
+  </ItemGroup>
+
+  <!-- The PSF container, tags and library chain, shared with the USF codec as source: each plugin loads in a
+       load context of its own, so a shared assembly would gain nothing. -->
+  <ItemGroup>
+    <Compile Include="..\Shared\Psf\*.cs" LinkBase="Psf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PlattaPlayer.Codecs.Gsf.Harness" />
+  </ItemGroup>
+
+  <!-- mgbagsf.dll (mGBA, MPL-2.0, built by native\mgbagsf\build.ps1, not checked in). Without it GSF files
+       still appear in the library with their tags, but don't play. -->
+  <ItemGroup>
+    <None Include="native\mgbagsf.dll" Condition="Exists('native\mgbagsf.dll')" CopyToOutputDirectory="PreserveNewest" Link="mgbagsf.dll" />
+    <None Include="THIRD-PARTY-NOTICES.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
