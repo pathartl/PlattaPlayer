@@ -19,4 +19,10 @@ public partial class PlaylistDetailView : UserControl
             vm.PlayCommand.CanExecute(item))
             vm.PlayCommand.Execute(item);
     }
+
+    private void OnRowContextRequested(object? sender, ContextRequestedEventArgs e)
+    {
+        if (sender is Control { DataContext: TrackItemViewModel item } anchor && TrackContextMenu.Open(anchor, item))
+            e.Handled = true;
+    }
 }

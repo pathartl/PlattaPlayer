@@ -15,9 +15,24 @@
                 <TextBlock Text="Artists" FontSize="13" />
             </Button>
             <ctrl:LineIcon Data="{StaticResource IconChevronRight}" Size="14" Foreground="#66FFFFFF" VerticalAlignment="Center" />
-            <Button Classes="Link" Foreground="#9EFFFFFF" Command="{Binding OpenArtistCommand}">
-                <TextBlock Text="{Binding AlbumArtist}" FontSize="13" />
-            </Button>
+            <!-- One link per credited artist: "A, B". -->
+            <ItemsControl ItemsSource="{Binding AlbumArtists}" VerticalAlignment="Center">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="4" /></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:AlbumArtistLink">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Classes="Link" Foreground="#9EFFFFFF"
+                                    Command="{Binding $parent[UserControl].((vm:AlbumDetailViewModel)DataContext).OpenArtistCommand}"
+                                    CommandParameter="{Binding ArtistId}">
+                                <TextBlock Text="{Binding Name}" FontSize="13" />
+                            </Button>
+                            <TextBlock Text="," FontSize="13" Foreground="#9EFFFFFF" IsVisible="{Binding !IsLast}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
             <ctrl:LineIcon Data="{StaticResource IconChevronRight}" Size="14" Foreground="#66FFFFFF" VerticalAlignment="Center" />
             <TextBlock Text="{Binding AlbumTitle}" FontSize="13" Foreground="#EBFFFFFF" VerticalAlignment="Center" />
         </StackPanel>
@@ -26,7 +41,8 @@
 
             <!-- Left: art (never cropped, never covered) + format badges. Outside the ScrollViewer so it stays put. -->
             <StackPanel Grid.Column="0" Spacing="20" Margin="0,0,48,32" VerticalAlignment="Top">
-                <Border Name="ArtSlot" Classes="ArtSlot" Width="400" Height="400" CornerRadius="6">
+                <Border Name="ArtSlot" Classes="ArtSlot" Width="400" Height="400" CornerRadius="6"
+                        ContextRequested="OnArtContextRequested">
                     <Panel>
                         <ctrl:LineIcon Data="{StaticResource IconAlbum}" Size="64" Foreground="{StaticResource TextDisabledBrush}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -52,9 +68,24 @@
                     <TextBlock Classes="Eyebrow" Text="{Binding Eyebrow}" />
                     <TextBlock Classes="Display" Text="{Binding AlbumTitle}" TextWrapping="Wrap" />
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Classes="Link Strong" FontSize="14" Command="{Binding OpenArtistCommand}">
-                            <TextBlock Text="{Binding AlbumArtist}" />
-                        </Button>
+                        <ItemsControl ItemsSource="{Binding AlbumArtists}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="4" /></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:AlbumArtistLink">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Classes="Link Strong" FontSize="14"
+                                                Command="{Binding $parent[UserControl].((vm:AlbumDetailViewModel)DataContext).OpenArtistCommand}"
+                                                CommandParameter="{Binding ArtistId}">
+                                            <TextBlock Text="{Binding Name}" />
+                                        </Button>
+                                        <TextBlock Text="," FontSize="14" FontWeight="Medium" Foreground="{StaticResource TextStrongBrush}"
+                                                   IsVisible="{Binding !IsLast}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                         <ItemsControl ItemsSource="{Binding Details}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="8" /></ItemsPanelTemplate>
@@ -83,6 +114,11 @@
                             <ctrl:LineIcon Data="{StaticResource IconShuffle}" Size="18" />
                             <TextBlock Text="Shuffle" VerticalAlignment="Center" />
                         </StackPanel>
+                    </Button>
+                    <!-- Kebab: the same menu as right-clicking the album (tile or art). -->
+                    <Button Classes="PillOutline" Width="44" Padding="0" HorizontalContentAlignment="Center"
+                            Click="OnMoreClick" ToolTip.Tip="More" AutomationProperties.Name="More album options">
+                        <ctrl:LineIcon Data="{StaticResource IconMore}" Size="18" />
                     </Button>
                 </StackPanel>
 

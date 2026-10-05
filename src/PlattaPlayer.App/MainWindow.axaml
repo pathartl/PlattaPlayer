@@ -74,7 +74,7 @@
             </Grid>
 
             <!-- ===== Library: nav rail + content ===== -->
-            <Grid Grid.Row="1" ColumnDefinitions="232,*">
+            <Grid Grid.Row="1" ColumnDefinitions="232,*,Auto">
 
                 <Border Name="NavRail" Classes="Glass" IsVisible="{Binding IsLibraryVisible}"
                         BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,1,1,0">
@@ -94,9 +94,49 @@
                                            Foreground="#99FFFFFF" IsHitTestVisible="False" />
                         </Panel>
 
-                        <!-- Pinned bottom: tag editor + settings -->
+                        <!-- Pinned bottom: source filter, tag editor + settings -->
                         <StackPanel DockPanel.Dock="Bottom" Spacing="2">
+                            <Button Classes="NavItem" Margin="0,0,0,6"
+                                    ToolTip.Tip="Choose which sources the library shows"
+                                    AutomationProperties.Name="Sources shown">
+                                <Button.IsVisible>
+                                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                        <Binding Path="HasSources" />
+                                        <Binding Path="Rail.SourceFilter.IsShown" />
+                                    </MultiBinding>
+                                </Button.IsVisible>
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <ctrl:LineIcon Data="{StaticResource IconSources}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding SourceFilterSummary}" Margin="12,0,8,0"
+                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                    <ctrl:LineIcon Grid.Column="2" Data="{StaticResource IconChevronUpDown}" Size="14"
+                                                   Foreground="{StaticResource TextTertiaryBrush}" />
+                                </Grid>
+                                <Button.Flyout>
+                                    <Flyout Placement="TopEdgeAlignedLeft">
+                                        <StackPanel Width="240" Spacing="6" Margin="4">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Classes="Caption" Text="SHOW MUSIC FROM" VerticalAlignment="Center" />
+                                                <Button Grid.Column="1" Classes="Link" Command="{Binding ShowAllSourcesCommand}">
+                                                    <TextBlock Text="Show all" FontSize="12" />
+                                                </Button>
+                                            </Grid>
+                                            <ItemsControl ItemsSource="{Binding SourceFilters}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="items:SourceFilterItemViewModel">
+                                                        <CheckBox IsChecked="{Binding IsShown}" ToolTip.Tip="{Binding DisplayName}">
+                                                            <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" />
+                                                        </CheckBox>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+
                             <RadioButton Classes="NavItem" Command="{Binding NavigateCommand}" CommandParameter="TagEditor"
+                                         IsVisible="{Binding Rail.TagEditor.IsShown}"
                                          IsChecked="{Binding SelectedSection, Mode=OneWay, Converter={x:Static conv:StringEqualsConverter.Instance}, ConverterParameter=TagEditor}">
                                 <StackPanel Orientation="Horizontal" Spacing="12">
                                     <ctrl:LineIcon Data="{StaticResource IconTag}" />
@@ -112,92 +152,91 @@
                             </RadioButton>
                         </StackPanel>
 
+                        <!-- Sections and the playlists block, in the order (and subset) picked in Settings. -->
                         <ScrollViewer Margin="0,22,0,12" HorizontalScrollBarVisibility="Disabled">
-                            <StackPanel Spacing="22">
-
-                                <!-- Library -->
-                                <StackPanel Spacing="2">
-                                    <TextBlock Classes="Caption" Text="LIBRARY" Margin="12,0,0,6" />
-                                    <RadioButton Classes="NavItem" Command="{Binding NavigateCommand}" CommandParameter="Artists"
-                                                 IsChecked="{Binding SelectedSection, Mode=OneWay, Converter={x:Static conv:StringEqualsConverter.Instance}, ConverterParameter=Artists}">
-                                        <Grid ColumnDefinitions="Auto,*,Auto">
-                                            <ctrl:LineIcon Data="{StaticResource IconArtist}" />
-                                            <TextBlock Grid.Column="1" Text="Artists" Margin="12,0,0,0" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="2" Classes="Mono" Text="{Binding ArtistCount}" FontSize="11"
-                                                       Foreground="{StaticResource TextTertiaryBrush}" VerticalAlignment="Center" />
-                                        </Grid>
-                                    </RadioButton>
-                                    <RadioButton Classes="NavItem" Command="{Binding NavigateCommand}" CommandParameter="Albums"
-                                                 IsChecked="{Binding SelectedSection, Mode=OneWay, Converter={x:Static conv:StringEqualsConverter.Instance}, ConverterParameter=Albums}">
-                                        <Grid ColumnDefinitions="Auto,*,Auto">
-                                            <ctrl:LineIcon Data="{StaticResource IconAlbum}" />
-                                            <TextBlock Grid.Column="1" Text="Albums" Margin="12,0,0,0" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="2" Classes="Mono" Text="{Binding AlbumCount}" FontSize="11"
-                                                       Foreground="{StaticResource TextTertiaryBrush}" VerticalAlignment="Center" />
-                                        </Grid>
-                                    </RadioButton>
-                                    <RadioButton Classes="NavItem" Command="{Binding NavigateCommand}" CommandParameter="Songs"
-                                                 IsChecked="{Binding SelectedSection, Mode=OneWay, Converter={x:Static conv:StringEqualsConverter.Instance}, ConverterParameter=Songs}">
-                                        <Grid ColumnDefinitions="Auto,*,Auto">
-                                            <ctrl:LineIcon Data="{StaticResource IconSong}" />
-                                            <TextBlock Grid.Column="1" Text="Songs" Margin="12,0,0,0" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="2" Classes="Mono" Text="{Binding TrackCount}" FontSize="11"
-                                                       Foreground="{StaticResource TextTertiaryBrush}" VerticalAlignment="Center" />
-                                        </Grid>
-                                    </RadioButton>
-                                    <RadioButton Classes="NavItem" Command="{Binding NavigateCommand}" CommandParameter="Home"
-                                                 IsChecked="{Binding SelectedSection, Mode=OneWay, Converter={x:Static conv:StringEqualsConverter.Instance}, ConverterParameter=Home}">
-                                        <StackPanel Orientation="Horizontal" Spacing="12">
-                                            <ctrl:LineIcon Data="{StaticResource IconRecent}" />
-                                            <TextBlock Text="Recent" VerticalAlignment="Center" />
+                            <ItemsControl ItemsSource="{Binding Rail.ShownItems}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><StackPanel Spacing="2" /></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.DataTemplates>
+                                    <!-- Playlists: listed before the section template, which would also match it. -->
+                                    <DataTemplate DataType="items:NavRailPlaylistsItemViewModel">
+                                        <StackPanel Spacing="2" Margin="{Binding GroupMargin}">
+                                            <Button Classes="Link" Margin="12,0,0,6"
+                                                    Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).NavigateCommand}"
+                                                    CommandParameter="Playlists"
+                                                    ToolTip.Tip="Manage playlists" Foreground="{StaticResource TextTertiaryBrush}">
+                                                <TextBlock Classes="Caption" Text="PLAYLISTS" Foreground="{Binding $parent[Button].Foreground}" />
+                                            </Button>
+                                            <ItemsControl ItemsSource="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).Playlists}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate><StackPanel Spacing="2" /></ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="items:PlaylistItemViewModel">
+                                                        <RadioButton Classes="NavItem"
+                                                                     Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).OpenPlaylistCommand}"
+                                                                     CommandParameter="{Binding}">
+                                                            <RadioButton.IsChecked>
+                                                                <MultiBinding Converter="{x:Static conv:EqualsMultiConverter.Instance}" Mode="OneWay">
+                                                                    <Binding Path="SectionKey" />
+                                                                    <Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).SelectedSection" />
+                                                                </MultiBinding>
+                                                            </RadioButton.IsChecked>
+                                                            <Grid ColumnDefinitions="Auto,*">
+                                                                <ctrl:LineIcon Data="{StaticResource IconPlaylist}" />
+                                                                <TextBlock Grid.Column="1" Text="{Binding Name}" Margin="12,0,0,0"
+                                                                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                            </Grid>
+                                                        </RadioButton>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <Button Classes="NavItem"
+                                                    Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).NavigateCommand}"
+                                                    CommandParameter="Playlists"
+                                                    IsVisible="{Binding !$parent[Window].((vm:MainWindowViewModel)DataContext).Playlists.Count}">
+                                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                                    <ctrl:LineIcon Data="{StaticResource IconPlaylist}" />
+                                                    <TextBlock Text="New playlist…" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Button>
                                         </StackPanel>
-                                    </RadioButton>
-                                </StackPanel>
+                                    </DataTemplate>
 
-                                <!-- Playlists -->
-                                <StackPanel Spacing="2">
-                                    <Button Classes="Link" Margin="12,0,0,6" Command="{Binding NavigateCommand}" CommandParameter="Playlists"
-                                            ToolTip.Tip="Manage playlists" Foreground="{StaticResource TextTertiaryBrush}">
-                                        <TextBlock Classes="Caption" Text="PLAYLISTS" Foreground="{Binding $parent[Button].Foreground}" />
-                                    </Button>
-                                    <ItemsControl ItemsSource="{Binding Playlists}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate><StackPanel Spacing="2" /></ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate x:DataType="items:PlaylistItemViewModel">
-                                                <RadioButton Classes="NavItem"
-                                                             Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).OpenPlaylistCommand}"
-                                                             CommandParameter="{Binding}">
-                                                    <RadioButton.IsChecked>
-                                                        <MultiBinding Converter="{x:Static conv:EqualsMultiConverter.Instance}" Mode="OneWay">
-                                                            <Binding Path="SectionKey" />
-                                                            <Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).SelectedSection" />
-                                                        </MultiBinding>
-                                                    </RadioButton.IsChecked>
-                                                    <Grid ColumnDefinitions="Auto,*">
-                                                        <ctrl:LineIcon Data="{StaticResource IconPlaylist}" />
-                                                        <TextBlock Grid.Column="1" Text="{Binding Name}" Margin="12,0,0,0"
-                                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                                    </Grid>
-                                                </RadioButton>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                    <Button Classes="NavItem" Command="{Binding NavigateCommand}" CommandParameter="Playlists"
-                                            IsVisible="{Binding !Playlists.Count}">
-                                        <StackPanel Orientation="Horizontal" Spacing="12">
-                                            <ctrl:LineIcon Data="{StaticResource IconPlaylist}" />
-                                            <TextBlock Text="New playlist…" VerticalAlignment="Center" />
+                                    <!-- A section link; the first run of them is headed "LIBRARY". -->
+                                    <DataTemplate DataType="items:NavRailItemViewModel">
+                                        <StackPanel Margin="{Binding GroupMargin}">
+                                            <TextBlock Classes="Caption" Text="LIBRARY" Margin="12,0,0,8"
+                                                       IsVisible="{Binding ShowLibraryCaption}" />
+                                            <RadioButton Classes="NavItem"
+                                                         Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).NavigateCommand}"
+                                                         CommandParameter="{Binding Key}">
+                                                <RadioButton.IsChecked>
+                                                    <MultiBinding Converter="{x:Static conv:EqualsMultiConverter.Instance}" Mode="OneWay">
+                                                        <Binding Path="Key" />
+                                                        <Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).SelectedSection" />
+                                                    </MultiBinding>
+                                                </RadioButton.IsChecked>
+                                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                                    <ctrl:LineIcon Data="{Binding Icon}" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding Label}" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                                    <TextBlock Grid.Column="2" Classes="Mono" Text="{Binding Count}" FontSize="11"
+                                                               Foreground="{StaticResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                                                </Grid>
+                                            </RadioButton>
                                         </StackPanel>
-                                    </Button>
-                                </StackPanel>
-                            </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.DataTemplates>
+                            </ItemsControl>
                         </ScrollViewer>
                     </DockPanel>
                 </Border>
 
                 <ContentControl Grid.Column="1" Content="{Binding CurrentPage}" IsVisible="{Binding IsLibraryVisible}" />
+
+                <!-- Room for the docked queue panel, which is drawn above (so one instance also floats in Now Playing). -->
+                <Border Grid.Column="2" Width="{Binding #QueuePanel.Width}" IsVisible="{Binding IsQueueDocked}" />
             </Grid>
 
             <!-- ===== Transport bar ===== -->
@@ -206,6 +245,10 @@
             <!-- ===== Now Playing: the visualizer gets the stage ===== -->
             <views:NowPlayingView Grid.Row="1" Grid.RowSpan="2" Name="NowPlayingView"
                                   IsVisible="{Binding IsNowPlayingOpen}" />
+
+            <!-- ===== Queue: docked right of the library page, or a floating card in Now Playing ===== -->
+            <views:QueueView Grid.Row="1" Name="QueuePanel"
+                             IsVisible="{Binding IsQueueOpen}" Classes.Floating="{Binding IsNowPlayingOpen}" />
         </Grid>
 
     </Panel>

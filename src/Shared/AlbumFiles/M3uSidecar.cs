@@ -1,11 +1,12 @@
 using System.Text;
 using PlattaPlayer.Codecs.Abstractions;
 
-namespace PlattaPlayer.Codecs.Midi;
+namespace PlattaPlayer.Codecs.AlbumFiles;
 
 /// <summary>
-/// Finds album metadata for media files in M3U playlists lying next to them. MIDI has no standard tags,
-/// so an album folder can describe itself with an extended M3U that lists its files in order:
+/// Finds album metadata for media files in M3U playlists lying next to them. For formats whose own tags lack
+/// album fields (MIDI has no standard tags at all; a VGM's GD3 has no album artist, genre, track or disc), an
+/// album folder can describe itself with an extended M3U that lists its files in order:
 /// <code>
 /// #EXTM3U
 /// #EXTALB:Album title          (or #PLAYLIST:)
@@ -13,6 +14,7 @@ namespace PlattaPlayer.Codecs.Midi;
 /// #EXTGENRE:Genre
 /// #EXTIMG:cover.jpg
 /// #EXTINF:180,Track artist - Track title
+/// #EXTDISC:1                   (PlattaPlayer's own, for the entry below it)
 /// 01 First track.mid
 /// </code>
 /// Playlists (<c>.m3u</c>/<c>.m3u8</c>) are looked for in the file's own folder, then its parent (for albums
@@ -101,8 +103,9 @@ internal sealed class M3uSidecarIndex
             var root = dir.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
 
             string? album = null, playlistTitle = null, albumArtist = null, genre = null, cover = null;
-            var pending = new List<(string Path, string? Title, string? Artist)>();
+            var pending = new List<(string Path, string? Title, string? Artist, int? Disc)>();
             string? infTitle = null, infArtist = null;
+            int? disc = null;
 
             foreach (var raw in M3uDocument.Load(path).Lines)
             {
@@ -117,25 +120,27 @@ internal sealed class M3uSidecarIndex
                     else if (M3u.Directive(line, M3u.Genre) is { } g) genre = g;
                     else if (M3u.Directive(line, M3u.Image) is { } img) cover = M3u.ResolveContained(dir, root, img);
                     else if (M3u.Directive(line, "#EXTINF:") is { } inf) (infArtist, infTitle) = SplitDisplay(inf);
+                    else if (M3u.Directive(line, M3u.Disc) is { } d) disc = M3u.Number(d);
                     continue;
                 }
 
                 if (M3u.Resolve(dir, line) is { } entry)
-                    pending.Add((entry, infTitle, infArtist));
+                    pending.Add((entry, infTitle, infArtist, disc));
                 infTitle = infArtist = null;
+                disc = null;
             }
 
             // Header directives describe the whole playlist wherever they appear. Track numbers count
             // within each folder, so one playlist above disc folders numbers every disc from 1.
             var playlist = new Playlist();
             var perFolder = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            foreach (var (entry, title, artist) in pending)
+            foreach (var (entry, title, artist, entryDisc) in pending)
             {
                 if (playlist._entries.ContainsKey(entry)) continue;
                 var folder = Path.GetDirectoryName(entry) ?? string.Empty;
                 var trackNo = perFolder[folder] = perFolder.GetValueOrDefault(folder) + 1;
                 playlist._entries.Add(entry, new CodecAlbumEntry(
-                    fullPath, album ?? playlistTitle, albumArtist, genre, cover, title, artist, trackNo));
+                    fullPath, album ?? playlistTitle, albumArtist, genre, cover, title, artist, trackNo, entryDisc));
             }
             return playlist;
         }
@@ -169,6 +174,13 @@ internal static class M3u
     public const string AlbumArtist = "#EXTART:";
     public const string Genre = "#EXTGENRE:";
     public const string Image = "#EXTIMG:";
+
+    /// <summary>The disc of the entry below it: PlattaPlayer's own, as no M3U convention has one.</summary>
+    public const string Disc = "#EXTDISC:";
+
+    /// <summary>A positive whole number, or null.</summary>
+    public static int? Number(string value) =>
+        int.TryParse(value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var n) && n > 0 ? n : null;
 
     public static string? Directive(string line, string name)
     {

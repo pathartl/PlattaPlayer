@@ -8,6 +8,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
 using PlattaPlayer.App.ViewModels;
+using PlattaPlayer.App.Visualizations;
 using PlattaPlayer.Visualizations.Abstractions;
 
 namespace PlattaPlayer.App;
@@ -15,6 +16,7 @@ namespace PlattaPlayer.App;
 public partial class MainWindow : Window
 {
     private VisualizerInstance? _visualizer;
+    private readonly VisualizerWatchdog _watchdog;
     private WindowState _stateBeforeFullScreen = WindowState.Normal;
 
     public MainWindow()
@@ -30,6 +32,11 @@ public partial class MainWindow : Window
 
         // Tunnel so global shortcuts (Space, Ctrl+…) win over focused buttons, but text fields keep typing keys.
         AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
+
+        _watchdog = new VisualizerWatchdog(IsVisualizerRendering, () =>
+        {
+            if (ViewModel is { } vm) BuildVisualizer(vm, recovery: true);
+        });
 
         UpdateChromeForWindowState();
     }
@@ -55,9 +62,17 @@ public partial class MainWindow : Window
         ToolTip.SetTip(MaximizeButton, maximized ? "Restore" : "Maximize");
         AutomationProperties.SetName(MaximizeButton, maximized ? "Restore" : "Maximize");
 
-        if (_visualizer is not null)
-            _visualizer.View.IsVisible = WindowState != WindowState.Minimized;
+        if (_visualizer is null) return;
+        var minimized = WindowState == WindowState.Minimized;
+        _visualizer.View.IsVisible = !minimized;
+        // Coming back from minimized is where render loops lose their pending frame request.
+        if (!minimized) _watchdog.Resume();
     }
+
+    // On screen with room to draw: the only time a stopped heartbeat means the visualizer is stuck.
+    private bool IsVisualizerRendering()
+        => _visualizer?.View is { IsEffectivelyVisible: true, Bounds: { Width: > 0, Height: > 0 } }
+           && WindowState != WindowState.Minimized;
 
     protected override void OnDataContextChanged(System.EventArgs e)
     {
@@ -67,6 +82,7 @@ public partial class MainWindow : Window
         if (DataContext is MainWindowViewModel vm)
         {
             vm.Visualization.PropertyChanged += OnVisualizationChanged;
+            vm.Visualization.RestartRequested += (_, _) => BuildVisualizer(vm);
             BuildVisualizer(vm);
         }
     }
@@ -79,22 +95,27 @@ public partial class MainWindow : Window
     }
 
     // Creates the active plugin's control and swaps it into the host panel. Removing the old control from
-    // the visual tree lets it tear down its render loop / GPU resources.
-    private void BuildVisualizer(MainWindowViewModel vm)
+    // the visual tree lets it tear down its render loop / GPU resources. Also how a stuck visualizer is
+    // restarted, by the watchdog (recovery) or the user.
+    private void BuildVisualizer(MainWindowViewModel vm, bool recovery = false)
     {
         VisualizerHost.Children.Clear();
         _visualizer = null;
         vm.Visualization.Controller = null;
 
         var plugin = vm.Visualization.ActiveVisualizer;
-        if (plugin is null) return;
+        if (plugin is null)
+        {
+            _watchdog.Attach(null, "");
+            return;
+        }
 
         var context = new VisualizerHostContext
         {
             Tap = vm.NowPlaying.AudioTap,
             Settings = vm.Visualization,
             // The glass panels: plugins that support it paint a blurred copy of the visualization behind them.
-            BlurTargets = new List<Visual> { NavRail, TransportBar },
+            BlurTargets = new List<Visual> { NavRail, TransportBar, QueuePanel.GlassBackdrop },
             ReportName = name => Dispatcher.UIThread.Post(() => vm.Visualization.CurrentPresetName = name),
             // Private per-plugin data folder (presets, caches, error logs).
             DataDirectory = PlattaPlayer.Data.AppPaths.PluginDataDirectory(plugin.Id),
@@ -103,8 +124,10 @@ public partial class MainWindow : Window
         };
 
         _visualizer = plugin.Create(context);
+        _visualizer.View.IsVisible = WindowState != WindowState.Minimized;
         VisualizerHost.Children.Add(_visualizer.View);
         vm.Visualization.Controller = _visualizer.Controller;
+        _watchdog.Attach(_visualizer, plugin.DisplayName, recovery);
     }
 
     private void ToggleMaximize()
@@ -144,6 +167,9 @@ public partial class MainWindow : Window
             case Key.Escape when none && WindowState == WindowState.FullScreen:
                 WindowState = _stateBeforeFullScreen;
                 break;
+            case Key.Escape when none && vm.IsQueueOpen:
+                vm.CloseQueueCommand.Execute(null);
+                break;
             case Key.Space when none && !typing:
                 vm.NowPlaying.PlayPauseCommand.Execute(null);
                 break;
@@ -158,6 +184,12 @@ public partial class MainWindow : Window
                 break;
             case Key.L when ctrl:
                 vm.ToggleLyricsCommand.Execute(null);
+                break;
+            case Key.Q when ctrl:
+                vm.ToggleQueueCommand.Execute(null);
+                break;
+            case Key.R when ctrl:
+                vm.Visualization.RestartVisualizerCommand.Execute(null);
                 break;
             case Key.Enter when ctrl:
                 if (vm.NowPlaying.HasTrack) vm.ToggleNowPlayingCommand.Execute(null);

@@ -9,11 +9,15 @@ using PlattaPlayer.App.Formatting;
 using PlattaPlayer.App.Services;
 using PlattaPlayer.App.ViewModels.Items;
 using PlattaPlayer.Core.Abstractions;
+using PlattaPlayer.Core.Models;
 
 namespace PlattaPlayer.App.ViewModels;
 
 /// <summary>"Disc N" sub-header between groups on multi-disc albums.</summary>
 public sealed record DiscHeader(string Text);
+
+/// <summary>One credited album artist, linked to its artist page; <see cref="IsLast"/> drops the trailing comma.</summary>
+public sealed record AlbumArtistLink(int ArtistId, string Name, bool IsLast);
 
 public sealed partial class AlbumDetailViewModel : PageViewModelBase
 {
@@ -37,8 +41,10 @@ public sealed partial class AlbumDetailViewModel : PageViewModelBase
 
     [ObservableProperty] private string _albumTitle = string.Empty;
     [ObservableProperty] private string _albumArtist = string.Empty;
-    [ObservableProperty] private int _artistId;
     [ObservableProperty] private string? _coverPath;
+
+    /// <summary>The album artist credit split into its artists, each linking to its own page.</summary>
+    [ObservableProperty] private IReadOnlyList<AlbumArtistLink> _albumArtists = Array.Empty<AlbumArtistLink>();
 
     /// <summary>"ALBUM · 2021".</summary>
     [ObservableProperty] private string _eyebrow = string.Empty;
@@ -85,8 +91,16 @@ public sealed partial class AlbumDetailViewModel : PageViewModelBase
             if (album is not null)
             {
                 AlbumTitle = album.Title;
-                AlbumArtist = album.AlbumArtist?.Name ?? "Unknown Artist";
-                ArtistId = album.AlbumArtistId;
+                AlbumArtist = TagValues.Display(album.ArtistCredit) is { Length: > 0 } credit ? credit : "Unknown Artist";
+
+                // Credit order, not the join table's: the first-credited artist leads.
+                var credited = TagValues.Split(album.ArtistCredit)
+                    .Select(n => album.Artists.FirstOrDefault(a => string.Equals(a.Name, n, StringComparison.OrdinalIgnoreCase)))
+                    .OfType<Artist>()
+                    .ToList();
+                AlbumArtists = credited.Count == 0
+                    ? [new AlbumArtistLink(album.AlbumArtistId, AlbumArtist, true)]
+                    : credited.Select((a, i) => new AlbumArtistLink(a.Id, a.Name, i == credited.Count - 1)).ToList();
                 CoverPath = _covers.GetPath(album.CoverArtKey);
 
                 var type = new AlbumItemViewModel(album, _covers, tracks).ReleaseType.ToUpperInvariant();
@@ -94,7 +108,7 @@ public sealed partial class AlbumDetailViewModel : PageViewModelBase
 
                 var details = new List<string>();
                 var genre = album.Genre ?? tracks.Select(t => t.Genre).FirstOrDefault(g => !string.IsNullOrWhiteSpace(g));
-                if (!string.IsNullOrWhiteSpace(genre)) details.Add(genre);
+                if (TagValues.Display(genre) is { Length: > 0 } genres) details.Add(genres);
                 var runtime = TimeSpan.FromTicks(tracks.Sum(t => t.Duration.Ticks));
                 details.Add($"{AudioFormatText.Count(tracks.Count, "track", "tracks")}, {AudioFormatText.Runtime(runtime)}");
                 Details = details;
@@ -138,9 +152,9 @@ public sealed partial class AlbumDetailViewModel : PageViewModelBase
     private void OpenArtists() => _navigation.NavigateTo<ArtistsViewModel>();
 
     [RelayCommand]
-    private void OpenArtist()
+    private void OpenArtist(int artistId)
     {
-        if (ArtistId > 0) _navigation.NavigateTo<ArtistDetailViewModel>(vm => vm.ArtistId = ArtistId);
+        if (artistId > 0) _navigation.NavigateTo<ArtistDetailViewModel>(vm => vm.ArtistId = artistId);
     }
 
     public Task AddToPlaylistAsync(TrackItemViewModel track, int playlistId)

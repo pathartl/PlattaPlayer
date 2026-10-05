@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using PlattaPlayer.App.ViewModels;
 using PlattaPlayer.App.ViewModels.Items;
 
@@ -45,8 +46,19 @@ public partial class AlbumDetailView : UserControl
             DataContext is not AlbumDetailViewModel vm)
             return;
 
-        PlaylistContextMenu.Build(item, vm.Playlists, (track, playlistId) => vm.AddToPlaylistAsync(track, playlistId))
-            .Open((Control)sender);
-        e.Handled = true;
+        if (TrackContextMenu.Open((Control)sender, item, vm.Playlists, (track, playlistId) => vm.AddToPlaylistAsync(track, playlistId)))
+            e.Handled = true;
+    }
+
+    private void OnArtContextRequested(object? sender, ContextRequestedEventArgs e)
+    {
+        if (sender is Control anchor && DataContext is AlbumDetailViewModel vm)
+            AlbumContextMenu.Open(anchor, vm.AlbumId, e);
+    }
+
+    private void OnMoreClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Control anchor && DataContext is AlbumDetailViewModel vm)
+            AlbumContextMenu.Open(anchor, vm.AlbumId, PlacementMode.BottomEdgeAlignedLeft);
     }
 }

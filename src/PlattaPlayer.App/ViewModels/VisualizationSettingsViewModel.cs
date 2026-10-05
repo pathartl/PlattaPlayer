@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -84,4 +85,11 @@ public sealed partial class VisualizationSettingsViewModel : ObservableObject, I
 
     [RelayCommand]
     private void RandomPreset() => Controller?.RandomPreset();
+
+    /// <summary>Raised when the user asks for the visualizer to be rebuilt; the main window handles it.</summary>
+    public event EventHandler? RestartRequested;
+
+    /// <summary>Rebuilds the active visualizer from its plugin, for one that has frozen or gone black.</summary>
+    [RelayCommand]
+    private void RestartVisualizer() => RestartRequested?.Invoke(this, EventArgs.Empty);
 }

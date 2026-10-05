@@ -161,7 +161,8 @@ public sealed partial class NowPlayingViewModel : ObservableObject
                 TrackId = t?.Id ?? 0;
                 Title = t?.Title ?? string.Empty;
                 Artist = t is null ? string.Empty
-                    : (string.IsNullOrEmpty(t.TrackArtist) ? t.Album?.AlbumArtist?.Name ?? "Unknown Artist" : t.TrackArtist);
+                    : TagValues.Display(string.IsNullOrEmpty(t.TrackArtist) ? t.Album?.ArtistCredit : t.TrackArtist) is { Length: > 0 } artist
+                        ? artist : "Unknown Artist";
                 Album = t?.Album?.Title ?? string.Empty;
                 Year = t?.Album?.Year?.ToString() ?? string.Empty;
                 ArtistId = t?.Album?.AlbumArtistId ?? 0;

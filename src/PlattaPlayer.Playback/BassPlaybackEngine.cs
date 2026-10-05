@@ -114,7 +114,7 @@ public sealed class BassPlaybackEngine : IPlaybackEngine, IAudioTap, IWaveformSo
         ICodecDecoder? decoder = null;
         if (plugin is not null)
         {
-            decoder = await Task.Run(() => TryOpen(plugin, media.Location), CancellationToken.None);
+            decoder = await Task.Run(() => TryOpen(plugin, media), CancellationToken.None);
             if (ct.IsCancellationRequested || generation != Volatile.Read(ref _loadGeneration))
             {
                 decoder?.Dispose();
@@ -172,18 +172,24 @@ public sealed class BassPlaybackEngine : IPlaybackEngine, IAudioTap, IWaveformSo
         }
     }
 
-    private static ICodecDecoder? TryOpen(ICodecPlugin plugin, string path)
+    private static ICodecDecoder? TryOpen(ICodecPlugin plugin, PlayableMedia media)
     {
         try
         {
-            return plugin.Open(path);
+            return Open(plugin, media);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"{plugin.DisplayName} could not open {path}: {ex}");
+            Debug.WriteLine($"{plugin.DisplayName} could not open {media.Location}: {ex}");
             return null;
         }
     }
+
+    // A song of a multi-song file opens through the plugin's subsong support; anything else as a whole file.
+    private static ICodecDecoder Open(ICodecPlugin plugin, PlayableMedia media) =>
+        media.Subsong is { } subsong && plugin is ICodecSubsongs subsongs
+            ? subsongs.Open(media.Location, subsong)
+            : plugin.Open(media.Location);
 
     /// <summary>
     /// Plays an opened codec decoder: its PCM through a BASS user stream (which ends by itself, raising the end
@@ -223,7 +229,7 @@ public sealed class BassPlaybackEngine : IPlaybackEngine, IAudioTap, IWaveformSo
         StartWaveform(cacheKey, decoder.AllowsBackgroundDecode
             ? () =>
             {
-                var waveformDecoder = new CodecStream(plugin.Open(media.Location), decodeOnly: true);
+                var waveformDecoder = new CodecStream(Open(plugin, media), decodeOnly: true);
                 return new DecodeChannel(waveformDecoder.Handle, waveformDecoder);
             }
             : null);

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.OpenGL;
@@ -30,7 +31,7 @@ namespace PlattaPlayer.Visualizations.Wmp.Alchemy.Plugin;
 /// Effects are randomly scheduled, so next / previous / random all ask for a new warp kernel, the
 /// nearest equivalent of the original's 'm' key.
 /// </summary>
-public sealed class WmpAlchemyVisualizer : OpenGlControlBase, IVisualizationController
+public sealed class WmpAlchemyVisualizer : OpenGlControlBase, IVisualizationController, IVisualizerHealth
 {
     public static readonly StyledProperty<IAudioTap?> TapProperty =
         AvaloniaProperty.Register<WmpAlchemyVisualizer, IAudioTap?>(nameof(Tap));
@@ -64,6 +65,7 @@ public sealed class WmpAlchemyVisualizer : OpenGlControlBase, IVisualizationCont
 
     private AlchemyGlRenderer? _renderer;
     private bool _failed;
+    private long _heartbeat;
     private bool _loggedRender;
 
     public void RandomPreset() { _pendingRandom = true; RequestNextFrameRendering(); }
@@ -71,6 +73,14 @@ public sealed class WmpAlchemyVisualizer : OpenGlControlBase, IVisualizationCont
     public void NextPreset() => RandomPreset();
 
     public void PreviousPreset() => RandomPreset();
+
+    public long Heartbeat => Interlocked.Read(ref _heartbeat);
+
+    public void Resume()
+    {
+        if (_pacer is { IsEnabled: false }) _pacer.Start();
+        RequestNextFrameRendering();
+    }
 
     /// <summary>
     /// Paces redraws at WMP's visualization rate with a timer. Requesting the next frame from inside the
@@ -118,7 +128,8 @@ public sealed class WmpAlchemyVisualizer : OpenGlControlBase, IVisualizationCont
     {
         if (_failed || _renderer is null) return;
         try { RenderFrame(_renderer, fb); }
-        catch (Exception ex) { _failed = true; LogFailure("render", ex); }
+        catch (Exception ex) { _failed = true; LogFailure("render", ex); return; }
+        Interlocked.Increment(ref _heartbeat);
     }
 
     private void RenderFrame(AlchemyGlRenderer renderer, int fb)

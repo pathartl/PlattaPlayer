@@ -41,8 +41,8 @@ public sealed class LibrarySyncService : ILibrarySyncService
 
         var artistsByName = await db.Artists
             .ToDictionaryAsync(a => a.Name, StringComparer.OrdinalIgnoreCase, ct);
-        var albumsByKey = await db.Albums
-            .ToDictionaryAsync(a => AlbumKey(a.AlbumArtistId, a.Title), ct);
+        var albumsByKey = await db.Albums.Include(a => a.Artists)
+            .ToDictionaryAsync(a => AlbumKey(a.ArtistCredit, a.Title), ct);
         var tracksByItemId = await db.Tracks
             .Where(t => t.SourceId == source.Id)
             .ToDictionaryAsync(t => t.SourceItemId, ct);
@@ -58,9 +58,7 @@ public sealed class LibrarySyncService : ILibrarySyncService
 
             await UpsertAsync(db, mediaSource, st, artistsByName, albumsByKey, tracksByItemId, now, refreshCover: false, ct);
 
-            // Note: we deliberately defer SaveChanges to the end of the loop. Saving mid-loop would
-            // assign real keys to newly-created artists and invalidate the album cache keys (which are
-            // derived from the artist key), producing duplicate albums.
+            // SaveChanges is deferred to the end of the loop so the whole source syncs in one transaction.
             if (++processed % 50 == 0)
                 progress?.Report(new SyncProgress(source.DisplayName, processed, null));
         }
@@ -100,36 +98,40 @@ public sealed class LibrarySyncService : ILibrarySyncService
             await using var db = await _factory.CreateDbContextAsync(ct);
             var artistsByName = await db.Artists
                 .ToDictionaryAsync(a => a.Name, StringComparer.OrdinalIgnoreCase, ct);
-            var albumsByKey = await db.Albums
-                .ToDictionaryAsync(a => AlbumKey(a.AlbumArtistId, a.Title), ct);
+            var albumsByKey = await db.Albums.Include(a => a.Artists)
+                .ToDictionaryAsync(a => AlbumKey(a.ArtistCredit, a.Title), ct);
 
-            // Keyed by full path: the stored ids keep whatever form the source folder was configured in.
+            // Keyed by full path: the stored ids keep whatever form the source folder was configured in. A
+            // multi-song file has a track per song, told apart by their subsong numbers.
             var tracks = await db.Tracks.Where(t => t.SourceId == source.Id).ToListAsync(ct);
-            var byPath = new Dictionary<string, Track>(StringComparer.OrdinalIgnoreCase);
+            var byPath = new Dictionary<string, List<Track>>(StringComparer.OrdinalIgnoreCase);
             foreach (var t in tracks)
-                byPath.TryAdd(SafeFullPath(t.SourceItemId), t);
+            {
+                var key = SafeFullPath(t.LocalPath ?? t.SourceItemId);
+                if (!byPath.TryGetValue(key, out var list)) byPath[key] = list = [];
+                list.Add(t);
+            }
 
             var tracksByItemId = new Dictionary<string, Track>(StringComparer.Ordinal);
             var now = DateTimeOffset.UtcNow;
             foreach (var path in owned)
             {
-                var st = source.ReadFile(path);
-                if (byPath.TryGetValue(path, out var existing))
+                var read = source.ReadFile(path);
+                var existing = byPath.GetValueOrDefault(path) ?? [];
+                foreach (var track in existing)
                 {
-                    if (st is null)
-                    {
-                        db.Tracks.Remove(existing); // gone from disk
-                        continue;
-                    }
-                    tracksByItemId[st.SourceItemId] = existing;
-                }
-                else if (st is null)
-                {
-                    continue;
+                    // Songs the file no longer lists (or the whole file, gone from disk) leave the library.
+                    if (read.FirstOrDefault(st => st.Subsong == track.Subsong) is { } st)
+                        tracksByItemId[st.SourceItemId] = track;
+                    else
+                        db.Tracks.Remove(track);
                 }
 
-                await UpsertAsync(db, source, st, artistsByName, albumsByKey, tracksByItemId, now, refreshCover: true, ct);
-                updated++;
+                foreach (var st in read)
+                {
+                    await UpsertAsync(db, source, st, artistsByName, albumsByKey, tracksByItemId, now, refreshCover: true, ct);
+                    updated++;
+                }
             }
 
             await db.SaveChangesAsync(ct);
@@ -139,7 +141,7 @@ public sealed class LibrarySyncService : ILibrarySyncService
         return updated;
     }
 
-    /// <summary>Adds or updates the track for <paramref name="st"/>, creating its artist and album as
+    /// <summary>Adds or updates the track for <paramref name="st"/>, creating its artists and album as
     /// needed. With <paramref name="refreshCover"/> the album's cover is re-read even if it has one (the
     /// sidecar image may have changed); otherwise only albums without a cover look for one.</summary>
     private async Task UpsertAsync(
@@ -147,8 +149,10 @@ public sealed class LibrarySyncService : ILibrarySyncService
         Dictionary<string, Artist> artistsByName, Dictionary<string, Album> albumsByKey,
         Dictionary<string, Track> tracksByItemId, DateTimeOffset now, bool refreshCover, CancellationToken ct)
     {
-        var artist = GetOrCreateArtist(db, artistsByName, st.AlbumArtist);
-        var album = GetOrCreateAlbum(db, albumsByKey, artist, st);
+        var names = TagValues.Split(st.AlbumArtist);
+        var artists = (names.Count == 0 ? ["Unknown Artist"] : names)
+            .Select(name => GetOrCreateArtist(db, artistsByName, name)).Distinct().ToList();
+        var album = GetOrCreateAlbum(db, albumsByKey, artists, st);
 
         if (album.CoverArtKey is null || refreshCover)
         {
@@ -177,6 +181,7 @@ public sealed class LibrarySyncService : ILibrarySyncService
         track.Bitrate = st.Bitrate;
         track.Genre = st.Genre;
         track.LocalPath = st.LocalPath;
+        track.Subsong = st.Subsong;
         if (refreshCover && album.CoverArtKey is not null)
             track.CoverArtKey = album.CoverArtKey;
         else
@@ -201,35 +206,46 @@ public sealed class LibrarySyncService : ILibrarySyncService
         return artist;
     }
 
-    private static Album GetOrCreateAlbum(LibraryDbContext db, Dictionary<string, Album> cache, Artist artist, SourceTrack st)
+    /// <summary>The album <paramref name="st"/> belongs to, credited to <paramref name="artists"/> (the first
+    /// is the album's primary artist).</summary>
+    private static Album GetOrCreateAlbum(LibraryDbContext db, Dictionary<string, Album> cache, List<Artist> artists, SourceTrack st)
     {
         var title = string.IsNullOrWhiteSpace(st.AlbumTitle) ? "Unknown Album" : st.AlbumTitle.Trim();
-        var key = AlbumKey(artist.Id, title, artist);
+        var credit = string.Join(TagValues.Separator, artists.Select(a => a.Name));
+        var key = AlbumKey(credit, title);
         if (cache.TryGetValue(key, out var album))
+        {
+            // Re-credit albums whose artists no longer match, e.g. one filed under a single artist named
+            // "A; B" before semicolons split the credit.
+            if (album.Artists.Count != artists.Count || artists.Any(a => !album.Artists.Contains(a)))
+            {
+                album.Artists.Clear();
+                album.Artists.AddRange(artists);
+            }
+            album.AlbumArtist = artists[0];
+            album.ArtistCredit = credit;
             return album;
+        }
 
         album = new Album
         {
             Title = title,
             SortTitle = SortKey(title),
-            AlbumArtist = artist,
+            AlbumArtist = artists[0],
+            ArtistCredit = credit,
             Year = st.Year,
             Genre = st.Genre,
             DateAdded = DateTimeOffset.UtcNow
         };
+        album.Artists.AddRange(artists);
         db.Albums.Add(album);
         cache[key] = album;
         return album;
     }
 
-    // For a saved album we key by its FK; for a not-yet-saved artist (Id == 0) we fall back to the
-    // artist reference identity so two albums under the same new artist still collide correctly.
-    private static string AlbumKey(int artistId, string title) => $"{artistId}\u0001{title.ToLowerInvariant()}";
-
-    private static string AlbumKey(int artistId, string title, Artist artist)
-        => artistId != 0
-            ? AlbumKey(artistId, title)
-            : $"new:{artist.Name.ToLowerInvariant()}\u0001{title.ToLowerInvariant()}";
+    // Artist names are matched case-insensitively, so the credit built from them is too.
+    private static string AlbumKey(string artistCredit, string title)
+        => $"{artistCredit.ToLowerInvariant()}\u0001{title.ToLowerInvariant()}";
 
     private static string SortKey(string value)
     {

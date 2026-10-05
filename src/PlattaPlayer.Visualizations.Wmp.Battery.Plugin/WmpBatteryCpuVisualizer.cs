@@ -7,7 +7,6 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Avalonia.Threading;
 using PlattaPlayer.Core.Abstractions;
 using PlattaPlayer.Visualizations.Abstractions;
 using PlattaPlayer.Visualizations.Wmp.Audio;
@@ -25,14 +24,15 @@ namespace PlattaPlayer.Visualizations.Wmp.Battery.Plugin;
 /// <list type="bullet">
 /// <item>The field is a FIXED 384x288. It is stretched to the control with no aspect correction and no
 /// smoothing, the way <c>StretchBlt</c> in COLORONCOLOR mode replicates pixels.</item>
-/// <item>The timer runs at <see cref="WmpFrameRate.WindowedIntervalMs"/>. Every motion constant is
-/// per-frame, so the tick rate IS the animation speed.</item>
+/// <item>It steps every <see cref="WmpFrameRate.WindowedIntervalMs"/> ms, counted by a
+/// <see cref="WmpFrameClock"/> on each display refresh. Every motion constant is per-frame, so the step
+/// rate IS the animation speed.</item>
 /// <item>Playing renders, paused holds, and stopped fades to palette index 1 over 300 frames and then
 /// fills with that colour.</item>
 /// </list>
 /// Next / previous / random step through the 26 presets. Preset 0 is "Randomization".
 /// </summary>
-public sealed class WmpBatteryCpuVisualizer : Control, IVisualizationController
+public sealed class WmpBatteryCpuVisualizer : Control, IVisualizationController, IVisualizerHealth
 {
     public static readonly StyledProperty<IAudioTap?> TapProperty =
         AvaloniaProperty.Register<WmpBatteryCpuVisualizer, IAudioTap?>(nameof(Tap));
@@ -60,7 +60,10 @@ public sealed class WmpBatteryCpuVisualizer : Control, IVisualizationController
         new PixelSize(FieldWidth, FieldHeight), new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Opaque);
     private readonly Random _random = new();
 
-    private DispatcherTimer? _timer;
+    private readonly WmpFrameClock _clock = new(WmpFrameRate.WindowedInterval);
+    private TopLevel? _topLevel;
+    private bool _frameRequested;
+    private int _frameGeneration;
     private int _requestedPreset = -1;
     private bool _failed;
     private string _lastName = "";
@@ -73,24 +76,54 @@ public sealed class WmpBatteryCpuVisualizer : Control, IVisualizationController
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        _timer = new DispatcherTimer { Interval = WmpFrameRate.WindowedInterval };
-        _timer.Tick += OnTick;
-        _timer.Start();
+        _topLevel = TopLevel.GetTopLevel(this);
+        _clock.Reset();
+        RequestFrame();
         RaiseNameIfChanged();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
-        if (_timer is null) return;
-        _timer.Stop();
-        _timer.Tick -= OnTick;
-        _timer = null;
+        _topLevel = null;
     }
 
-    private void OnTick(object? sender, EventArgs e)
+    public long Heartbeat { get; private set; }
+
+    /// <summary>
+    /// Starts a fresh animation-frame loop. The outstanding request may never be answered (the loop then
+    /// stalls on <see cref="_frameRequested"/>), so it is superseded rather than waited for, and its callback
+    /// is ignored if it does arrive late.
+    /// </summary>
+    public void Resume()
     {
-        if (_failed) return;
+        _frameGeneration++;
+        _frameRequested = false;
+        RequestFrame();
+    }
+
+    // At most one animation-frame request is outstanding, so a quick detach and re-attach does not
+    // start a second loop.
+    private void RequestFrame()
+    {
+        if (_frameRequested || _topLevel is null) return;
+        _frameRequested = true;
+        var generation = _frameGeneration;
+        _topLevel.RequestAnimationFrame(_ => OnAnimationFrame(generation));
+    }
+
+    private void OnAnimationFrame(int generation)
+    {
+        if (generation != _frameGeneration) return;
+        _frameRequested = false;
+        if (_topLevel is null || _failed) return;
+        Heartbeat++;
+        for (var due = _clock.TakeDueSteps(); due > 0 && !_failed; due--) Step();
+        RequestFrame();
+    }
+
+    private void Step()
+    {
         try
         {
             if (_requestedPreset >= 0)

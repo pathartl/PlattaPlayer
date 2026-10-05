@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.OpenGL;
@@ -21,7 +22,7 @@ namespace PlattaPlayer.Visualizations.PSP.Plugin;
 /// and are extracted in the background); until then the surface is black and the host shows a status line.
 /// Next / previous / random step through the visualizers in <see cref="PspVisualizerCatalog"/>.
 /// </summary>
-public sealed class PspVisualizer : OpenGlControlBase, IVisualizationController
+public sealed class PspVisualizer : OpenGlControlBase, IVisualizationController, IVisualizerHealth
 {
     public static readonly StyledProperty<IAudioTap?> TapProperty =
         AvaloniaProperty.Register<PspVisualizer, IAudioTap?>(nameof(Tap));
@@ -37,6 +38,7 @@ public sealed class PspVisualizer : OpenGlControlBase, IVisualizationController
     private GuGlRenderer? _renderer;
     private DispatcherTimer? _pacer;
     private bool _failed;
+    private long _heartbeat;
     private bool _loggedFirstFrame;
 
     public IAudioTap? Tap
@@ -70,6 +72,14 @@ public sealed class PspVisualizer : OpenGlControlBase, IVisualizationController
     public void RandomPreset() => _requested = _random.Next(PspVisualizerCatalog.All.Count);
 
     private int Pending => _requested >= 0 ? _requested : CurrentIndex;
+
+    public long Heartbeat => Interlocked.Read(ref _heartbeat);
+
+    public void Resume()
+    {
+        if (_pacer is { IsEnabled: false }) _pacer.Start();
+        RequestNextFrameRendering();
+    }
 
     private int CurrentIndex => _host?.Current is { } info ? IndexOf(info) : 0;
 
@@ -116,7 +126,8 @@ public sealed class PspVisualizer : OpenGlControlBase, IVisualizationController
     {
         if (_failed || _renderer is null) return;
         try { RenderFrame(_renderer, fb); }
-        catch (Exception ex) { _failed = true; LogFailure("render", ex); }
+        catch (Exception ex) { _failed = true; LogFailure("render", ex); return; }
+        Interlocked.Increment(ref _heartbeat);
     }
 
     private void RenderFrame(GuGlRenderer renderer, int fb)

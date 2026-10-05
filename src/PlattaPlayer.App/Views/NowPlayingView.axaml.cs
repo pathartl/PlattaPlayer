@@ -38,12 +38,35 @@ public partial class NowPlayingView : UserControl
         _scrollTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
         _scrollTimer.Tick += (_, _) => StepScroll();
 
-        Root.PointerMoved += (_, _) => WakeUp();
-        Root.PointerPressed += (_, _) => WakeUp();
         AddHandler(KeyDownEvent, (_, _) => WakeUp(), Avalonia.Interactivity.RoutingStrategies.Tunnel);
 
         LyricsScroll.PointerWheelChanged += (_, _) => _manualScrollAt = DateTime.UtcNow;
         Root.SizeChanged += (_, _) => UpdateLyricsWidth();
+    }
+
+    // Pointer activity anywhere in the window counts, including over the floating queue card, which sits
+    // above this view rather than inside it.
+    private TopLevel? _topLevel;
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _topLevel = TopLevel.GetTopLevel(this);
+        _topLevel?.AddHandler(PointerMovedEvent, OnWindowPointerActivity, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
+        _topLevel?.AddHandler(PointerPressedEvent, OnWindowPointerActivity, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        _topLevel?.RemoveHandler(PointerMovedEvent, OnWindowPointerActivity);
+        _topLevel?.RemoveHandler(PointerPressedEvent, OnWindowPointerActivity);
+        _topLevel = null;
+    }
+
+    private void OnWindowPointerActivity(object? sender, PointerEventArgs e)
+    {
+        if (IsVisible) WakeUp();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

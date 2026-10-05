@@ -18,6 +18,11 @@
     <ProjectReference Include="..\PlattaPlayer.Codecs.Abstractions\PlattaPlayer.Codecs.Abstractions.csproj" />
   </ItemGroup>
 
+  <!-- M3U album files, shared with the other plugins that keep album fields in them. -->
+  <ItemGroup>
+    <Compile Include="..\Shared\AlbumFiles\*.cs" LinkBase="AlbumFiles" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="MeltySynth" />
   </ItemGroup>

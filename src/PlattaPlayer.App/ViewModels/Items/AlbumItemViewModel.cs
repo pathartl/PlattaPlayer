@@ -33,7 +33,7 @@ public sealed partial class AlbumItemViewModel
     public int Id => Album.Id;
     public int ArtistId => Album.AlbumArtistId;
     public string Title => Album.Title;
-    public string Artist => Album.AlbumArtist?.Name ?? "Unknown Artist";
+    public string Artist => TagValues.Display(Album.ArtistCredit) is { Length: > 0 } artist ? artist : "Unknown Artist";
     public string? Year => Album.Year?.ToString();
     public string? CoverPath { get; }
 

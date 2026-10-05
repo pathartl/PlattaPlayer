@@ -25,6 +25,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\PlattaPlayer.Visualizations.Wmp\PlattaPlayer.Visualizations.Wmp.csproj" />
+    <!-- verify-gpu / render-gpu run the plugin's GL renderer in an offscreen WGL context. -->
+    <ProjectReference Include="..\..\src\PlattaPlayer.Visualizations.Wmp.Alchemy.Plugin\PlattaPlayer.Visualizations.Wmp.Alchemy.Plugin.csproj" />
+    <!-- verify-battery-gpu / render-battery-gpu / sweep-battery-gpu do the same with the Battery GL renderer. -->
+    <ProjectReference Include="..\..\src\PlattaPlayer.Visualizations.Wmp.Battery.Plugin\PlattaPlayer.Visualizations.Wmp.Battery.Plugin.csproj" />
     <!-- calibrate-timedlevel runs the app's own analysis (BASS FFT2048) over the capture's test signal. -->
     <PackageReference Include="ManagedBass" />
   </ItemGroup>

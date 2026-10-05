@@ -26,6 +26,7 @@ internal static unsafe class MathRedirect
     private const string CrtModule = "api-ms-win-crt-private-l1-1-0.dll";
 
     private static bool _applied;
+    private static bool _appliedWmp;
 
     public static bool IsApplied => _applied;
 
@@ -45,19 +46,32 @@ internal static unsafe class MathRedirect
     {
         if (_applied) return;
         MpvisModule.AssertKnownBuild();
-
-        Redirect("_o_sin", (nint)(delegate* unmanaged[Cdecl]<double, double>)&Sin);
-        Redirect("_o_cos", (nint)(delegate* unmanaged[Cdecl]<double, double>)&Cos);
-        Redirect("_o_atan2", (nint)(delegate* unmanaged[Cdecl]<double, double, double>)&Atan2);
-        Redirect("_o_sqrt", (nint)(delegate* unmanaged[Cdecl]<double, double>)&Sqrt);
-
+        RedirectAll(MpvisModule.Handle, "mpvis.DLL");
         _applied = true;
     }
 
-    private static void Redirect(string export, nint replacement)
+    /// <summary>The same for wmp.dll (Battery). wmp.dll also imports floor and pow, which are exact in
+    /// any correct libm, so they are left alone.</summary>
+    public static void ApplyWmp()
     {
-        if (!ImportPatch.Redirect(MpvisModule.Handle, CrtModule, export, replacement))
-            throw new InvalidOperationException($"mpvis.DLL does not import {export} from {CrtModule}.");
+        if (_appliedWmp) return;
+        WmpModule.AssertKnownBuild();
+        RedirectAll(WmpModule.Handle, "wmp.dll");
+        _appliedWmp = true;
+    }
+
+    private static void RedirectAll(nint module, string name)
+    {
+        Redirect(module, name, "_o_sin", (nint)(delegate* unmanaged[Cdecl]<double, double>)&Sin);
+        Redirect(module, name, "_o_cos", (nint)(delegate* unmanaged[Cdecl]<double, double>)&Cos);
+        Redirect(module, name, "_o_atan2", (nint)(delegate* unmanaged[Cdecl]<double, double, double>)&Atan2);
+        Redirect(module, name, "_o_sqrt", (nint)(delegate* unmanaged[Cdecl]<double, double>)&Sqrt);
+    }
+
+    private static void Redirect(nint module, string name, string export, nint replacement)
+    {
+        if (!ImportPatch.Redirect(module, CrtModule, export, replacement))
+            throw new InvalidOperationException($"{name} does not import {export} from {CrtModule}.");
     }
 
     /// <summary>
@@ -66,8 +80,9 @@ internal static unsafe class MathRedirect
     /// </summary>
     public static void Restore()
     {
-        if (!_applied) return;
+        if (!_applied && !_appliedWmp) return;
         ImportPatch.RestoreAll();
         _applied = false;
+        _appliedWmp = false;
     }
 }

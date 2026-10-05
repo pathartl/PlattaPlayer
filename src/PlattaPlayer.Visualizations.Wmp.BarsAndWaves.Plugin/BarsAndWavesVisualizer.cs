@@ -26,7 +26,7 @@ namespace PlattaPlayer.Visualizations.Wmp.BarsAndWaves.Plugin;
 /// there is nothing to upscale.</item>
 /// </list>
 /// </summary>
-public sealed class BarsAndWavesVisualizer : Control, IVisualizationController
+public sealed class BarsAndWavesVisualizer : Control, IVisualizationController, IVisualizerHealth
 {
     public static readonly StyledProperty<IAudioTap?> TapProperty =
         AvaloniaProperty.Register<BarsAndWavesVisualizer, IAudioTap?>(nameof(Tap));
@@ -58,6 +58,13 @@ public sealed class BarsAndWavesVisualizer : Control, IVisualizationController
     private int _presetIndex;
     private string _lastName = "";
 
+    public long Heartbeat { get; private set; }
+
+    public void Resume()
+    {
+        if (_timer is { IsEnabled: false }) _timer.Start();
+    }
+
     public BarsAndWavesVisualizer()
     {
         // The engine starts at wmp.dll's constructor defaults and expects the host to choose a preset,
@@ -85,6 +92,7 @@ public sealed class BarsAndWavesVisualizer : Control, IVisualizationController
 
     private void OnTick(object? sender, EventArgs e)
     {
+        Heartbeat++;
         if (Bounds.Width <= 0 || Bounds.Height <= 0) return;
         EnsureBitmap();
         if (_bitmap is null) return;

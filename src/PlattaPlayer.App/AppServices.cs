@@ -74,13 +74,17 @@ internal static class AppServices
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<NowPlayingViewModel>();
         services.AddSingleton<VisualizationSettingsViewModel>();
+        services.AddSingleton<NavRailLayoutViewModel>();
         services.AddSingleton<LyricsViewModel>();
+        services.AddSingleton<QueueViewModel>();
 
         // Page view-models (fresh instance per navigation)
         services.AddTransient<HomeViewModel>();
         services.AddTransient<ArtistsViewModel>();
         services.AddTransient<AlbumsViewModel>();
         services.AddTransient<SongsViewModel>();
+        services.AddTransient<GenresViewModel>();
+        services.AddTransient<GenreDetailViewModel>();
         services.AddTransient<PlaylistsViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<MetadataEditorViewModel>();

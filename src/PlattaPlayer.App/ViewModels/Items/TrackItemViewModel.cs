@@ -16,9 +16,8 @@ public sealed class TrackItemViewModel
 
     public int Id => Track.Id;
     public string Title => Track.Title;
-    public string Artist => string.IsNullOrEmpty(Track.TrackArtist)
-        ? Track.Album?.AlbumArtist?.Name ?? "Unknown Artist"
-        : Track.TrackArtist;
+    public string Artist => TagValues.Display(string.IsNullOrEmpty(Track.TrackArtist) ? Track.Album?.ArtistCredit : Track.TrackArtist)
+        is { Length: > 0 } artist ? artist : "Unknown Artist";
     public string AlbumTitle => Track.Album?.Title ?? string.Empty;
 
     /// <summary>Album-artist id used to navigate from the track's artist name (0 when unknown).</summary>

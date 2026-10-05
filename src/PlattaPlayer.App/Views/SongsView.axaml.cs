@@ -26,8 +26,7 @@ public partial class SongsView : UserControl
             DataContext is not SongsViewModel vm)
             return;
 
-        PlaylistContextMenu.Build(item, vm.Playlists, (track, playlistId) => vm.AddToPlaylistAsync(track, playlistId))
-            .Open((Control)sender);
-        e.Handled = true;
+        if (TrackContextMenu.Open((Control)sender, item, vm.Playlists, (track, playlistId) => vm.AddToPlaylistAsync(track, playlistId)))
+            e.Handled = true;
     }
 }

@@ -63,6 +63,11 @@ public sealed class ResponsiveCoverGrid : Decorator
     public static readonly StyledProperty<double> EdgePaddingProperty =
         AvaloniaProperty.Register<ResponsiveCoverGrid, double>(nameof(EdgePadding), 24d);
 
+    /// <summary>Padding the item template wraps around the image on every side (e.g. a tile's hover fill).
+    /// The slot keeps the computed width; the image shrinks by twice this so the padding fits inside.</summary>
+    public static readonly StyledProperty<double> ItemInsetProperty =
+        AvaloniaProperty.Register<ResponsiveCoverGrid, double>(nameof(ItemInset), 0d);
+
     private double _imageWidth;
     public static readonly DirectProperty<ResponsiveCoverGrid, double> ImageWidthProperty =
         AvaloniaProperty.RegisterDirect<ResponsiveCoverGrid, double>(nameof(ImageWidth), o => o._imageWidth);
@@ -78,6 +83,9 @@ public sealed class ResponsiveCoverGrid : Decorator
     private readonly ItemsRepeater _repeater;
     private readonly UniformGridLayout _layout;
     private readonly ScrollViewer _scroll;
+
+    /// <summary>Width of the vertical scrollbar's gutter; matches <c>ScrollBarSize</c> in Themes/ScrollBars.axaml.</summary>
+    private const double ScrollBarGutter = 14;
 
     public ResponsiveCoverGrid()
     {
@@ -161,6 +169,12 @@ public sealed class ResponsiveCoverGrid : Decorator
         set => SetValue(EdgePaddingProperty, value);
     }
 
+    public double ItemInset
+    {
+        get => GetValue(ItemInsetProperty);
+        set => SetValue(ItemInsetProperty, value);
+    }
+
     public double ImageWidth => _imageWidth;
     public double ImageHeight => _imageHeight;
     public double DecodePixelWidth => _decodePixelWidth;
@@ -182,7 +196,8 @@ public sealed class ResponsiveCoverGrid : Decorator
         else if (change.Property == BoundsProperty ||
                  change.Property == MinItemWidthProperty || change.Property == MinColumnsProperty ||
                  change.Property == MaxColumnsProperty || change.Property == AspectProperty ||
-                 change.Property == CaptionHeightProperty || change.Property == EdgePaddingProperty)
+                 change.Property == CaptionHeightProperty || change.Property == EdgePaddingProperty ||
+                 change.Property == ItemInsetProperty)
         {
             Recompute();
         }
@@ -207,7 +222,9 @@ public sealed class ResponsiveCoverGrid : Decorator
 
     private void Recompute()
     {
-        var usable = Bounds.Width - EdgePadding - _scroll.Padding.Left - _scroll.Padding.Right;
+        // Always reserve the scrollbar gutter (it no longer overlays content): reserving it only while the bar is
+        // visible would let the column count flip-flop as the bar appears and disappears.
+        var usable = Bounds.Width - ScrollBarGutter - EdgePadding - _scroll.Padding.Left - _scroll.Padding.Right;
         if (usable <= 0)
             return;
 
@@ -219,7 +236,9 @@ public sealed class ResponsiveCoverGrid : Decorator
         var columns = (int)Math.Floor((usable + spacing) / (minItem + spacing));
         columns = Math.Clamp(columns, minCols, maxCols);
 
-        var width = Math.Max(1, Math.Floor((usable - spacing * (columns - 1)) / columns));
+        var slotWidth = Math.Max(1, Math.Floor((usable - spacing * (columns - 1)) / columns));
+        var inset = Math.Max(0, ItemInset);
+        var width = Math.Max(1, slotWidth - 2 * inset);
         var height = Aspect > 0 ? Math.Max(1, Math.Floor(width * Aspect)) : 0;
 
         SetAndRaise(ImageWidthProperty, ref _imageWidth, width);
@@ -228,8 +247,8 @@ public sealed class ResponsiveCoverGrid : Decorator
         var scaling = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1.0;
         SetAndRaise(DecodePixelWidthProperty, ref _decodePixelWidth, width * scaling * HoverHeadroom);
 
-        _layout.MinItemWidth = width;
-        _layout.MinItemHeight = height + CaptionHeight;
+        _layout.MinItemWidth = slotWidth;
+        _layout.MinItemHeight = height + CaptionHeight + 2 * inset;
         _layout.MaximumRowsOrColumns = columns;
         _layout.MinRowSpacing = EffectiveRowSpacing;
         _columns = columns;

@@ -218,7 +218,7 @@ internal static class VerifyWarps
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 
-    private static int ArgInt(string[] args, string name, int fallback)
+    internal static int ArgInt(string[] args, string name, int fallback)
     {
         for (var i = 0; i < args.Length - 1; i++)
             if (string.Equals(args[i], name, StringComparison.OrdinalIgnoreCase) &&
@@ -226,7 +226,7 @@ internal static class VerifyWarps
         return fallback;
     }
 
-    private static string? ArgString(string[] args, string name)
+    internal static string? ArgString(string[] args, string name)
     {
         for (var i = 0; i < args.Length - 1; i++)
             if (string.Equals(args[i], name, StringComparison.OrdinalIgnoreCase)) return args[i + 1];

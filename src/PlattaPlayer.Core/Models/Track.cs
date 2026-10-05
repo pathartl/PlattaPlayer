@@ -42,6 +42,10 @@ public class Track
     /// <summary>Local file path when the source is on-disk; null for remote sources.</summary>
     public string? LocalPath { get; set; }
 
+    /// <summary>Which song of a multi-song file (e.g. a Game Boy .gbs) this track is, numbered by the file's
+    /// codec; null when the file is the whole track. <see cref="SourceItemId"/> tells the songs apart.</summary>
+    public int? Subsong { get; set; }
+
     /// <summary>Hash key into the cover-art cache.</summary>
     public string? CoverArtKey { get; set; }
 

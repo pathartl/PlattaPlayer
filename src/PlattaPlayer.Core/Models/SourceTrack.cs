@@ -29,4 +29,8 @@ public sealed class SourceTrack
 
     /// <summary>Local path for on-disk sources; null for remote sources.</summary>
     public string? LocalPath { get; init; }
+
+    /// <summary>Which song of a multi-song file (e.g. a Game Boy .gbs) this is, numbered by the file's codec;
+    /// null for a file that is one track.</summary>
+    public int? Subsong { get; init; }
 }

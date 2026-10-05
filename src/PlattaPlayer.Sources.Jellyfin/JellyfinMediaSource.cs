@@ -99,12 +99,13 @@ public sealed class JellyfinMediaSource : IMediaSource
         if (item.Id is null)
             return null;
 
-        var albumArtist = item.AlbumArtist
-            ?? item.AlbumArtists?.FirstOrDefault()?.Name
-            ?? item.Artists?.FirstOrDefault()
+        var artists = TagValues.Normalize(item.Artists);
+        var albumArtist = TagValues.Normalize(item.AlbumArtists?.Select(a => a.Name))
+            ?? TagValues.Normalize(item.AlbumArtist)
+            ?? artists
             ?? "Unknown Artist";
 
-        var trackArtist = item.Artists?.FirstOrDefault() ?? albumArtist;
+        var trackArtist = artists ?? albumArtist;
         var album = string.IsNullOrWhiteSpace(item.Album) ? "Unknown Album" : item.Album!;
 
         return new SourceTrack
@@ -120,7 +121,7 @@ public sealed class JellyfinMediaSource : IMediaSource
             DiscNo = item.ParentIndexNumber,
             Year = item.ProductionYear,
             Duration = item.RunTimeTicks is { } ticks ? TimeSpan.FromTicks(ticks) : TimeSpan.Zero,
-            Genre = item.Genres?.FirstOrDefault(),
+            Genre = TagValues.Normalize(item.Genres),
             Format = item.Container ?? string.Empty,
         };
     }

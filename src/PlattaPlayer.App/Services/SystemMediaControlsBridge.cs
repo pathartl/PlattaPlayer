@@ -66,9 +66,9 @@ internal sealed class SystemMediaControlsBridge : IDisposable
         if (track is null || ReferenceEquals(track, _lastTrack)) return;
         _lastTrack = track;
 
-        var artist = !string.IsNullOrEmpty(track.TrackArtist)
+        var artist = TagValues.Display(!string.IsNullOrEmpty(track.TrackArtist)
             ? track.TrackArtist
-            : track.Album?.AlbumArtist?.Name ?? string.Empty;
+            : track.Album?.ArtistCredit);
         var album = track.Album?.Title ?? string.Empty;
         var cover = _covers.GetPath(track.CoverArtKey ?? track.Album?.CoverArtKey);
 

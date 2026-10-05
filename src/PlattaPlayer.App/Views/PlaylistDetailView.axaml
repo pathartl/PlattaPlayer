@@ -18,7 +18,7 @@
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="items:TrackItemViewModel">
                     <Grid ColumnDefinitions="44,*,Auto,64" Height="44" Background="Transparent"
-                          DoubleTapped="OnRowDoubleTapped">
+                          DoubleTapped="OnRowDoubleTapped" ContextRequested="OnRowContextRequested">
                         <Panel Grid.Column="0" Width="36" Height="36" VerticalAlignment="Center">
                             <Border Background="{StaticResource SurfaceBrush}" CornerRadius="4">
                                 <TextBlock Text="&#xE8D6;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"

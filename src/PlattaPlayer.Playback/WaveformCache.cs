@@ -29,6 +29,7 @@ internal sealed class WaveformCache(string directory)
             : FileIdentity(media.Location);
         if (identity is null) return null;
 
+        if (media.Subsong is { } subsong) identity += "::" + subsong;
         if (variant is not null) identity += "|" + variant;
         return version + "|" + identity;
     }

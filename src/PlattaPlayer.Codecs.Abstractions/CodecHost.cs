@@ -52,13 +52,49 @@ public sealed class CodecSetting
 public sealed record CodecFolder(string Label, string Path);
 
 /// <summary>
-/// Optional: a codec plugin whose format has no album fields of its own, keeping album-level metadata (album,
+/// Optional: a codec plugin whose files can each hold several songs (e.g. a Game Boy .gbs holds a game's
+/// whole soundtrack). The library lists every song of such a file as a track of its own, and the host plays,
+/// reads and tags a song through the members here, passing the <see cref="CodecSubsong.Number"/> the plugin
+/// reported for it.
+/// <para>The single-song members of <see cref="ICodecPlugin"/> still work on such a file and mean its first
+/// listed song; the host uses them only where a file is handled as a whole.</para>
+/// </summary>
+public interface ICodecSubsongs
+{
+    /// <summary>The songs the file offers, in album order (a song may be left out, e.g. a sound effect the
+    /// rip's playlist skips). Null when the file is not a valid file of this format.</summary>
+    IReadOnlyList<CodecSubsong>? ReadSubsongs(string path);
+
+    /// <summary>Opens one song for playback, as <see cref="ICodecPlugin.Open"/>.</summary>
+    ICodecDecoder Open(string path, int subsong);
+
+    /// <summary>Reads one song's editable tags, keyed as in <see cref="ICodecPlugin.TagFields"/>.</summary>
+    CodecTags ReadTags(string path, int subsong);
+
+    /// <summary>Writes one song's tags, as <see cref="ICodecPlugin.WriteTags"/>. Fields the format stores
+    /// once per file (e.g. the game) change for every song of the file.</summary>
+    void WriteTags(string path, int subsong, CodecTags tags);
+}
+
+/// <summary>One song of a multi-song file.</summary>
+/// <param name="Number">Identifies the song within its file (the plugin's own numbering, 0 or more); stable
+/// across scans, since the library stores it.</param>
+/// <param name="Info">What the library needs to know about the song, as <see cref="ICodecPlugin.ReadInfo"/>.</param>
+public sealed record CodecSubsong(int Number, CodecFileInfo Info);
+
+/// <summary>
+/// Optional: a codec plugin whose format lacks album fields of its own, keeping album-level metadata (album,
 /// album artist, genre, cover and the track order) in an album file shared by the album's files (e.g. an M3U
 /// beside MIDI files). The Tag Editor then edits album fields there, and orders tracks by it.
 /// <para><see cref="ICodecPlugin.ReadInfo"/> already folds the album file into what it reports.</para>
 /// </summary>
 public interface ICodecAlbumFiles
 {
+    /// <summary>The album fields (<see cref="CodecTagKeys.Album"/>, <see cref="CodecTagKeys.AlbumArtist"/>,
+    /// <see cref="CodecTagKeys.Genre"/>) kept in the album file; any other is the file's own tag. All three by
+    /// default. The cover and the track order are always the album file's.</summary>
+    IReadOnlyCollection<string> AlbumFileKeys => [CodecTagKeys.Album, CodecTagKeys.AlbumArtist, CodecTagKeys.Genre];
+
     /// <summary>What the album file says about the file, or null when no album file lists it.</summary>
     CodecAlbumEntry? FindAlbumEntry(string path);
 
@@ -72,6 +108,8 @@ public interface ICodecAlbumFiles
     /// <summary>
     /// Orders the files in their album files as given and returns each file's resulting track number (keyed
     /// by full path). With <paramref name="save"/> false nothing is written: only the numbers are computed.
+    /// A song of a multi-song file (<see cref="ICodecSubsongs"/>) is given, and keyed, as
+    /// <c>&lt;full path&gt;::&lt;song number&gt;</c>.
     /// </summary>
     IReadOnlyDictionary<string, int> WriteTrackOrder(IReadOnlyList<string> pathsInOrder, bool save);
 }
@@ -83,6 +121,7 @@ public interface ICodecAlbumFiles
 /// <param name="Title">The entry's own title, if the album file gives one.</param>
 /// <param name="Artist">The entry's own artist, if the album file gives one.</param>
 /// <param name="TrackNo">The file's 1-based position in the album.</param>
+/// <param name="Disc">The entry's disc, if the album file gives one.</param>
 public sealed record CodecAlbumEntry(
     string AlbumFilePath,
     string? Album,
@@ -91,7 +130,8 @@ public sealed record CodecAlbumEntry(
     string? CoverPath,
     string? Title,
     string? Artist,
-    int TrackNo);
+    int TrackNo,
+    int? Disc = null);
 
 /// <summary>
 /// Album-level edits for <see cref="ICodecAlbumFiles.WriteAlbum"/>. Each <c>SetX</c> flag marks a field as

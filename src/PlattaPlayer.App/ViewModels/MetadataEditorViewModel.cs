@@ -240,7 +240,7 @@ public sealed partial class MetadataEditorViewModel : PageViewModelBase
         Album = Shared(f => f.AlbumEdit ?? f.Tags.Album ?? f.AlbumEntry?.Album);
         Genre = Shared(f => f.Genre);
 
-        TitleHint = Hint(f => f.AlbumEntry?.Title ?? Path.GetFileNameWithoutExtension(f.FilePath));
+        TitleHint = Hint(f => f.AlbumEntry?.Title ?? f.FallbackTitle);
         ArtistHint = Hint(f => f.AlbumEntry?.Artist);
         TrackHint = Hint(f => (f.OrderTrack ?? f.AlbumEntry?.TrackNo)?.ToString());
         AlbumHint = Hint(f => f.FolderName);
@@ -291,8 +291,8 @@ public sealed partial class MetadataEditorViewModel : PageViewModelBase
         var added = 0;
         var batch = ExpandToFiles(paths, IsTaggable)
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Where(path => !Files.Any(f => string.Equals(f.FilePath, path, StringComparison.OrdinalIgnoreCase)))
-            .Select(CreateRow)
+            .SelectMany(CreateRows)
+            .Where(row => !Files.Any(f => string.Equals(f.Key, row.Key, StringComparison.OrdinalIgnoreCase)))
             // Album by album (its album file, else its folder), then in track order.
             .OrderBy(f => f.AlbumEntry?.AlbumFilePath ?? Path.GetDirectoryName(f.FilePath), StringComparer.OrdinalIgnoreCase)
             .ThenBy(f => f.Disc ?? 0)
@@ -315,7 +315,20 @@ public sealed partial class MetadataEditorViewModel : PageViewModelBase
 
     private bool IsTaggable(string path) => _codecs.ForPath(path) is not null;
 
-    private TagFileItemViewModel CreateRow(string path) => new(path, _codecs.ForPath(path)!);
+    /// <summary>The file's row, or a row per song of a multi-song file.</summary>
+    private IEnumerable<TagFileItemViewModel> CreateRows(string path)
+    {
+        var plugin = _codecs.ForPath(path)!;
+        IReadOnlyList<CodecSubsong>? songs = null;
+        if (plugin is ICodecSubsongs subsongs)
+        {
+            try { songs = subsongs.ReadSubsongs(path); }
+            catch { songs = null; } // unreadable: one row, which shows it untagged
+        }
+        return songs is { Count: > 0 }
+            ? songs.Select(song => new TagFileItemViewModel(path, plugin, song.Number))
+            : [new TagFileItemViewModel(path, plugin)];
+    }
 
     private static IEnumerable<string> ExpandToFiles(IEnumerable<string> paths, Func<string, bool> include)
     {
@@ -374,13 +387,13 @@ public sealed partial class MetadataEditorViewModel : PageViewModelBase
 
         foreach (var file in Files)
         {
-            file.OrderTrack = numbers is not null && numbers.TryGetValue(Path.GetFullPath(file.FilePath), out var n) ? n : null;
+            file.OrderTrack = numbers is not null && numbers.TryGetValue(file.Key, out var n) ? n : null;
             file.Refresh();
         }
     }
 
     /// <summary>
-    /// The track numbers the grid order gives every row (keyed by full path): rows of formats with album files
+    /// The track numbers the grid order gives every row (keyed by <see cref="TagFileItemViewModel.Key"/>): rows of formats with album files
     /// take their position in the album file (which <paramref name="save"/> writes), the others their position
     /// among the rows of the same folder (<see cref="InFileTrackOrder"/>).
     /// </summary>
@@ -388,7 +401,7 @@ public sealed partial class MetadataEditorViewModel : PageViewModelBase
     {
         var numbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var group in Files.Where(f => f.AlbumFiles is not null).GroupBy(f => f.AlbumFiles!))
-            foreach (var (path, n) in group.Key.WriteTrackOrder(group.Select(f => f.FilePath).ToList(), save))
+            foreach (var (path, n) in group.Key.WriteTrackOrder(group.Select(f => f.Key).ToList(), save))
                 numbers[path] = n;
         foreach (var (path, n) in InFileTrackOrder())
             numbers[path] = n;
@@ -396,7 +409,7 @@ public sealed partial class MetadataEditorViewModel : PageViewModelBase
     }
 
     /// <summary>Track numbers for the rows of formats without album files from the grid order: their position
-    /// among those rows in the same folder (keyed by full path).</summary>
+    /// among those rows in the same folder (keyed by <see cref="TagFileItemViewModel.Key"/>).</summary>
     private Dictionary<string, int> InFileTrackOrder()
     {
         var numbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -405,7 +418,7 @@ public sealed partial class MetadataEditorViewModel : PageViewModelBase
         {
             var n = 0;
             foreach (var file in folder)
-                numbers[Path.GetFullPath(file.FilePath)] = ++n;
+                numbers[file.Key] = ++n;
         }
         return numbers;
     }
@@ -465,13 +478,27 @@ public sealed partial class MetadataEditorViewModel : PageViewModelBase
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
+        // Which album fields go there: a format may keep some in the file (a VGM's game).
+        var inAlbumFile = new[] { AlbumField, AlbumArtistField, GenreField }
+            .Where(field => withAlbumFile.All(f => f.InAlbumFile(field)))
+            .ToList();
+        var names = inAlbumFile
+            .Select(field => (field == AlbumField ? AlbumLabel : field == AlbumArtistField ? AlbumArtistLabel : GenreLabel).ToLowerInvariant())
+            .Append("cover")
+            .ToList();
+        var fields = inAlbumFile.Count == 3 ? "album fields"
+            : names.Count == 1 ? "the cover"
+            : string.Join(", ", names[..^1]) + " and " + names[^1];
+        var are = names.Count == 1 ? "is" : "are";
         var caption = albumFiles switch
         {
             [] => string.Empty,
-            [{ } name] => $"Album fields are saved in the album file {name}.",
-            [null] => "These files have no album file yet. Saving album fields adds them to the album file in their folder, or creates one named after the album.",
-            _ => "Album fields are saved in each file's own album file (files without one are added to their folder's)."
+            [{ } name] => $"{Capitalized(fields)} {are} saved in the album file {name}.",
+            [null] => $"These files have no album file yet. Saving {fields} adds the files to the album file in their folder, or creates one named after the album.",
+            _ => $"{Capitalized(fields)} {are} saved in each file's own album file (files without one are added to their folder's)."
         };
+        if (inAlbumFile.Count < 3 && caption.Length > 0)
+            caption += " The other fields are saved in each file.";
         var formats = string.Join(", ", withAlbumFile.Select(f => f.FormatName).Distinct());
         AlbumFileCaption = inFile == 0 ? caption
             : withAlbumFile.Count == 0 ? "Album fields are saved in each file's tags."
@@ -494,10 +521,10 @@ public sealed partial class MetadataEditorViewModel : PageViewModelBase
             // Formats with album files: those first, since the files' own copies of album fields are only
             // cleared once their new home is written. Rows staged with the same album edits go together.
             var albumFiles = new List<string>();
-            foreach (var group in dirty.Where(f => f.AlbumFiles is not null && f.HasAlbumEdits)
-                         .GroupBy(f => (Plugin: f.AlbumFiles!, f.AlbumEdit, f.AlbumArtistEdit, f.GenreEdit, f.CoverEdit)))
+            foreach (var group in dirty.Where(f => f.AlbumFiles is not null && f.AlbumFileEdits != default)
+                         .GroupBy(f => (Plugin: f.AlbumFiles!, Edits: f.AlbumFileEdits)))
             {
-                var (plugin, album, albumArtist, genre, cover) = group.Key;
+                var (plugin, (album, albumArtist, genre, cover)) = group.Key;
                 var changes = new CodecAlbumChanges
                 {
                     SetAlbum = album is not null, Album = NullIfBlank(album),
@@ -511,19 +538,13 @@ public sealed partial class MetadataEditorViewModel : PageViewModelBase
                         albumFiles.Add(written);
             }
 
-            // The plugin cleared the files' own copies of those fields; keep them cleared when the rows' track
-            // fields are written below.
-            foreach (var file in dirty.Where(f => f.AlbumFieldsInAlbumFile))
-            {
-                if (file.AlbumEdit is not null) file.Tags.Album = null;
-                if (file.AlbumArtistEdit is not null) file.Tags.AlbumArtist = null;
-                if (file.GenreEdit is not null) file.Tags.Genre = null;
-            }
-
-            // Other formats: album fields go into the file's own tags, a new cover becomes the folder image.
-            var covers = 0;
-            foreach (var file in dirty.Where(f => !f.AlbumFieldsInAlbumFile))
+            // Album fields the format keeps in the file go into its tags. The plugin cleared the files' own copies
+            // of those saved in the album file; they stay cleared when the rows' tags are written below.
+            foreach (var file in dirty)
                 file.ApplyAlbumEdits();
+
+            // Formats without album files: a new cover becomes the folder image.
+            var covers = 0;
             foreach (var group in dirty.Where(f => !f.AlbumFieldsInAlbumFile && f.CoverEdit is not null)
                          .GroupBy(f => (Folder: Path.GetDirectoryName(Path.GetFullPath(f.FilePath))!, Cover: f.CoverEdit!)))
             {
@@ -540,7 +561,7 @@ public sealed partial class MetadataEditorViewModel : PageViewModelBase
                 var numbers = await Task.Run(() => AlbumFileTrackOrder(save: true));
                 foreach (var file in Files)
                 {
-                    if (file.TrackEdited || !numbers.TryGetValue(Path.GetFullPath(file.FilePath), out var n)) continue;
+                    if (file.TrackEdited || !numbers.TryGetValue(file.Key, out var n)) continue;
                     if (!file.AlbumFieldsInAlbumFile || file.Tags.Track is { } track && n != track)
                         file.Tags.Track = n;
                 }
@@ -579,7 +600,7 @@ public sealed partial class MetadataEditorViewModel : PageViewModelBase
     /// that was written (their album fields and track numbers come from it). Returns a status suffix.</summary>
     private async Task<string> RescanLibraryAsync(IReadOnlyList<string> albumFiles)
     {
-        var paths = Files.Select(f => f.FilePath).ToList();
+        var paths = Files.Select(f => f.FilePath).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         foreach (var albumFile in albumFiles)
         {
             // The album file's own folder, plus disc folders directly below it.
@@ -642,6 +663,8 @@ public sealed partial class MetadataEditorViewModel : PageViewModelBase
     }
 
     private static string? NullIfBlank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string Capitalized(string text) => text.Length == 0 ? text : char.ToUpperInvariant(text[0]) + text[1..];
 
     private static int? ParsePositive(string? value) =>
         int.TryParse(value?.Trim(), out var n) && n > 0 ? n : null;

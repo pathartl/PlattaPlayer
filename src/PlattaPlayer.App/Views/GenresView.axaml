@@ -1,0 +1,74 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PlattaPlayer.App.ViewModels"
+             xmlns:items="using:PlattaPlayer.App.ViewModels.Items"
+             xmlns:conv="using:PlattaPlayer.App.Converters"
+             xmlns:ctrl="using:PlattaPlayer.App.Controls"
+             x:Class="PlattaPlayer.App.Views.GenresView"
+             x:DataType="vm:GenresViewModel">
+
+    <Grid RowDefinitions="Auto,*" Margin="28,32,28,0">
+
+        <!-- Header: title + stats, sort -->
+        <Grid ColumnDefinitions="*,Auto" Margin="12,0,12,28">
+            <StackPanel Spacing="6" VerticalAlignment="Bottom">
+                <TextBlock Classes="H1" Text="Genres" />
+                <TextBlock Classes="Meta" Text="{Binding Stats}" />
+            </StackPanel>
+            <Button Grid.Column="1" Classes="Outline" Content="{Binding SortLabel}" VerticalAlignment="Bottom"
+                    AutomationProperties.Name="Sort genres">
+                <Button.Flyout>
+                    <MenuFlyout Placement="BottomEdgeAlignedRight">
+                        <MenuItem Header="Name A–Z" Command="{Binding SetSortCommand}" CommandParameter="{x:Static vm:GenreSort.Name}" />
+                        <MenuItem Header="Most tracks" Command="{Binding SetSortCommand}" CommandParameter="{x:Static vm:GenreSort.MostTracks}" />
+                    </MenuFlyout>
+                </Button.Flyout>
+            </Button>
+        </Grid>
+
+        <TextBlock Grid.Row="1" Margin="12,0" Text="No genres yet. Genres come from your tracks' tags."
+                   Classes="Secondary" FontSize="15" IsVisible="{Binding IsEmpty}" />
+
+        <!-- Glass-lite cards with a row of up to four covers, as on the Artists page. -->
+        <ctrl:ResponsiveCoverGrid Grid.Row="1" ItemsSource="{Binding Genres}"
+                                  MinItemWidth="236" MinColumns="1" MaxColumns="8" Spacing="16"
+                                  Aspect="0" CaptionHeight="142" EdgePadding="0">
+            <ctrl:ResponsiveCoverGrid.ItemTemplate>
+                <DataTemplate x:DataType="items:GenreItemViewModel">
+                    <Button Classes="Card"
+                            Command="{Binding $parent[UserControl].((vm:GenresViewModel)DataContext).OpenGenreCommand}"
+                            CommandParameter="{Binding}" AutomationProperties.Name="{Binding Name}">
+                        <StackPanel Spacing="14">
+                            <Panel Height="54">
+                                <ItemsControl ItemsSource="{Binding Covers}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="6" /></ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="x:String">
+                                            <Border Classes="ArtSlot" Width="54" Height="54" CornerRadius="3">
+                                                <Panel>
+                                                    <Image Source="{Binding Converter={x:Static conv:CoverImageConverter.Instance}, ConverterParameter=120}" />
+                                                </Panel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Border Classes="ArtSlot" Width="54" Height="54" CornerRadius="3" HorizontalAlignment="Left"
+                                        IsVisible="{Binding !Covers.Count}">
+                                    <ctrl:LineIcon Data="{StaticResource IconGenre}" Foreground="{StaticResource TextDisabledBrush}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                            </Panel>
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Medium"
+                                           Foreground="{StaticResource TextStrongBrush}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding Meta}" FontSize="12" Foreground="#A3FFFFFF" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+                </DataTemplate>
+            </ctrl:ResponsiveCoverGrid.ItemTemplate>
+        </ctrl:ResponsiveCoverGrid>
+    </Grid>
+</UserControl>

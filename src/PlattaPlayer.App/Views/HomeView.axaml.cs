@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using PlattaPlayer.App.ViewModels.Items;
 
 namespace PlattaPlayer.App.Views;
 
@@ -18,6 +19,15 @@ public partial class HomeView : UserControl
     }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
+
+    private void OnAlbumContextRequested(object? sender, ContextRequestedEventArgs e)
+        => AlbumContextMenu.OnTileContextRequested(sender, e);
+
+    private void OnTrackContextRequested(object? sender, ContextRequestedEventArgs e)
+    {
+        if (sender is Control { DataContext: TrackItemViewModel item } anchor && TrackContextMenu.Open(anchor, item))
+            e.Handled = true;
+    }
 
     private void OnPageWheel(object? sender, PointerWheelEventArgs e)
     {

@@ -27,8 +27,38 @@ public interface IPlaybackService : INotifyPropertyChanged
     bool HasNext { get; }
     bool HasPrevious { get; }
 
-    /// <summary>Play an ordered set of tracks starting at <paramref name="startIndex"/>.</summary>
+    /// <summary>
+    /// Snapshot of the queue in play order (shuffle already applied). Entries before
+    /// <see cref="CurrentIndex"/> have been played; those after it are up next.
+    /// </summary>
+    IReadOnlyList<QueueEntry> Queue { get; }
+
+    /// <summary>Index of the current entry in <see cref="Queue"/>, or -1 when the queue is empty.</summary>
+    int CurrentIndex { get; }
+
+    /// <summary>Raised (possibly off the UI thread) whenever <see cref="Queue"/> or <see cref="CurrentIndex"/> changes.</summary>
+    event EventHandler? QueueChanged;
+
+    /// <summary>Play an ordered set of tracks starting at <paramref name="startIndex"/>, replacing the queue.</summary>
     Task PlayQueueAsync(IReadOnlyList<Track> tracks, int startIndex = 0, CancellationToken ct = default);
+
+    /// <summary>Jumps to and plays the entry at <paramref name="index"/> in <see cref="Queue"/>.</summary>
+    Task PlayQueueEntryAsync(int index, CancellationToken ct = default);
+
+    /// <summary>Inserts tracks right after the current entry.</summary>
+    void PlayNext(IReadOnlyList<Track> tracks);
+
+    /// <summary>Appends tracks to the end of the queue.</summary>
+    void AddToQueue(IReadOnlyList<Track> tracks);
+
+    /// <summary>Moves the entry at <paramref name="from"/> so it ends up at <paramref name="to"/>.</summary>
+    void MoveQueueEntry(int from, int to);
+
+    /// <summary>Removes an entry. Removing the current entry skips to the next one (or stops at the end).</summary>
+    Task RemoveQueueEntryAsync(int index, CancellationToken ct = default);
+
+    /// <summary>Removes every entry after the current one.</summary>
+    void ClearUpcoming();
 
     Task PlayTrackAsync(Track track, CancellationToken ct = default);
 

@@ -30,6 +30,24 @@ public interface IAppSettings
     /// </summary>
     string? AccentColor { get; set; }
 
+    /// <summary>
+    /// Sources (<c>SourceConfig.Id</c>) whose music the library views hide, picked in the nav rail's source
+    /// filter. Stored as the hidden set so a newly added source shows by default. Empty means "show everything".
+    /// </summary>
+    IReadOnlyList<string> HiddenSourceIds { get; set; }
+
+    /// <summary>
+    /// Order of the nav rail's entries by key ("Artists", "Playlists", …), set in Settings. Empty means the
+    /// default order; keys missing from it (entries added later) go after the entry they follow by default.
+    /// </summary>
+    IReadOnlyList<string> NavRailOrder { get; set; }
+
+    /// <summary>
+    /// Nav rail entries (by key) the user turned off in Settings. Stored as the hidden set so new entries show
+    /// by default.
+    /// </summary>
+    IReadOnlyList<string> HiddenNavRailItems { get; set; }
+
     /// <summary>Persists the current values to disk.</summary>
     void Save();
 }

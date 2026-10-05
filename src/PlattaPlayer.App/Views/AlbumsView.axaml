@@ -14,10 +14,11 @@
                    Classes="Secondary" FontSize="15" IsVisible="{Binding IsEmpty}" />
 
         <ctrl:ResponsiveCoverGrid Grid.Row="1" ItemsSource="{Binding Albums}" IsVisible="{Binding !IsEmpty}"
-                                  MinItemWidth="140" MinColumns="4" MaxColumns="6" CaptionHeight="74">
+                                  MinItemWidth="140" MinColumns="4" MaxColumns="6" CaptionHeight="54"
+                                  ItemInset="10">
             <ctrl:ResponsiveCoverGrid.ItemTemplate>
                 <DataTemplate x:DataType="items:AlbumItemViewModel">
-                    <Button Classes="Tile"
+                    <Button Classes="Tile" ContextRequested="OnAlbumContextRequested"
                             Command="{Binding $parent[UserControl].((vm:AlbumsViewModel)DataContext).OpenAlbumCommand}"
                             CommandParameter="{Binding}">
                         <StackPanel Spacing="8">

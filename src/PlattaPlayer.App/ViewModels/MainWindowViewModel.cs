@@ -1,6 +1,8 @@
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -21,19 +23,29 @@ public sealed partial class MainWindowViewModel : ObservableObject
 {
     private readonly INavigationService _navigation;
     private readonly ILibraryRepository _repository;
+    private readonly IPlaybackService _playback;
+    private readonly IAppSettings _settings;
 
     public MainWindowViewModel(
         INavigationService navigation,
         ILibraryRepository repository,
+        IPlaybackService playback,
+        IAppSettings settings,
         NowPlayingViewModel nowPlaying,
         LyricsViewModel lyrics,
-        VisualizationSettingsViewModel visualization)
+        QueueViewModel queue,
+        VisualizationSettingsViewModel visualization,
+        NavRailLayoutViewModel rail)
     {
         _navigation = navigation;
         _repository = repository;
+        _playback = playback;
+        _settings = settings;
         NowPlaying = nowPlaying;
         Lyrics = lyrics;
+        Queue = queue;
         Visualization = visualization;
+        Rail = rail;
         _navigation.CurrentPageChanged += () => Dispatcher.UIThread.Post(OnPageChanged);
 
         NowPlaying.PropertyChanged += OnNowPlayingChanged;
@@ -41,6 +53,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     public NowPlayingViewModel NowPlaying { get; }
     public LyricsViewModel Lyrics { get; }
+    public QueueViewModel Queue { get; }
 
     /// <summary>Live tuning for the full-window visualizer, and the active preset name for the switcher pill.</summary>
     public VisualizationSettingsViewModel Visualization { get; }
@@ -53,11 +66,32 @@ public sealed partial class MainWindowViewModel : ObservableObject
     // ---- Now Playing mode ---------------------------------------------------------------------------
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsLibraryVisible), nameof(VisualizerOpacity))]
+    [NotifyPropertyChangedFor(nameof(IsLibraryVisible), nameof(VisualizerOpacity), nameof(IsQueueDocked))]
     private bool _isNowPlayingOpen;
 
-    /// <summary>Lyrics column shown in Now Playing.</summary>
+    /// <summary>Lyrics column shown in Now Playing. Shares the right side with the queue, so one closes the other.</summary>
     [ObservableProperty] private bool _isLyricsOpen;
+
+    /// <summary>
+    /// Queue panel: docked to the right of the library page, or floating where the lyrics column would be in
+    /// Now Playing.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsQueueDocked))]
+    private bool _isQueueOpen;
+
+    /// <summary>The queue is open over the library (full-height glass panel, rather than the Now Playing card).</summary>
+    public bool IsQueueDocked => IsQueueOpen && !IsNowPlayingOpen;
+
+    partial void OnIsLyricsOpenChanged(bool value)
+    {
+        if (value) IsQueueOpen = false;
+    }
+
+    partial void OnIsQueueOpenChanged(bool value)
+    {
+        if (value) IsLyricsOpen = false;
+    }
 
     /// <summary>Nav rail, transport bar and library dimming are shown outside Now Playing.</summary>
     public bool IsLibraryVisible => !IsNowPlayingOpen;
@@ -70,18 +104,84 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     // ---- Nav rail data ------------------------------------------------------------------------------
 
-    [ObservableProperty] private string _artistCount = string.Empty;
-    [ObservableProperty] private string _albumCount = string.Empty;
-    [ObservableProperty] private string _trackCount = string.Empty;
+    /// <summary>Which rail entries are shown and in what order (edited in Settings).</summary>
+    public NavRailLayoutViewModel Rail { get; }
 
     public ObservableCollection<PlaylistItemViewModel> Playlists { get; } = new();
 
     [ObservableProperty] private string _searchText = string.Empty;
 
+    // ---- Source filter (rail dropdown) ---------------------------------------------------------------
+
+    /// <summary>One checkbox per configured source; unchecked sources are left out of every library view.</summary>
+    public ObservableCollection<SourceFilterItemViewModel> SourceFilters { get; } = new();
+
+    /// <summary>The dropdown's label: "All sources", the one source shown, or "2 of 3 sources".</summary>
+    [ObservableProperty] private string _sourceFilterSummary = "All sources";
+
+    /// <summary>The filter only appears once there is a source to filter.</summary>
+    public bool HasSources => SourceFilters.Count > 0;
+
+    /// <summary>Rebuilds the checkboxes when sources were added, removed or renamed (left alone otherwise, so an
+    /// open dropdown isn't rebuilt under the pointer).</summary>
+    private async Task RefreshSourceFiltersAsync()
+    {
+        var sources = (await _repository.GetSourcesAsync())
+            .OrderBy(s => s.DisplayName, StringComparer.CurrentCultureIgnoreCase)
+            .ToList();
+        if (sources.Select(s => (s.Id, s.DisplayName))
+            .SequenceEqual(SourceFilters.Select(f => (f.Config.Id, f.DisplayName))))
+            return;
+
+        var hidden = _settings.HiddenSourceIds.ToHashSet();
+        SourceFilters.Clear();
+        foreach (var s in sources)
+            SourceFilters.Add(new SourceFilterItemViewModel(s, !hidden.Contains(s.Id), OnSourceFilterChanged));
+        OnPropertyChanged(nameof(HasSources));
+        UpdateSourceFilterSummary();
+    }
+
+    private void UpdateSourceFilterSummary()
+    {
+        var shown = SourceFilters.Where(f => f.IsShown).ToList();
+        SourceFilterSummary = shown.Count switch
+        {
+            _ when shown.Count == SourceFilters.Count => "All sources",
+            0 => "No sources",
+            1 => shown[0].DisplayName,
+            _ => $"{shown.Count} of {SourceFilters.Count} sources",
+        };
+    }
+
+    private void OnSourceFilterChanged()
+    {
+        if (_batchingSourceFilters) return;
+        _settings.HiddenSourceIds = SourceFilters.Where(f => !f.IsShown).Select(f => f.Config.Id).ToList();
+        _settings.Save();
+        UpdateSourceFilterSummary();
+
+        // Reload what's on screen; the editor and settings pages don't show library content.
+        if (CurrentPage is not (null or MetadataEditorViewModel or SettingsViewModel))
+            _ = CurrentPage.InitializeAsync();
+        _ = RefreshLibraryAsync();
+    }
+
+    private bool _batchingSourceFilters;
+
+    [RelayCommand]
+    private void ShowAllSources()
+    {
+        if (SourceFilters.All(f => f.IsShown)) return;
+        _batchingSourceFilters = true;
+        try { foreach (var f in SourceFilters) f.IsShown = true; }
+        finally { _batchingSourceFilters = false; }
+        OnSourceFilterChanged();
+    }
+
     /// <summary>Performs the initial navigation once the window is shown.</summary>
     public void Start()
     {
-        Navigate("Artists");
+        Navigate(Rail.StartSection);
         _ = RefreshLibraryAsync();
     }
 
@@ -89,14 +189,17 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public async Task RefreshLibraryAsync()
     {
         var counts = await _repository.GetLibraryCountsAsync();
-        ArtistCount = counts.Artists.ToString("N0", CultureInfo.CurrentCulture);
-        AlbumCount = counts.Albums.ToString("N0", CultureInfo.CurrentCulture);
-        TrackCount = counts.Tracks.ToString("N0", CultureInfo.CurrentCulture);
+        Rail.SetCount("Artists", counts.Artists.ToString("N0", CultureInfo.CurrentCulture));
+        Rail.SetCount("Albums", counts.Albums.ToString("N0", CultureInfo.CurrentCulture));
+        Rail.SetCount("Songs", counts.Tracks.ToString("N0", CultureInfo.CurrentCulture));
+        Rail.SetCount("Genres", (await _repository.GetGenresAsync()).Count.ToString("N0", CultureInfo.CurrentCulture));
 
         var playlists = await _repository.GetPlaylistsAsync();
         Playlists.Clear();
         foreach (var p in playlists)
             Playlists.Add(new PlaylistItemViewModel(p));
+
+        await RefreshSourceFiltersAsync();
     }
 
     [RelayCommand]
@@ -117,9 +220,16 @@ public sealed partial class MainWindowViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void ToggleQueue() => IsQueueOpen = !IsQueueOpen;
+
+    [RelayCommand]
+    private void CloseQueue() => IsQueueOpen = false;
+
+    [RelayCommand]
     private void GoBack()
     {
-        if (IsNowPlayingOpen) IsNowPlayingOpen = false;
+        if (IsQueueOpen) IsQueueOpen = false;
+        else if (IsNowPlayingOpen) IsNowPlayingOpen = false;
         else _navigation.GoBack();
     }
 
@@ -140,6 +250,41 @@ public sealed partial class MainWindowViewModel : ObservableObject
         IsNowPlayingOpen = false;
         _navigation.NavigateTo<AlbumDetailViewModel>(vm => vm.AlbumId = albumId);
     }
+
+    /// <summary>Opens the Tag Editor with an album's files (those of the formats it handles; others are skipped).</summary>
+    [RelayCommand]
+    private async Task OpenAlbumInTagEditor(int albumId)
+    {
+        if (albumId <= 0) return;
+        var paths = (await _repository.GetAlbumTracksAsync(albumId))
+            .Select(t => t.LocalPath)
+            .OfType<string>()
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        IsNowPlayingOpen = false;
+        _navigation.NavigateTo<MetadataEditorViewModel>(vm =>
+        {
+            vm.AddFiles(paths);
+            if (vm.Files.Count == 0)
+                vm.Status = $"This album has no {vm.FormatsText} files to edit.";
+        });
+    }
+
+    // ---- Album queueing (album context menu) ---------------------------------------------------------
+
+    [RelayCommand]
+    private async Task PlayAlbum(int albumId)
+    {
+        var tracks = await _repository.GetAlbumTracksAsync(albumId);
+        if (tracks.Count > 0) await _playback.PlayQueueAsync(tracks);
+    }
+
+    [RelayCommand]
+    private async Task PlayAlbumNext(int albumId) => Queue.PlayNext(await _repository.GetAlbumTracksAsync(albumId));
+
+    [RelayCommand]
+    private async Task AddAlbumToQueue(int albumId) => Queue.AddToQueue(await _repository.GetAlbumTracksAsync(albumId));
 
     [RelayCommand]
     private void OpenPlaylist(PlaylistItemViewModel playlist)
@@ -167,6 +312,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             case "Artists": _navigation.NavigateTo<ArtistsViewModel>(); break;
             case "Albums": _navigation.NavigateTo<AlbumsViewModel>(); break;
             case "Songs": _navigation.NavigateTo<SongsViewModel>(); break;
+            case "Genres": _navigation.NavigateTo<GenresViewModel>(); break;
             case "Playlists": _navigation.NavigateTo<PlaylistsViewModel>(); break;
             case "TagEditor": _navigation.NavigateTo<MetadataEditorViewModel>(); break;
             case "Settings": _navigation.NavigateTo<SettingsViewModel>(); break;
@@ -184,6 +330,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             // Albums are reached from either section; keep whichever the user came from.
             AlbumDetailViewModel => SelectedSection == "Albums" ? "Albums" : "Artists",
             SongsViewModel => "Songs",
+            GenresViewModel or GenreDetailViewModel => "Genres",
             PlaylistsViewModel => "Playlists",
             PlaylistDetailViewModel p => $"Playlist:{p.PlaylistId}",
             MetadataEditorViewModel => "TagEditor",

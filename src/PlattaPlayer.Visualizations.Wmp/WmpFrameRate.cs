@@ -25,6 +25,9 @@ public static class WmpFrameRate
     /// The observed rate sits below the timer rate because the renderers skip work when the TimedLevel
     /// timestamp has not advanced, so some ticks produce an identical frame. 16 ms is therefore the
     /// right target and an upper bound on what is observable.
+    ///
+    /// A DispatcherTimer at this interval does NOT achieve it (it fires ~37 times a second); count steps
+    /// with <see cref="WmpFrameClock"/> instead.
     /// </summary>
     public const int WindowedIntervalMs = 16;
 

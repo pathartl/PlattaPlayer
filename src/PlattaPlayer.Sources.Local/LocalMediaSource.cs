@@ -8,7 +8,8 @@ namespace PlattaPlayer.Sources.Local;
 /// <summary>
 /// A media source backed by one or more local folders. Walks the folders for supported audio files and reads
 /// tags / embedded art with TagLib#. Formats a codec plugin handles (MIDI, SNES .spc, …) are read through the
-/// plugin instead, with the plugin's cover or else the folder's image.
+/// plugin instead, with the plugin's cover or else the folder's image. A file holding several songs (a Game Boy
+/// .gbs) is listed as one track per song, identified as <c>path::number</c>.
 /// </summary>
 public sealed class LocalMediaSource : ILocalFileMediaSource
 {
@@ -42,8 +43,7 @@ public sealed class LocalMediaSource : ILocalFileMediaSource
             {
                 ct.ThrowIfCancellationRequested();
 
-                var track = Read(path);
-                if (track is not null)
+                foreach (var track in Read(path))
                     yield return track;
 
                 await Task.Yield();
@@ -60,19 +60,19 @@ public sealed class LocalMediaSource : ILocalFileMediaSource
     }
 
     // SourceItemIds are the paths as enumerated from the configured folders, so build the same form.
-    public SourceTrack? ReadFile(string path) =>
-        File.Exists(path) ? Read(Path.GetFullPath(path)) : null;
+    public IReadOnlyList<SourceTrack> ReadFile(string path) =>
+        File.Exists(path) ? Read(Path.GetFullPath(path)) : [];
 
-    private SourceTrack? Read(string path)
+    private IReadOnlyList<SourceTrack> Read(string path)
     {
         var ext = Path.GetExtension(path);
         if (_codecs.ForPath(path) is { } codec)
-            return ReadCodec(path, codec);
-        return AudioExtensions.Contains(ext) ? ReadAudio(path, ext) : null;
+            return codec is ICodecSubsongs subsongs ? ReadSubsongs(path, codec, subsongs) : [ReadCodec(path, codec)];
+        return AudioExtensions.Contains(ext) && ReadAudio(path, ext) is { } track ? [track] : [];
     }
 
     public Task<PlayableMedia> ResolvePlayableAsync(Track track, CancellationToken ct = default) =>
-        Task.FromResult(new PlayableMedia(PlayableKind.LocalFile, track.LocalPath ?? track.SourceItemId));
+        Task.FromResult(new PlayableMedia(PlayableKind.LocalFile, track.LocalPath ?? track.SourceItemId, track.Subsong));
 
     public Task<byte[]?> GetCoverArtAsync(SourceTrack track, CancellationToken ct = default)
     {
@@ -116,7 +116,6 @@ public sealed class LocalMediaSource : ILocalFileMediaSource
     /// </summary>
     private SourceTrack ReadCodec(string path, ICodecPlugin codec)
     {
-        var format = codec.FormatName.ToLowerInvariant();
         CodecFileInfo? info;
         try
         {
@@ -126,27 +125,51 @@ public sealed class LocalMediaSource : ILocalFileMediaSource
         {
             info = null;
         }
-        if (info is null)
-            return FromFileName(path, format);
+        return info is null ? FromFileName(path, codec.FormatName.ToLowerInvariant()) : FromCodecInfo(path, codec, info, null);
+    }
 
+    /// <summary>Reads each song of a multi-song file as a track of its own. A file the plugin can't read is
+    /// listed as one track named after it, as for single-song files.</summary>
+    private IReadOnlyList<SourceTrack> ReadSubsongs(string path, ICodecPlugin codec, ICodecSubsongs subsongs)
+    {
+        IReadOnlyList<CodecSubsong>? songs;
+        try
+        {
+            songs = subsongs.ReadSubsongs(path);
+        }
+        catch
+        {
+            songs = null;
+        }
+        if (songs is null)
+            return [FromFileName(path, codec.FormatName.ToLowerInvariant())];
+
+        return songs.Select(song => FromCodecInfo(path, codec, song.Info, song.Number)).ToList();
+    }
+
+    private SourceTrack FromCodecInfo(string path, ICodecPlugin codec, CodecFileInfo info, int? subsong)
+    {
         var tags = info.Tags;
         var folderName = Path.GetFileName(Path.GetDirectoryName(path));
-        var albumArtist = FirstNonEmpty(tags[CodecTagKeys.AlbumArtist], tags[CodecTagKeys.Artist], "Unknown Artist");
+        var artist = TagValues.Normalize(tags[CodecTagKeys.Artist]);
+        var albumArtist = TagValues.Normalize(tags[CodecTagKeys.AlbumArtist]) ?? artist ?? "Unknown Artist";
         return new SourceTrack
         {
             SourceId = Id,
-            SourceItemId = path,
+            SourceItemId = subsong is { } n ? SubsongItemId(path, n) : path,
             LocalPath = path,
-            Title = tags[CodecTagKeys.Title] ?? Path.GetFileNameWithoutExtension(path),
+            Subsong = subsong,
+            Title = tags[CodecTagKeys.Title]
+                    ?? (subsong is { } song ? $"{Path.GetFileNameWithoutExtension(path)} #{song}" : Path.GetFileNameWithoutExtension(path)),
             AlbumTitle = tags[CodecTagKeys.Album] ?? (string.IsNullOrWhiteSpace(folderName) ? "Unknown Album" : folderName),
             AlbumArtist = albumArtist,
-            TrackArtist = tags[CodecTagKeys.Artist] ?? albumArtist,
+            TrackArtist = artist ?? albumArtist,
             TrackNo = tags.GetNumber(CodecTagKeys.Track),
             DiscNo = tags.GetNumber(CodecTagKeys.Disc),
             Year = tags.GetNumber(CodecTagKeys.Year),
-            Genre = tags[CodecTagKeys.Genre],
+            Genre = TagValues.Normalize(tags[CodecTagKeys.Genre]),
             Duration = info.Duration,
-            Format = format,
+            Format = codec.FormatName.ToLowerInvariant(),
             SampleRate = info.SampleRate,
             BitsPerSample = info.BitsPerSample,
             Bitrate = info.Bitrate,
@@ -164,8 +187,9 @@ public sealed class LocalMediaSource : ILocalFileMediaSource
                 ? Path.GetFileNameWithoutExtension(path)
                 : tag.Title.Trim();
 
-            var albumArtist = FirstNonEmpty(tag.FirstAlbumArtist, tag.FirstPerformer, "Unknown Artist");
-            var trackArtist = FirstNonEmpty(tag.FirstPerformer, tag.FirstAlbumArtist, albumArtist);
+            var performers = TagValues.Normalize(tag.Performers);
+            var albumArtist = TagValues.Normalize(tag.AlbumArtists) ?? performers ?? "Unknown Artist";
+            var trackArtist = performers ?? albumArtist;
             var album = string.IsNullOrWhiteSpace(tag.Album) ? "Unknown Album" : tag.Album.Trim();
             var props = file.Properties;
 
@@ -182,7 +206,7 @@ public sealed class LocalMediaSource : ILocalFileMediaSource
                 DiscNo = tag.Disc > 0 ? (int)tag.Disc : null,
                 Year = tag.Year > 0 ? (int)tag.Year : null,
                 Duration = props?.Duration ?? TimeSpan.Zero,
-                Genre = tag.FirstGenre,
+                Genre = TagValues.Normalize(tag.Genres),
                 Format = ext.TrimStart('.').ToLowerInvariant(),
                 SampleRate = props?.AudioSampleRate > 0 ? props.AudioSampleRate : null,
                 // TagLib reports 0 bits for lossy codecs, which have no fixed bit depth.
@@ -196,6 +220,9 @@ public sealed class LocalMediaSource : ILocalFileMediaSource
             return FromFileName(path, ext.TrimStart('.').ToLowerInvariant());
         }
     }
+
+    /// <summary>The source item id of one song of a multi-song file.</summary>
+    public static string SubsongItemId(string path, int subsong) => $"{path}::{subsong}";
 
     private SourceTrack FromFileName(string path, string format)
     {
@@ -211,14 +238,6 @@ public sealed class LocalMediaSource : ILocalFileMediaSource
             TrackArtist = "Unknown Artist",
             Format = format,
         };
-    }
-
-    private static string FirstNonEmpty(params string?[] values)
-    {
-        foreach (var v in values)
-            if (!string.IsNullOrWhiteSpace(v))
-                return v.Trim();
-        return string.Empty;
     }
 
     /// <summary>Recursive file walk that skips folders it cannot read instead of throwing.</summary>

@@ -14,6 +14,13 @@
         </Setter>
     </Style>
 
+    <!-- ===================================================================================== Scrolling -->
+    <!-- Scrollbars get their own gutter instead of overlaying content (theme in ScrollBars.axaml). Controls
+         whose template TemplateBinds the attached property need it set on themselves, not just the ScrollViewer. -->
+    <Style Selector="ScrollViewer, ListBox, TextBox, DataGrid, TreeView, ComboBox">
+        <Setter Property="ScrollViewer.AllowAutoHide" Value="False" />
+    </Style>
+
     <!-- ===================================================================================== Type -->
     <Style Selector="TextBlock.H1, TextBlock.PageTitle">
         <Setter Property="FontSize" Value="40" />
@@ -555,11 +562,12 @@
         <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="ctrl:SliderClickToPoint.IsEnabled" Value="True" />
         <Setter Property="Template">
             <ControlTemplate>
                 <!-- The fill is drawn from the value fraction rather than by the Track's repeat buttons, which
                      Avalonia 12 arranges at zero width under a custom template. The Track still owns the
-                     thumb, dragging and click-to-page. -->
+                     thumb and its dragging; SliderClickToPoint supplies click-to-seek on the rest of the bar. -->
                 <Grid Name="PART_Root" Background="Transparent" MinHeight="16">
                     <Border Height="4" CornerRadius="2" VerticalAlignment="Center"
                             Background="{StaticResource TrackRemainderBrush}" IsHitTestVisible="False" />

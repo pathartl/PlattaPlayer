@@ -4,6 +4,7 @@
              xmlns:models="using:PlattaPlayer.Core.Models"
              xmlns:codecs="using:PlattaPlayer.Codecs.Abstractions"
              xmlns:items="using:PlattaPlayer.App.ViewModels.Items"
+             xmlns:ctrl="using:PlattaPlayer.App.Controls"
              x:Class="PlattaPlayer.App.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
 
@@ -40,10 +41,31 @@
         <StackPanel Spacing="8">
             <TextBlock Text="Sources" Classes="SectionTitle" />
             <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Content="&#xE8B7;  Add local folder" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                        Click="OnAddLocalFolder" Background="{StaticResource AccentBrush}"
-                        Foreground="{StaticResource OnAccentBrush}" Padding="16,8" CornerRadius="4"
-                        IsEnabled="{Binding !IsSyncing}" />
+                <!-- One entry per source type; each opens that type's own add flow. -->
+                <Button Background="{StaticResource AccentBrush}" Foreground="{StaticResource OnAccentBrush}"
+                        Padding="16,8" CornerRadius="4" IsEnabled="{Binding !IsSyncing}"
+                        AutomationProperties.Name="Add source">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="&#xE710;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" VerticalAlignment="Center" />
+                        <TextBlock Text="Add source" VerticalAlignment="Center" />
+                        <TextBlock Text="&#xE70D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                    <Button.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                            <MenuItem Header="Jellyfin library" Command="{Binding BeginAddJellyfinCommand}">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="&#xE774;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Local path" Click="OnAddLocalFolder">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="&#xE8B7;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
                 <Button Content="&#xE72C;  Rescan all" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
                         Command="{Binding RescanAllCommand}" Background="{StaticResource SurfaceBrush}"
                         Foreground="{StaticResource TextPrimaryBrush}" Padding="16,8" CornerRadius="4"
@@ -54,6 +76,80 @@
                            FontSize="13" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" />
                 <TextBlock Text="{Binding SyncStatus}" Classes="Secondary" FontSize="13" VerticalAlignment="Center" />
             </StackPanel>
+
+            <!-- Jellyfin login, shown after picking "Jellyfin library" from the Add source menu. -->
+            <Border Classes="Card" IsVisible="{Binding IsAddingJellyfin}">
+                <StackPanel Spacing="8" MaxWidth="420" HorizontalAlignment="Left">
+                    <TextBlock Text="Add Jellyfin library" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                    <TextBox Text="{Binding JellyfinServerUrl}" PlaceholderText="Server URL (e.g. http://192.168.1.10:8096)"
+                             IsEnabled="{Binding !IsConnecting}" />
+                    <TextBox Text="{Binding JellyfinUsername}" PlaceholderText="Username"
+                             IsEnabled="{Binding !IsConnecting}" />
+                    <TextBox Text="{Binding JellyfinPassword}" PlaceholderText="Password" PasswordChar="•"
+                             IsEnabled="{Binding !IsConnecting}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="&#xE703;  Connect" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                Command="{Binding ConnectJellyfinCommand}" Background="{StaticResource AccentBrush}"
+                                Foreground="{StaticResource OnAccentBrush}" Padding="16,8" CornerRadius="4"
+                                IsEnabled="{Binding !IsConnecting}" />
+                        <Button Content="Cancel" Command="{Binding CancelAddJellyfinCommand}"
+                                Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                Padding="16,8" CornerRadius="4" IsEnabled="{Binding !IsConnecting}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding JellyfinStatus}" Classes="Secondary" FontSize="13" TextWrapping="Wrap"
+                               IsVisible="{Binding JellyfinStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="No sources configured yet." Classes="Secondary" FontSize="14"
+                       IsVisible="{Binding !Sources.Count}" />
+            <ItemsControl ItemsSource="{Binding Sources}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="items:SourceItemViewModel">
+                        <Border Classes="Card" Margin="0,0,0,8">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                <TextBlock Grid.Column="0" Text="{Binding Glyph}" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                           FontSize="20" Foreground="{StaticResource AccentBrush}"
+                                           VerticalAlignment="Center" Margin="4,0,12,0" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding TypeLabel}" Classes="Secondary" FontSize="12" />
+                                </StackPanel>
+                                <Button Grid.Column="2" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                        Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}"
+                                        BorderThickness="0" Padding="8" ToolTip.Tip="Reindex this source"
+                                        IsEnabled="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).IsSyncing, Converter={x:Static BoolConverters.Not}}"
+                                        Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).RescanSourceCommand}"
+                                        CommandParameter="{Binding}">
+                                    <TextBlock Text="&#xE72C;" Classes.Spinning="{Binding IsSyncing}"
+                                               RenderTransformOrigin="50%,50%">
+                                        <TextBlock.RenderTransform>
+                                            <RotateTransform />
+                                        </TextBlock.RenderTransform>
+                                    </TextBlock>
+                                </Button>
+                                <Button Grid.Column="3" Content="&#xE74D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                        Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}"
+                                        BorderThickness="0" Padding="8" ToolTip.Tip="Remove"
+                                        Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).RemoveSourceCommand}"
+                                        CommandParameter="{Binding}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="Streaming" Classes="SectionTitle" Margin="0,12,0,0" />
+            <Border Classes="Card">
+                <StackPanel Spacing="8" MaxWidth="420" HorizontalAlignment="Left">
+                    <CheckBox Content="Show waveform on the seek bar for Jellyfin tracks"
+                              IsChecked="{Binding ShowRemoteWaveforms}" />
+                    <TextBlock Classes="Secondary" FontSize="12" TextWrapping="Wrap"
+                               Text="Downloads each track a second time in the background to draw it. Takes effect from the next track." />
+                </StackPanel>
+            </Border>
 
             <TextBlock Text="Appearance" Classes="SectionTitle" Margin="0,12,0,0" />
             <Border Classes="Card">
@@ -118,6 +214,59 @@
                     </Grid>
                     <TextBlock Classes="Secondary" FontSize="12" TextWrapping="Wrap"
                                Text="Pick a swatch or enter any hex color. Used for playing/active state, sliders and primary buttons." />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="Navigation rail" Classes="SectionTitle" Margin="0,12,0,0" />
+            <Border Classes="Card">
+                <StackPanel Spacing="8" MaxWidth="420" HorizontalAlignment="Left">
+                    <TextBlock Text="Shown in the rail, top to bottom" Classes="Secondary" FontSize="13" />
+                    <ItemsControl ItemsSource="{Binding Rail.Items}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="items:NavRailItemViewModel">
+                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="4" Width="320">
+                                    <CheckBox IsChecked="{Binding IsShown}">
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <ctrl:LineIcon Data="{Binding Icon}" Size="16" />
+                                            <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </CheckBox>
+                                    <Button Grid.Column="1" Content="&#xE70E;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                            Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}"
+                                            BorderThickness="0" Padding="8" ToolTip.Tip="Move up"
+                                            AutomationProperties.Name="{Binding Label, StringFormat='Move {0} up'}"
+                                            IsEnabled="{Binding CanMoveUp}"
+                                            Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).Rail.MoveUpCommand}"
+                                            CommandParameter="{Binding}" />
+                                    <Button Grid.Column="2" Content="&#xE70D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                            Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}"
+                                            BorderThickness="0" Padding="8" ToolTip.Tip="Move down"
+                                            AutomationProperties.Name="{Binding Label, StringFormat='Move {0} down'}"
+                                            IsEnabled="{Binding CanMoveDown}"
+                                            Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).Rail.MoveDownCommand}"
+                                            CommandParameter="{Binding}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="Pinned to the bottom" Classes="Secondary" FontSize="13" Margin="0,8,0,0" />
+                    <ItemsControl ItemsSource="{Binding Rail.PinnedItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="items:NavRailItemViewModel">
+                                <CheckBox IsChecked="{Binding IsShown}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <ctrl:LineIcon Data="{Binding Icon}" Size="16" />
+                                        <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </CheckBox>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button Content="Reset to default" Command="{Binding Rail.ResetToDefaultCommand}"
+                            Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                            Padding="12,8" CornerRadius="4" Margin="0,4,0,0" />
+                    <TextBlock Classes="Secondary" FontSize="12" TextWrapping="Wrap"
+                               Text="Settings always stays in the rail. The source filter only appears once a source is added." />
                 </StackPanel>
             </Border>
 
@@ -194,69 +343,6 @@
                                Text="Choose which animated background plays behind the app while audio is playing." />
                 </StackPanel>
             </Border>
-
-            <TextBlock Text="Jellyfin server" Classes="SectionTitle" Margin="0,12,0,0" />
-            <Border Classes="Card">
-                <StackPanel Spacing="8" MaxWidth="420" HorizontalAlignment="Left">
-                    <TextBox Text="{Binding JellyfinServerUrl}" PlaceholderText="Server URL (e.g. http://192.168.1.10:8096)"
-                             IsEnabled="{Binding !IsConnecting}" />
-                    <TextBox Text="{Binding JellyfinUsername}" PlaceholderText="Username"
-                             IsEnabled="{Binding !IsConnecting}" />
-                    <TextBox Text="{Binding JellyfinPassword}" PlaceholderText="Password" PasswordChar="•"
-                             IsEnabled="{Binding !IsConnecting}" />
-                    <Button Content="&#xE703;  Connect" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                            Command="{Binding ConnectJellyfinCommand}" Background="{StaticResource AccentBrush}"
-                            Foreground="{StaticResource OnAccentBrush}" Padding="16,8" CornerRadius="4" HorizontalAlignment="Left"
-                            IsEnabled="{Binding !IsConnecting}" />
-                    <TextBlock Text="{Binding JellyfinStatus}" Classes="Secondary" FontSize="13"
-                               IsVisible="{Binding JellyfinStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                    <CheckBox Content="Show waveform on the seek bar" Margin="0,4,0,0"
-                              IsChecked="{Binding ShowRemoteWaveforms}" />
-                    <TextBlock Classes="Secondary" FontSize="12" TextWrapping="Wrap"
-                               Text="Downloads each track a second time in the background to draw it. Takes effect from the next track." />
-                </StackPanel>
-            </Border>
-
-            <TextBlock Text="Configured sources" Classes="SectionTitle" Margin="0,12,0,0" />
-            <TextBlock Text="No sources configured yet." Classes="Secondary" FontSize="14"
-                       IsVisible="{Binding !Sources.Count}" />
-            <ItemsControl ItemsSource="{Binding Sources}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="items:SourceItemViewModel">
-                        <Border Classes="Card" Margin="0,0,0,8">
-                            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                                <TextBlock Grid.Column="0" Text="&#xE8B7;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                                           FontSize="20" Foreground="{StaticResource AccentBrush}"
-                                           VerticalAlignment="Center" Margin="4,0,12,0" />
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
-                                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"
-                                               Foreground="{StaticResource TextPrimaryBrush}"
-                                               TextTrimming="CharacterEllipsis" />
-                                    <TextBlock Text="{Binding Type}" Classes="Secondary" FontSize="12" />
-                                </StackPanel>
-                                <Button Grid.Column="2" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                                        Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}"
-                                        BorderThickness="0" Padding="8" ToolTip.Tip="Reindex this source"
-                                        IsEnabled="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).IsSyncing, Converter={x:Static BoolConverters.Not}}"
-                                        Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).RescanSourceCommand}"
-                                        CommandParameter="{Binding}">
-                                    <TextBlock Text="&#xE72C;" Classes.Spinning="{Binding IsSyncing}"
-                                               RenderTransformOrigin="50%,50%">
-                                        <TextBlock.RenderTransform>
-                                            <RotateTransform />
-                                        </TextBlock.RenderTransform>
-                                    </TextBlock>
-                                </Button>
-                                <Button Grid.Column="3" Content="&#xE74D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                                        Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}"
-                                        BorderThickness="0" Padding="8" ToolTip.Tip="Remove"
-                                        Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).RemoveSourceCommand}"
-                                        CommandParameter="{Binding}" />
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
         </StackPanel>
         </ScrollViewer>
     </Grid>

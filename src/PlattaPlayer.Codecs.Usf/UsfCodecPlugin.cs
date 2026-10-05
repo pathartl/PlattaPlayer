@@ -1,4 +1,5 @@
 using PlattaPlayer.Codecs.Abstractions;
+using PlattaPlayer.Codecs.Psf;
 using PlattaPlayer.Codecs.Usf.Emulation;
 using PlattaPlayer.Codecs.Usf.Psf;
 
@@ -20,10 +21,10 @@ public sealed class UsfCodecPlugin : ICodecPlugin, ICodecSettings
     public const double DefaultFadeSeconds = 10;
 
     // Format-specific tag keys.
-    public const string CopyrightKey = "copyright";
-    public const string RipperKey = "ripper";
-    public const string LengthKey = "length";
-    public const string FadeKey = "fade";
+    public const string CopyrightKey = PsfTagMap.CopyrightKey;
+    public const string RipperKey = PsfTagMap.RipperKey;
+    public const string LengthKey = PsfTagMap.LengthKey;
+    public const string FadeKey = PsfTagMap.FadeKey;
 
     public const string RspSetting = "rsp";
     private const string RspLowLevel = "lle";
@@ -83,7 +84,7 @@ public sealed class UsfCodecPlugin : ICodecPlugin, ICodecSettings
     public CodecFileInfo? ReadInfo(string path)
     {
         // A playable song carries data or names a library holding it (a bare tag-only PSF plays nothing).
-        if (PsfFile.TryReadTags(path) is not var (reserved, tags) || (reserved == 0 && tags["_lib"] is null)) return null;
+        if (PsfFile.TryReadTags(path, PsfFile.UsfVersion) is not var (reserved, _, tags) || (reserved == 0 && tags["_lib"] is null)) return null;
         var (play, fade) = PlayTime(tags);
         return new CodecFileInfo
         {
@@ -95,20 +96,20 @@ public sealed class UsfCodecPlugin : ICodecPlugin, ICodecSettings
 
     public ICodecDecoder Open(string path)
     {
-        var file = PsfFile.TryLoad(path) ?? throw new InvalidDataException($"{Path.GetFileName(path)} is not a USF file.");
+        var file = PsfFile.TryLoad(path, PsfFile.UsfVersion) ?? throw new InvalidDataException($"{Path.GetFileName(path)} is not a USF file.");
         if (!LazyUsf2Native.IsAvailable)
             throw new DllNotFoundException("lazyusf2.dll is missing from the USF plugin's folder (build it with native/lazyusf2/build.ps1).");
 
         var (play, fade) = PlayTime(file.Tags);
-        return new UsfDecoder(UsfSet.Load(path), UseHle, play, fade, UsfTags.VolumeOf(file.Tags));
+        return new UsfDecoder(UsfSet.Load(path), UseHle, play, fade, PsfTagMap.VolumeOf(file.Tags));
     }
 
     public CodecTags ReadTags(string path) =>
-        PsfFile.TryReadTags(path) is var (_, tags) ? UsfTags.ToCodecTags(tags) : new CodecTags();
+        PsfFile.TryReadTags(path, PsfFile.UsfVersion) is var (_, _, tags) ? UsfTags.ToCodecTags(tags) : new CodecTags();
 
     public void WriteTags(string path, CodecTags tags)
     {
-        var file = PsfFile.TryLoad(path) ?? throw new InvalidDataException($"{Path.GetFileName(path)} is not a USF file.");
+        var file = PsfFile.TryLoad(path, PsfFile.UsfVersion) ?? throw new InvalidDataException($"{Path.GetFileName(path)} is not a USF file.");
         UsfTags.Apply(file.Tags, tags);
 
         // Write beside the file, then swap it in, so a failure can't leave a half-written USF.
@@ -118,6 +119,5 @@ public sealed class UsfCodecPlugin : ICodecPlugin, ICodecSettings
     }
 
     private static (double Play, double Fade) PlayTime(PsfTags tags) =>
-        (UsfTags.ParseSeconds(tags[UsfTags.Length]) is > 0 and var play ? play : DefaultPlaySeconds,
-         UsfTags.ParseSeconds(tags[UsfTags.Fade]) is >= 0 and var fade ? fade : DefaultFadeSeconds);
+        PsfTagMap.PlayTime(tags, DefaultPlaySeconds, DefaultFadeSeconds);
 }

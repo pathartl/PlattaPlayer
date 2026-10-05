@@ -1,0 +1,109 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PlattaPlayer.App.ViewModels"
+             xmlns:items="using:PlattaPlayer.App.ViewModels.Items"
+             xmlns:conv="using:PlattaPlayer.App.Converters"
+             xmlns:ctrl="using:PlattaPlayer.App.Controls"
+             x:Class="PlattaPlayer.App.Views.GenreDetailView"
+             x:DataType="vm:GenreDetailViewModel">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="28,24,28,0">
+
+        <!-- Breadcrumb -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="6" Margin="12,0">
+            <Button Classes="Link" Foreground="#9EFFFFFF" Command="{Binding OpenGenresCommand}">
+                <TextBlock Text="Genres" FontSize="13" />
+            </Button>
+            <ctrl:LineIcon Data="{StaticResource IconChevronRight}" Size="14" Foreground="#66FFFFFF" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding Genre}" FontSize="13" Foreground="#EBFFFFFF" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <!-- Header -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="12,28,12,0">
+            <StackPanel Spacing="10" VerticalAlignment="Bottom">
+                <TextBlock Classes="DisplayXl" Text="{Binding Genre}" TextTrimming="CharacterEllipsis" />
+                <TextBlock Classes="Meta" Text="{Binding Meta}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Bottom" Margin="24,0,0,0">
+                <Button Classes="PillAccent" Command="{Binding PlayAllCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <ctrl:LineIcon Data="{StaticResource IconPlay}" Size="18" IsFilled="True" StrokeThickness="0" />
+                        <TextBlock Text="Play all" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <Button Classes="PillOutline" Command="{Binding ShuffleCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <ctrl:LineIcon Data="{StaticResource IconShuffle}" Size="18" />
+                        <TextBlock Text="Shuffle" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <TextBlock Grid.Row="2" Classes="H2" Text="Albums" Margin="12,28,12,18" />
+
+        <!-- Albums with tracks in the genre, newest first. -->
+        <ctrl:ResponsiveCoverGrid Grid.Row="3" ItemsSource="{Binding Albums}"
+                                  MinItemWidth="180" MinColumns="2" MaxColumns="8"
+                                  Spacing="8" RowSpacing="16" CaptionHeight="56" EdgePadding="0" ItemInset="10">
+            <ctrl:ResponsiveCoverGrid.ItemTemplate>
+                <DataTemplate x:DataType="items:AlbumItemViewModel">
+                    <Button Classes="Tile" VerticalAlignment="Top" ContextRequested="OnAlbumContextRequested"
+                            Command="{Binding $parent[UserControl].((vm:GenreDetailViewModel)DataContext).OpenAlbumCommand}"
+                            CommandParameter="{Binding}" AutomationProperties.Name="{Binding Title}">
+                        <StackPanel Spacing="12">
+                            <Border Classes="ArtSlot" CornerRadius="4"
+                                    Width="{Binding $parent[ctrl:ResponsiveCoverGrid].ImageWidth}"
+                                    Height="{Binding $parent[ctrl:ResponsiveCoverGrid].ImageHeight}">
+                                <Panel>
+                                    <ctrl:LineIcon Data="{StaticResource IconAlbum}" Size="40" Foreground="{StaticResource TextDisabledBrush}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   IsVisible="{Binding CoverPath, Converter={x:Static ObjectConverters.IsNull}}" />
+                                    <Image>
+                                        <Image.Source>
+                                            <MultiBinding Converter="{x:Static conv:CoverImageConverter.Instance}">
+                                                <Binding Path="CoverPath" />
+                                                <Binding Path="$parent[ctrl:ResponsiveCoverGrid].DecodePixelWidth" />
+                                            </MultiBinding>
+                                        </Image.Source>
+                                    </Image>
+                                </Panel>
+                            </Border>
+                            <StackPanel Spacing="4">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Medium" TextTrimming="CharacterEllipsis"
+                                               MaxWidth="{Binding $parent[ctrl:ResponsiveCoverGrid].ImageWidth}">
+                                        <TextBlock.Foreground>
+                                            <MultiBinding Converter="{x:Static conv:PlayingBrushConverter.Strong}">
+                                                <Binding Path="Id" />
+                                                <Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).NowPlaying.AlbumId" />
+                                            </MultiBinding>
+                                        </TextBlock.Foreground>
+                                    </TextBlock>
+                                    <ctrl:NowPlayingIndicator VerticalAlignment="Center" BarBrush="{StaticResource AccentBrush}"
+                                                              IsActive="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).NowPlaying.IsPlaying}">
+                                        <ctrl:NowPlayingIndicator.IsVisible>
+                                            <MultiBinding Converter="{x:Static conv:EqualsMultiConverter.Instance}">
+                                                <Binding Path="Id" />
+                                                <Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).NowPlaying.AlbumId" />
+                                            </MultiBinding>
+                                        </ctrl:NowPlayingIndicator.IsVisible>
+                                    </ctrl:NowPlayingIndicator>
+                                </StackPanel>
+                                <!-- Albums here are by many artists, so the caption names the artist. -->
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Button Classes="Link" HorizontalAlignment="Left" CommandParameter="{Binding ArtistId}"
+                                            Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).GoToArtistCommand}">
+                                        <TextBlock Text="{Binding Artist}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                    </Button>
+                                    <TextBlock Grid.Column="1" Classes="Mono" Text="{Binding Year}" FontSize="11"
+                                               Foreground="#A3FFFFFF" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                </Grid>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+                </DataTemplate>
+            </ctrl:ResponsiveCoverGrid.ItemTemplate>
+        </ctrl:ResponsiveCoverGrid>
+    </Grid>
+</UserControl>

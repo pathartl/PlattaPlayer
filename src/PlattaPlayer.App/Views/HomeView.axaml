@@ -23,7 +23,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="items:AlbumItemViewModel">
-                                <Button Classes="Tile" Width="160"
+                                <Button Classes="Tile" Width="160" ContextRequested="OnAlbumContextRequested"
                                         Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).GoToAlbumCommand}"
                                         CommandParameter="{Binding Id}">
                                     <StackPanel Spacing="8">
@@ -59,7 +59,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="items:TrackItemViewModel">
-                                <Button Classes="Tile" Width="160"
+                                <Button Classes="Tile" Width="160" ContextRequested="OnTrackContextRequested"
                                         Command="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).PlayCommand}"
                                         CommandParameter="{Binding}">
                                     <StackPanel Spacing="8">
@@ -95,7 +95,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="items:TrackItemViewModel">
-                                <Button Classes="Tile" Width="160"
+                                <Button Classes="Tile" Width="160" ContextRequested="OnTrackContextRequested"
                                         Command="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).PlayCommand}"
                                         CommandParameter="{Binding}">
                                     <StackPanel Spacing="8">

@@ -13,6 +13,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://PlattaPlayer.App/Themes/Colors.axaml" />
                 <ResourceInclude Source="avares://PlattaPlayer.App/Themes/Icons.axaml" />
+                <ResourceInclude Source="avares://PlattaPlayer.App/Themes/ScrollBars.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

@@ -31,8 +31,10 @@ public sealed partial class SettingsViewModel : PageViewModelBase
         JellyfinAuthenticator jellyfinAuth,
         CodecRegistry codecs,
         IAppSettings appSettings,
-        VisualizationSettingsViewModel visualization)
+        VisualizationSettingsViewModel visualization,
+        NavRailLayoutViewModel rail)
     {
+        Rail = rail;
         _repository = repository;
         _sources = sources;
         _sync = sync;
@@ -57,6 +59,9 @@ public sealed partial class SettingsViewModel : PageViewModelBase
 
     /// <summary>Shared visualizer settings (the active-visualizer picker binds to this).</summary>
     public VisualizationSettingsViewModel Visualization { get; }
+
+    /// <summary>Shared nav rail layout: which entries show and in what order.</summary>
+    public NavRailLayoutViewModel Rail { get; }
 
     public ObservableCollection<SourceItemViewModel> Sources { get; } = new();
 
@@ -143,6 +148,25 @@ public sealed partial class SettingsViewModel : PageViewModelBase
     [ObservableProperty] private bool _isConnecting;
     [ObservableProperty] private string _jellyfinStatus = string.Empty;
 
+    /// <summary>True while the Jellyfin login form is open (picked from the "Add source" menu).</summary>
+    [ObservableProperty] private bool _isAddingJellyfin;
+
+    [RelayCommand]
+    private void BeginAddJellyfin()
+    {
+        JellyfinStatus = string.Empty;
+        IsAddingJellyfin = true;
+    }
+
+    [RelayCommand]
+    private void CancelAddJellyfin()
+    {
+        if (IsConnecting) return;
+        IsAddingJellyfin = false;
+        JellyfinPassword = string.Empty;
+        JellyfinStatus = string.Empty;
+    }
+
     public override async Task InitializeAsync()
     {
         Sources.Clear();
@@ -194,10 +218,11 @@ public sealed partial class SettingsViewModel : PageViewModelBase
             var item = new SourceItemViewModel(config);
             Sources.Add(item);
 
-            JellyfinStatus = $"Connected as {settings.Username}. Syncing…";
+            // The source now shows in the list (with its own scan progress), so close the form.
             JellyfinPassword = string.Empty;
+            JellyfinStatus = string.Empty;
+            IsAddingJellyfin = false;
             await RunSyncAsync(item);
-            JellyfinStatus = $"Connected as {settings.Username}.";
         }
         catch (Exception ex)
         {

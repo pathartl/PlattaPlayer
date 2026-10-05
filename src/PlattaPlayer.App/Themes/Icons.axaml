@@ -34,7 +34,12 @@
     <StreamGeometry x:Key="IconCollapse">M4,14 h6 v6 M10,14 l-7,7 M20,10 h-6 V4 M14,10 l7,-7</StreamGeometry>
     <StreamGeometry x:Key="IconChevronRight">M9,5 l7,7 l-7,7</StreamGeometry>
     <StreamGeometry x:Key="IconChevronLeft">M15,5 l-7,7 l7,7</StreamGeometry>
+    <StreamGeometry x:Key="IconChevronUpDown">M8,9 l4,-4 l4,4 M8,15 l4,4 l4,-4</StreamGeometry>
+    <StreamGeometry x:Key="IconSources">M12,4 l8,4 l-8,4 l-8,-4 Z M4,12 l8,4 l8,-4 M4,16 l8,4 l8,-4</StreamGeometry>
     <StreamGeometry x:Key="IconMore">M3.8,12 a1.2,1.2 0 1 0 2.4,0 a1.2,1.2 0 1 0 -2.4,0 Z M10.8,12 a1.2,1.2 0 1 0 2.4,0 a1.2,1.2 0 1 0 -2.4,0 Z M17.8,12 a1.2,1.2 0 1 0 2.4,0 a1.2,1.2 0 1 0 -2.4,0 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconClose">M6,6 L18,18 M18,6 L6,18</StreamGeometry>
+    <!-- Drag handle: two rows of three dots. -->
+    <StreamGeometry x:Key="IconGrip">M9,8 h0.01 M15,8 h0.01 M9,12 h0.01 M15,12 h0.01 M9,16 h0.01 M15,16 h0.01</StreamGeometry>
     <StreamGeometry x:Key="IconSparkle">M12,3 v4 M12,17 v4 M3,12 h4 M17,12 h4 M6,6 l2.5,2.5 M15.5,15.5 L18,18 M6,18 l2.5,-2.5 M15.5,8.5 L18,6</StreamGeometry>
 
     <!-- Caption glyphs, on a 10×10 grid with a 1px stroke (Windows 11 style). -->

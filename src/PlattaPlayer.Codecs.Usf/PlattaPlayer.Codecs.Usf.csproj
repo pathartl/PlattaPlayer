@@ -15,6 +15,12 @@
     <ProjectReference Include="..\PlattaPlayer.Codecs.Abstractions\PlattaPlayer.Codecs.Abstractions.csproj" />
   </ItemGroup>
 
+  <!-- The PSF container, tags and library chain, shared with the GSF codec as source: each plugin loads in a
+       load context of its own, so a shared assembly would gain nothing. -->
+  <ItemGroup>
+    <Compile Include="..\Shared\Psf\*.cs" LinkBase="Psf" />
+  </ItemGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="PlattaPlayer.Codecs.Usf.Harness" />
   </ItemGroup>

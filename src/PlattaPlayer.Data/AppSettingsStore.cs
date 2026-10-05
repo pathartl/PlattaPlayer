@@ -69,6 +69,24 @@ public sealed class AppSettingsStore : IAppSettings
         set { lock (_gate) _model.AccentColor = value; }
     }
 
+    public IReadOnlyList<string> HiddenSourceIds
+    {
+        get { lock (_gate) return _model.HiddenSourceIds.ToArray(); }
+        set { lock (_gate) _model.HiddenSourceIds = value.Distinct().ToList(); }
+    }
+
+    public IReadOnlyList<string> NavRailOrder
+    {
+        get { lock (_gate) return _model.NavRailOrder.ToArray(); }
+        set { lock (_gate) _model.NavRailOrder = value.Distinct().ToList(); }
+    }
+
+    public IReadOnlyList<string> HiddenNavRailItems
+    {
+        get { lock (_gate) return _model.HiddenNavRailItems.ToArray(); }
+        set { lock (_gate) _model.HiddenNavRailItems = value.Distinct().ToList(); }
+    }
+
     public void Save()
     {
         lock (_gate)
@@ -103,6 +121,9 @@ public sealed class AppSettingsStore : IAppSettings
     private static Model Migrate(Model model)
     {
         model.CodecSettings ??= new();
+        model.HiddenSourceIds ??= new();
+        model.NavRailOrder ??= new();
+        model.HiddenNavRailItems ??= new();
         if (model.MidiDeviceId is { } device)
         {
             if (!model.CodecSettings.TryGetValue("midi", out var midi))
@@ -124,5 +145,8 @@ public sealed class AppSettingsStore : IAppSettings
         public string? ActiveVisualizerId { get; set; }
         public bool ShowRemoteWaveforms { get; set; } = true;
         public string? AccentColor { get; set; }
+        public List<string> HiddenSourceIds { get; set; } = new();
+        public List<string> NavRailOrder { get; set; } = new();
+        public List<string> HiddenNavRailItems { get; set; } = new();
     }
 }

@@ -10,5 +10,6 @@ public class Artist
     /// <summary>Normalised name used for case-insensitive sorting/lookup.</summary>
     public string SortName { get; set; } = string.Empty;
 
+    /// <summary>Every album crediting this artist as an album artist, including shared credits ("A; B").</summary>
     public List<Album> Albums { get; } = new();
 }

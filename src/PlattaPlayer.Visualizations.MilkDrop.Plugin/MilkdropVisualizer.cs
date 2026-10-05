@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.OpenGL;
@@ -27,7 +28,7 @@ namespace PlattaPlayer.Visualizations.MilkDrop.Plugin;
 /// Presets are cycled from <see cref="PresetsPath"/>; switching crossfades between two independently
 /// rendered <see cref="MilkLayer"/>s over <see cref="BlendDuration"/> so transitions are smooth.
 /// </summary>
-public sealed class MilkdropVisualizer : OpenGlControlBase, IVisualizationController
+public sealed class MilkdropVisualizer : OpenGlControlBase, IVisualizationController, IVisualizerHealth
 {
     public static readonly StyledProperty<IAudioTap?> TapProperty =
         AvaloniaProperty.Register<MilkdropVisualizer, IAudioTap?>(nameof(Tap));
@@ -150,6 +151,13 @@ public sealed class MilkdropVisualizer : OpenGlControlBase, IVisualizationContro
     public void RandomPreset() { _pendingRandom = true; RequestNextFrameRendering(); }
 
     private double _lastTime;
+    private long _heartbeat;
+
+    /// <inheritdoc />
+    public long Heartbeat => Interlocked.Read(ref _heartbeat);
+
+    /// <inheritdoc />
+    public void Resume() => RequestNextFrameRendering();
 
     private static readonly float[] QuadData =
     {
@@ -416,6 +424,7 @@ public sealed class MilkdropVisualizer : OpenGlControlBase, IVisualizationContro
 
         DrawFrostedRegions(g, fb, w, h, scaling);
 
+        Interlocked.Increment(ref _heartbeat);
         RequestNextFrameRendering();
     }
 

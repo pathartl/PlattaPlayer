@@ -40,6 +40,7 @@ internal static unsafe class RandRedirect
     private static int _index;
     private static long _calls;
     private static bool _applied;
+    private static bool _appliedWmp;
 
     /// <summary>Total calls since <see cref="Apply"/> — a cheap check that the redirect is live.</summary>
     public static long Calls => _calls;
@@ -64,25 +65,43 @@ internal static unsafe class RandRedirect
         return value;
     }
 
+    /// <summary>Redirects mpvis.DLL's rand() (Alchemy).</summary>
     public static void Apply()
     {
         if (_applied) return;
         MpvisModule.AssertKnownBuild();
-
-        var replacement = (nint)(delegate* unmanaged[Cdecl]<int>)&Rand;
-        if (!ImportPatch.Redirect(MpvisModule.Handle, CrtModule, CrtExport, replacement))
-            throw new InvalidOperationException(
-                $"mpvis.DLL does not import {CrtExport} from {CrtModule}. Imports present: " +
-                ImportPatch.Describe(MpvisModule.Handle, CrtModule));
-
+        Redirect(MpvisModule.Handle, "mpvis.DLL");
         _applied = true;
+    }
+
+    /// <summary>
+    /// Redirects wmp.dll's rand() (Battery, Bars and Waves). wmp.dll imports <c>_o_rand</c> from the same
+    /// CRT forwarder as mpvis, so the mechanism is identical; only the image differs. Independent of
+    /// <see cref="Apply"/>: both may be live at once and share one script.
+    /// </summary>
+    public static void ApplyWmp()
+    {
+        if (_appliedWmp) return;
+        WmpModule.AssertKnownBuild();
+        Redirect(WmpModule.Handle, "wmp.dll");
+        _appliedWmp = true;
+    }
+
+    private static void Redirect(nint module, string name)
+    {
+        var replacement = (nint)(delegate* unmanaged[Cdecl]<int>)&Rand;
+        if (!ImportPatch.Redirect(module, CrtModule, CrtExport, replacement))
+            throw new InvalidOperationException(
+                $"{name} does not import {CrtExport} from {CrtModule}. Imports present: " +
+                ImportPatch.Describe(module, CrtModule));
     }
 
     public static void Restore()
     {
-        if (!_applied) return;
+        if (!_applied && !_appliedWmp) return;
         ImportPatch.RestoreAll();
         _applied = false;
+        _appliedWmp = false;
     }
 
     /// <summary>Installs a script and rewinds to its start.</summary>

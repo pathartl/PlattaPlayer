@@ -72,17 +72,12 @@ public sealed partial class ArtistDetailViewModel : PageViewModelBase
 
             _all = artist.Albums
                 .OrderByDescending(a => a.Year ?? 0).ThenBy(a => a.SortTitle)
-                .Select(a =>
-                {
-                    a.AlbumArtist = artist;
-                    return new AlbumItemViewModel(a, _covers, byAlbum.TryGetValue(a.Id, out var t) ? t : null);
-                })
+                .Select(a => new AlbumItemViewModel(a, _covers, byAlbum.TryGetValue(a.Id, out var t) ? t : null))
                 .ToList();
 
             var runtime = TimeSpan.FromTicks(_tracks.Sum(t => t.Duration.Ticks));
-            var genres = _tracks.Select(t => t.Genre ?? t.Album?.Genre)
-                .Where(g => !string.IsNullOrWhiteSpace(g))
-                .GroupBy(g => g!, StringComparer.OrdinalIgnoreCase)
+            var genres = _tracks.SelectMany(t => TagValues.Split(t.Genre ?? t.Album?.Genre))
+                .GroupBy(g => g, StringComparer.OrdinalIgnoreCase)
                 .OrderByDescending(g => g.Count())
                 .Take(2)
                 .Select(g => g.Key);

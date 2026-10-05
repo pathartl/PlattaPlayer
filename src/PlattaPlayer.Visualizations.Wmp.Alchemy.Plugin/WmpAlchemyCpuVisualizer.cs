@@ -34,7 +34,7 @@ namespace PlattaPlayer.Visualizations.Wmp.Alchemy.Plugin;
 /// Effects are randomly scheduled, so next / previous / random all ask for a new warp kernel, the
 /// nearest equivalent of the original's 'm' key.
 /// </summary>
-public sealed class WmpAlchemyCpuVisualizer : Control, IVisualizationController
+public sealed class WmpAlchemyCpuVisualizer : Control, IVisualizationController, IVisualizerHealth
 {
     public static readonly StyledProperty<IAudioTap?> TapProperty =
         AvaloniaProperty.Register<WmpAlchemyCpuVisualizer, IAudioTap?>(nameof(Tap));
@@ -68,6 +68,13 @@ public sealed class WmpAlchemyCpuVisualizer : Control, IVisualizationController
     private bool _failed;
     private string _lastName = "";
 
+    public long Heartbeat { get; private set; }
+
+    public void Resume()
+    {
+        if (_timer is { IsEnabled: false }) _timer.Start();
+    }
+
     public WmpAlchemyCpuVisualizer()
     {
         _core.Resize(FieldWidth, FieldHeight);
@@ -95,6 +102,7 @@ public sealed class WmpAlchemyCpuVisualizer : Control, IVisualizationController
     private void OnTick(object? sender, EventArgs e)
     {
         if (_failed) return;
+        Heartbeat++;
         try
         {
             _levels.LoadFrom(_adapter.Update(Tap));

@@ -1,0 +1,146 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PlattaPlayer.App.ViewModels"
+             xmlns:items="using:PlattaPlayer.App.ViewModels.Items"
+             xmlns:conv="using:PlattaPlayer.App.Converters"
+             xmlns:ctrl="using:PlattaPlayer.App.Controls"
+             xmlns:views="using:PlattaPlayer.App.Views"
+             x:Class="PlattaPlayer.App.Views.QueueView"
+             x:DataType="vm:MainWindowViewModel"
+             HorizontalAlignment="Right">
+
+    <UserControl.Styles>
+        <!-- Docked: full-height glass column right of the library page (the window reserves the space). -->
+        <Style Selector="views|QueueView">
+            <Setter Property="Width" Value="380" />
+        </Style>
+        <Style Selector="Border#Card">
+            <Setter Property="Background" Value="{StaticResource GlassBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1,1,0,0" />
+        </Style>
+        <!-- Now Playing: a card floating over the visualizer where the lyrics column would be. No blur there,
+             so the tint is darker. -->
+        <Style Selector="views|QueueView.Floating">
+            <Setter Property="Width" Value="400" />
+            <Setter Property="Margin" Value="0,64,40,200" />
+        </Style>
+        <Style Selector="views|QueueView.Floating Border#Card">
+            <Setter Property="Background" Value="#D10C0C10" />
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+        </Style>
+
+        <!-- Rows: grip and remove appear on hover / keyboard selection; played rows recede. -->
+        <Style Selector="Grid.QueueRow :is(Control).HoverOnly">
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+        <Style Selector="ListBoxItem:pointerover Grid.QueueRow :is(Control).HoverOnly, ListBoxItem:selected Grid.QueueRow :is(Control).HoverOnly">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Grid.QueueRow.Played">
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+        <Style Selector="Grid.QueueRow.Dragging">
+            <Setter Property="Opacity" Value="0.3" />
+        </Style>
+        <Style Selector="TextBlock.QueueTitle">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        </Style>
+        <Style Selector="TextBlock.QueueTitle.Current">
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Panel>
+        <!-- Registered with the visualizer as a blur target: frosted glass behind the docked column only. -->
+        <Border Name="GlassBackdrop" IsHitTestVisible="False" IsVisible="{Binding IsQueueDocked}" />
+
+        <Border Name="Card" ClipToBounds="True">
+            <DockPanel>
+                <!-- Header: title, what's left, clear, close. -->
+                <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto,Auto" Margin="20,16,12,10">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                        <TextBlock Text="Queue" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextStrongBrush}" />
+                        <TextBlock Text="{Binding Queue.UpNextSummary}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"
+                                   IsVisible="{Binding Queue.HasUpcoming}" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Classes="Link" Margin="0,0,10,0" VerticalAlignment="Center"
+                            Command="{Binding Queue.ClearUpcomingCommand}" IsVisible="{Binding Queue.HasUpcoming}"
+                            ToolTip.Tip="Remove everything after the current song">
+                        <TextBlock Text="Clear" FontSize="13" />
+                    </Button>
+                    <Button Grid.Column="2" Classes="Icon" Command="{Binding CloseQueueCommand}"
+                            ToolTip.Tip="Close queue (Ctrl+Q)" AutomationProperties.Name="Close queue">
+                        <ctrl:LineIcon Data="{StaticResource IconClose}" Size="16" />
+                    </Button>
+                </Grid>
+
+                <TextBlock DockPanel.Dock="Bottom" Margin="20,6,20,12" FontSize="11"
+                           Foreground="{StaticResource TextTertiaryBrush}" IsVisible="{Binding !Queue.IsEmpty}"
+                           Text="Drag to reorder · Alt+↑/↓ to move · Delete to remove" TextTrimming="CharacterEllipsis" />
+
+                <!-- Empty -->
+                <StackPanel DockPanel.Dock="Top" Margin="20,8,20,0" Spacing="6" IsVisible="{Binding Queue.IsEmpty}">
+                    <TextBlock Text="Nothing queued" FontSize="15" FontWeight="Medium" />
+                    <TextBlock FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"
+                               Text="Right-click a song or album and choose Play next or Add to queue." />
+                </StackPanel>
+
+                <!-- The list, with the drop marker drawn over it while dragging. -->
+                <Panel Margin="8,0,8,0" IsVisible="{Binding !Queue.IsEmpty}">
+                    <ListBox Name="QueueList" Classes="Rows" ItemsSource="{Binding Queue.Items}" SelectionMode="Single"
+                             AutomationProperties.Name="Queue">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="items:QueueItemViewModel">
+                                <Grid Classes="QueueRow" Classes.Played="{Binding IsPlayed}" Classes.Dragging="{Binding IsDragging}"
+                                      ColumnDefinitions="22,36,*,Auto,30" Height="52" Background="Transparent"
+                                      DoubleTapped="OnRowDoubleTapped" ContextRequested="OnRowContextRequested">
+                                    <ctrl:LineIcon Classes="HoverOnly" Data="{StaticResource IconGrip}" Size="16" StrokeThickness="2.6"
+                                                   Foreground="{StaticResource TextTertiaryBrush}" Cursor="SizeNorthSouth"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   ToolTip.Tip="Drag to reorder" />
+
+                                    <Border Grid.Column="1" Classes="ArtSlot" Width="36" Height="36" CornerRadius="4">
+                                        <Panel>
+                                            <Image Source="{Binding Track.CoverPath, Converter={x:Static conv:CoverImageConverter.Instance}, ConverterParameter=96}" />
+                                            <Border Background="#99000000" IsVisible="{Binding IsCurrent}">
+                                                <ctrl:NowPlayingIndicator HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                          BarBrush="{StaticResource AccentBrush}"
+                                                                          IsActive="{Binding $parent[UserControl].((vm:MainWindowViewModel)DataContext).NowPlaying.IsPlaying}" />
+                                            </Border>
+                                        </Panel>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="12,0,8,0" Spacing="2">
+                                        <TextBlock Classes="QueueTitle" Classes.Current="{Binding IsCurrent}" Text="{Binding Track.Title}"
+                                                   FontSize="13" FontWeight="Medium" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="{Binding Track.Artist}" FontSize="12" TextTrimming="CharacterEllipsis"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Column="3" Classes="Mono" Text="{Binding Track.Duration}" FontSize="11"
+                                               Foreground="{StaticResource TextTertiaryBrush}" VerticalAlignment="Center" />
+
+                                    <Button Grid.Column="4" Classes="Icon HoverOnly" Width="26" Height="26" HorizontalAlignment="Right"
+                                            IsVisible="{Binding !IsCurrent}"
+                                            Command="{Binding $parent[UserControl].((vm:MainWindowViewModel)DataContext).Queue.RemoveCommand}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip.Tip="Remove from queue" AutomationProperties.Name="Remove from queue">
+                                        <ctrl:LineIcon Data="{StaticResource IconClose}" Size="13" />
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <Canvas IsHitTestVisible="False">
+                        <Border Name="DropMarker" Height="2" CornerRadius="1" IsVisible="False"
+                                Background="{StaticResource AccentBrush}" />
+                    </Canvas>
+                </Panel>
+            </DockPanel>
+        </Border>
+    </Panel>
+</UserControl>

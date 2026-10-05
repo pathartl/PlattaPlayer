@@ -1,11 +1,11 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
-using Avalonia.Threading;
 using PlattaPlayer.Core.Abstractions;
 using PlattaPlayer.Visualizations.Abstractions;
 using PlattaPlayer.Visualizations.Wmp.Audio;
@@ -29,7 +29,7 @@ namespace PlattaPlayer.Visualizations.Wmp.Battery.Plugin;
 ///
 /// Next / previous / random step through the 26 presets; preset 0 is "Randomization".
 /// </summary>
-public sealed class WmpBatteryVisualizer : OpenGlControlBase, IVisualizationController
+public sealed class WmpBatteryVisualizer : OpenGlControlBase, IVisualizationController, IVisualizerHealth
 {
     public static readonly StyledProperty<IAudioTap?> TapProperty =
         AvaloniaProperty.Register<WmpBatteryVisualizer, IAudioTap?>(nameof(Tap));
@@ -60,7 +60,7 @@ public sealed class WmpBatteryVisualizer : OpenGlControlBase, IVisualizationCont
     private readonly BatteryGpuEngine _engine = new(seed: (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
     private readonly TapToTimedLevel _adapter = new();
     private readonly Random _random = new();
-    private DispatcherTimer? _pacer;
+    private readonly WmpFrameClock _clock = new(WmpFrameRate.WindowedInterval);
     private volatile int _requestedPreset = -1;
     private string _lastName = "";
 
@@ -69,6 +69,11 @@ public sealed class WmpBatteryVisualizer : OpenGlControlBase, IVisualizationCont
     private bool _loggedRender;
     private BatteryFieldScale _pendingScale;
     private long _pendingSince;
+    private long _heartbeat;
+
+    public long Heartbeat => Interlocked.Read(ref _heartbeat);
+
+    public void Resume() => RequestNextFrameRendering();
 
     public void NextPreset() { _requestedPreset = (Pending + 1) % _engine.Core.PresetCount; RequestNextFrameRendering(); }
 
@@ -83,22 +88,15 @@ public sealed class WmpBatteryVisualizer : OpenGlControlBase, IVisualizationCont
     private int Pending => _requestedPreset >= 0 ? _requestedPreset : _engine.Core.CurrentPreset;
 
     /// <summary>
-    /// Paces redraws at WMP's visualization rate with a timer. Every motion constant in the effect is
-    /// per-frame, so the tick rate IS the animation speed.
+    /// Redraws on every display refresh and runs the effect steps <see cref="_clock"/> says are due. Every
+    /// motion constant in the effect is per-step, so the step rate IS the animation speed, and it no longer
+    /// depends on how a timer happens to fire.
     /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        _pacer = new DispatcherTimer { Interval = WmpFrameRate.WindowedInterval };
-        _pacer.Tick += (_, _) => RequestNextFrameRendering();
-        _pacer.Start();
-    }
-
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnDetachedFromVisualTree(e);
-        _pacer?.Stop();
-        _pacer = null;
+        _clock.Reset();
+        RequestNextFrameRendering();
     }
 
     protected override void OnOpenGlInit(GlInterface gl)
@@ -127,7 +125,9 @@ public sealed class WmpBatteryVisualizer : OpenGlControlBase, IVisualizationCont
     {
         if (_failed || _renderer is null) return;
         try { RenderFrame(_renderer, fb); }
-        catch (Exception ex) { _failed = true; LogFailure("render", ex); }
+        catch (Exception ex) { _failed = true; LogFailure("render", ex); return; }
+        Interlocked.Increment(ref _heartbeat);
+        RequestNextFrameRendering();
     }
 
     private void RenderFrame(BatteryGlRenderer renderer, int fb)
@@ -156,13 +156,16 @@ public sealed class WmpBatteryVisualizer : OpenGlControlBase, IVisualizationCont
             _engine.Core.SetCurrentPreset(requested);
         }
 
-        var frame = _engine.Render(_adapter.Update(Tap));
-        renderer.Step(frame, _engine.Tables);
-        if (!_loggedRender)
+        for (var due = _clock.TakeDueSteps(); due > 0; due--)
         {
-            _loggedRender = true;
-            LogInfo($"first frame: preset '{_engine.Core.PresetTitle(_engine.Core.CurrentPreset)}', " +
-                    $"{frame.Commands.Count} steps, {frame.VertexCount} vertices");
+            var frame = _engine.Render(_adapter.Update(Tap));
+            renderer.Step(frame, _engine.Tables);
+            if (!_loggedRender)
+            {
+                _loggedRender = true;
+                LogInfo($"first frame: preset '{_engine.Core.PresetTitle(_engine.Core.CurrentPreset)}', " +
+                        $"{frame.Commands.Count} steps, {frame.VertexCount} vertices");
+            }
         }
 
         renderer.Present(fb, deviceW, deviceH);

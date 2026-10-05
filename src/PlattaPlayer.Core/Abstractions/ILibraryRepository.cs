@@ -20,6 +20,11 @@ public interface ILibraryRepository
     Task<LibraryCounts> GetLibraryCountsAsync(CancellationToken ct = default);
     /// <summary>Track count per album-artist id.</summary>
     Task<IReadOnlyDictionary<int, int>> GetTrackCountsByArtistAsync(CancellationToken ct = default);
+    /// <summary>Every genre value in the library, by name.</summary>
+    Task<IReadOnlyList<GenreSummary>> GetGenresAsync(CancellationToken ct = default);
+    /// <summary>Tracks having <paramref name="genre"/> among their genre values (case-insensitive), newest album
+    /// first, then disc/track order.</summary>
+    Task<IReadOnlyList<Track>> GetGenreTracksAsync(string genre, CancellationToken ct = default);
 
     // Home sections
     Task<IReadOnlyList<Album>> GetRecentlyAddedAlbumsAsync(int count, CancellationToken ct = default);

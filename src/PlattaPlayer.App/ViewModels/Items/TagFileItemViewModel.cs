@@ -21,6 +21,8 @@ namespace PlattaPlayer.App.ViewModels.Items;
 /// (<see cref="ICodecAlbumFiles"/>, e.g. an M3U beside MIDI files). Covers are the plugin's own (a tag, the
 /// album file) or the folder's image.
 /// </para>
+/// <para>A file holding several songs (<see cref="ICodecSubsongs"/>, e.g. a Game Boy .gbs) has a row per song;
+/// fields the format keeps once per file (the game) are shared by those rows.</para>
 /// </summary>
 public sealed class TagFileItemViewModel : ObservableObject
 {
@@ -48,10 +50,12 @@ public sealed class TagFileItemViewModel : ObservableObject
     private Dictionary<string, string?> _savedExtra = new();
     private string? _resolvedCover;
 
-    public TagFileItemViewModel(string filePath, ICodecPlugin plugin)
+    public TagFileItemViewModel(string filePath, ICodecPlugin plugin, int? subsong = null)
     {
         FilePath = filePath;
-        FileName = Path.GetFileName(filePath);
+        Subsong = subsong;
+        Key = subsong is { } n ? $"{Path.GetFullPath(filePath)}::{n}" : Path.GetFullPath(filePath);
+        FileName = subsong is { } song ? $"{Path.GetFileName(filePath)} #{song}" : Path.GetFileName(filePath);
         FolderName = Path.GetFileName(Path.GetDirectoryName(filePath));
         Plugin = plugin;
         AlbumFiles = plugin as ICodecAlbumFiles;
@@ -60,6 +64,13 @@ public sealed class TagFileItemViewModel : ObservableObject
     }
 
     public string FilePath { get; }
+
+    /// <summary>Which song of a multi-song file the row is, or null for a file that is one track.</summary>
+    public int? Subsong { get; }
+
+    /// <summary>Identifies the row: the full path, plus the song number for a song of a multi-song file.</summary>
+    public string Key { get; }
+
     public string FileName { get; }
     public string? FolderName { get; }
 
@@ -85,6 +96,12 @@ public sealed class TagFileItemViewModel : ObservableObject
     /// the album's files rather than in each file.</summary>
     public bool AlbumFieldsInAlbumFile => AlbumFiles is not null;
 
+    /// <summary>Whether the album field (<see cref="AlbumField"/>, <see cref="AlbumArtistField"/> or
+    /// <see cref="GenreField"/>) is saved in the album file rather than in the file: a format with an album file
+    /// may keep some album fields in its own tags (a VGM's game).</summary>
+    public bool InAlbumFile(string field) =>
+        AlbumFiles is not null && StandardKeys.TryGetValue(field, out var key) && AlbumFiles.AlbumFileKeys.Contains(key, StringComparer.OrdinalIgnoreCase);
+
     /// <summary>Working copy of the standard tag values: staged edits live here until saved.</summary>
     public StandardTags Tags { get; private set; } = new();
 
@@ -106,6 +123,12 @@ public sealed class TagFileItemViewModel : ObservableObject
     public CoverOrigin CoverOrigin { get; private set; }
 
     public bool HasAlbumEdits => AlbumEdit is not null || AlbumArtistEdit is not null || GenreEdit is not null || CoverEdit is not null;
+
+    /// <summary>The staged album edits that go to the album file (null for those saved in the file).</summary>
+    public (string? Album, string? AlbumArtist, string? Genre, string? Cover) AlbumFileEdits => AlbumFiles is null
+        ? default
+        : (InAlbumFile(AlbumField) ? AlbumEdit : null, InAlbumFile(AlbumArtistField) ? AlbumArtistEdit : null,
+            InAlbumFile(GenreField) ? GenreEdit : null, CoverEdit);
 
     /// <summary>The track number this file would get from the reordered rows, while the new order is
     /// unsaved; null otherwise.</summary>
@@ -130,7 +153,12 @@ public sealed class TagFileItemViewModel : ObservableObject
     /// <summary>The row has edits that haven't been saved.</summary>
     public bool IsDirty => TagsChanged || HasAlbumEdits;
 
-    public string Title => Tags.Title ?? AlbumEntry?.Title ?? Path.GetFileNameWithoutExtension(FilePath);
+    public string Title => Tags.Title ?? AlbumEntry?.Title ?? FallbackTitle;
+
+    /// <summary>The title the library shows when the file gives none, as <c>LocalMediaSource</c> names it.</summary>
+    public string FallbackTitle => Subsong is { } song
+        ? $"{Path.GetFileNameWithoutExtension(FilePath)} #{song}"
+        : Path.GetFileNameWithoutExtension(FilePath);
     public string? Artist => Tags.Artist ?? AlbumEntry?.Artist;
     public string? AlbumArtist => AlbumArtistEdit is { } edit ? Blank(edit) : Tags.AlbumArtist ?? AlbumEntry?.AlbumArtist;
     public string? Album => AlbumEdit is { } edit ? Blank(edit) ?? FolderName : Tags.Album ?? AlbumEntry?.Album ?? FolderName;
@@ -161,7 +189,7 @@ public sealed class TagFileItemViewModel : ObservableObject
     {
         try
         {
-            _savedTags = Plugin.ReadTags(FilePath);
+            _savedTags = ReadTags();
         }
         catch
         {
@@ -202,36 +230,51 @@ public sealed class TagFileItemViewModel : ObservableObject
             : CoverOrigin.File;
     }
 
-    /// <summary>Moves staged album-field edits into the tags, for a format that saves them in the file.</summary>
+    /// <summary>Moves staged album-field edits into the tags, for the fields the format saves in the file. The
+    /// file's own copy of a field saved in the album file is cleared, as the plugin cleared it.</summary>
     public void ApplyAlbumEdits()
     {
-        if (AlbumEdit is not null) Tags.Album = Blank(AlbumEdit);
-        if (AlbumArtistEdit is not null) Tags.AlbumArtist = Blank(AlbumArtistEdit);
-        if (GenreEdit is not null) Tags.Genre = Blank(GenreEdit);
+        if (AlbumEdit is not null) Tags.Album = InAlbumFile(AlbumField) ? null : Blank(AlbumEdit);
+        if (AlbumArtistEdit is not null) Tags.AlbumArtist = InAlbumFile(AlbumArtistField) ? null : Blank(AlbumArtistEdit);
+        if (GenreEdit is not null) Tags.Genre = InAlbumFile(GenreField) ? null : Blank(GenreEdit);
     }
 
-    /// <summary>Writes the standard tags and the format-specific ones into the file.</summary>
-    public Task WriteAsync()
+    /// <summary>
+    /// Writes the fields edited on this row into the file. The rest are written as the file has them now, not
+    /// as they were loaded: another row may have changed them since (a song of the same multi-song file
+    /// sharing its game field), and this row must not put them back.
+    /// </summary>
+    public Task WriteAsync() => Task.Run(() =>
     {
-        // Start from what was read, so keys the editor doesn't show survive.
-        var tags = _savedTags.Clone();
-        Set(tags, TitleField, Tags.Title);
-        Set(tags, ArtistField, Tags.Artist);
-        Set(tags, AlbumField, Tags.Album);
-        Set(tags, AlbumArtistField, Tags.AlbumArtist);
-        Set(tags, GenreField, Tags.Genre);
-        Set(tags, YearField, Tags.Year?.ToString(CultureInfo.InvariantCulture));
-        Set(tags, TrackField, Tags.Track?.ToString(CultureInfo.InvariantCulture));
-        Set(tags, DiscField, Tags.Disc?.ToString(CultureInfo.InvariantCulture));
+        // Start from the file, so keys the editor doesn't show survive.
+        var tags = ReadTags();
+        Set(tags, TitleField, Tags.Title, _saved.Title);
+        Set(tags, ArtistField, Tags.Artist, _saved.Artist);
+        Set(tags, AlbumField, Tags.Album, _saved.Album);
+        Set(tags, AlbumArtistField, Tags.AlbumArtist, _saved.AlbumArtist);
+        Set(tags, GenreField, Tags.Genre, _saved.Genre);
+        Set(tags, YearField, Number(Tags.Year), Number(_saved.Year));
+        Set(tags, TrackField, Number(Tags.Track), Number(_saved.Track));
+        Set(tags, DiscField, Number(Tags.Disc), Number(_saved.Disc));
         foreach (var (key, value) in Extra)
-            tags[key] = value;
-        return Task.Run(() => Plugin.WriteTags(FilePath, tags));
+            if (!string.Equals(Blank(value ?? ""), Blank(_savedExtra.GetValueOrDefault(key) ?? ""), StringComparison.Ordinal))
+                tags[key] = value;
+
+        if (Subsong is { } subsong && Plugin is ICodecSubsongs subsongs)
+            subsongs.WriteTags(FilePath, subsong, tags);
+        else
+            Plugin.WriteTags(FilePath, tags);
+    });
+
+    private CodecTags ReadTags() =>
+        Subsong is { } subsong && Plugin is ICodecSubsongs subsongs ? subsongs.ReadTags(FilePath, subsong) : Plugin.ReadTags(FilePath);
+
+    private void Set(CodecTags tags, string field, string? value, string? saved)
+    {
+        if (CanEdit(field) && value != saved) tags[StandardKeys[field]] = value;
     }
 
-    private void Set(CodecTags tags, string field, string? value)
-    {
-        if (CanEdit(field)) tags[StandardKeys[field]] = value;
-    }
+    private static string? Number(int? value) => value?.ToString(CultureInfo.InvariantCulture);
 
     /// <summary>Refreshes the displayed columns after staged edits change.</summary>
     public void Refresh()

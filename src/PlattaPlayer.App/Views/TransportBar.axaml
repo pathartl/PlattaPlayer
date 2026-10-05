@@ -11,9 +11,10 @@
             BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="0,1,0,0">
         <Grid ColumnDefinitions="340,*,340">
 
-            <!-- Track: the whole block opens Now Playing; the names link to the artist / album. -->
+            <!-- Track: the whole block opens Now Playing; the names link to the artist / album.
+                 Padding gives the hover fill room around the art; the negative margin keeps the art in place. -->
             <Button Grid.Column="0" Classes="Plain" HorizontalAlignment="Left" VerticalAlignment="Center"
-                    IsVisible="{Binding NowPlaying.HasTrack}" Margin="0,0,24,0"
+                    IsVisible="{Binding NowPlaying.HasTrack}" Margin="-8,0,16,0" Padding="8" CornerRadius="8"
                     Command="{Binding OpenNowPlayingCommand}"
                     ToolTip.Tip="Open Now Playing" AutomationProperties.Name="Open Now Playing">
                 <StackPanel Orientation="Horizontal" Spacing="14">
@@ -23,8 +24,10 @@
                         </Panel>
                     </Border>
                     <StackPanel VerticalAlignment="Center" Spacing="3" MaxWidth="256">
-                        <TextBlock Text="{Binding NowPlaying.Title}" FontSize="14" FontWeight="Medium"
-                                   Foreground="{StaticResource TextStrongBrush}" TextTrimming="CharacterEllipsis" />
+                        <ctrl:Marquee HorizontalAlignment="Left">
+                            <TextBlock Text="{Binding NowPlaying.Title}" FontSize="14" FontWeight="Medium"
+                                       Foreground="{StaticResource TextStrongBrush}" />
+                        </ctrl:Marquee>
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <Button Classes="Link" Command="{Binding GoToArtistCommand}" CommandParameter="{Binding NowPlaying.ArtistId}">
                                 <TextBlock Text="{Binding NowPlaying.Artist}" FontSize="12" MaxWidth="130" TextTrimming="CharacterEllipsis" />
@@ -127,6 +130,11 @@
                 <Button Classes="Icon" Command="{Binding ToggleLyricsCommand}"
                         ToolTip.Tip="Lyrics (Ctrl+L)" AutomationProperties.Name="Lyrics">
                     <ctrl:LineIcon Data="{StaticResource IconLyrics}" />
+                </Button>
+                <Button Classes="Icon" Classes.Active="{Binding IsQueueOpen}"
+                        Command="{Binding ToggleQueueCommand}"
+                        ToolTip.Tip="Queue (Ctrl+Q)" AutomationProperties.Name="Queue">
+                    <ctrl:LineIcon Data="{StaticResource IconQueue}" />
                 </Button>
                 <Button Classes="Icon" Command="{Binding NowPlaying.ToggleMuteCommand}"
                         ToolTip.Tip="Mute" AutomationProperties.Name="Mute">

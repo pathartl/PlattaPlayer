@@ -17,6 +17,21 @@ namespace PlattaPlayer.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
 
+            modelBuilder.Entity("AlbumArtist", b =>
+                {
+                    b.Property<int>("AlbumsId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ArtistsId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("AlbumsId", "ArtistsId");
+
+                    b.HasIndex("ArtistsId");
+
+                    b.ToTable("AlbumArtistCredits", (string)null);
+                });
+
             modelBuilder.Entity("PlattaPlayer.Core.Models.Album", b =>
                 {
                     b.Property<int>("Id")
@@ -25,6 +40,10 @@ namespace PlattaPlayer.Data.Migrations
 
                     b.Property<int>("AlbumArtistId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("ArtistCredit")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("CoverArtKey")
                         .HasColumnType("TEXT");
@@ -48,9 +67,11 @@ namespace PlattaPlayer.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AlbumArtistId");
+
                     b.HasIndex("SortTitle");
 
-                    b.HasIndex("AlbumArtistId", "Title")
+                    b.HasIndex("ArtistCredit", "Title")
                         .IsUnique();
 
                     b.ToTable("Albums");
@@ -221,6 +242,9 @@ namespace PlattaPlayer.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("Subsong")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -248,10 +272,25 @@ namespace PlattaPlayer.Data.Migrations
                     b.ToTable("Tracks");
                 });
 
+            modelBuilder.Entity("AlbumArtist", b =>
+                {
+                    b.HasOne("PlattaPlayer.Core.Models.Album", null)
+                        .WithMany()
+                        .HasForeignKey("AlbumsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PlattaPlayer.Core.Models.Artist", null)
+                        .WithMany()
+                        .HasForeignKey("ArtistsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("PlattaPlayer.Core.Models.Album", b =>
                 {
                     b.HasOne("PlattaPlayer.Core.Models.Artist", "AlbumArtist")
-                        .WithMany("Albums")
+                        .WithMany()
                         .HasForeignKey("AlbumArtistId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -303,11 +342,6 @@ namespace PlattaPlayer.Data.Migrations
             modelBuilder.Entity("PlattaPlayer.Core.Models.Album", b =>
                 {
                     b.Navigation("Tracks");
-                });
-
-            modelBuilder.Entity("PlattaPlayer.Core.Models.Artist", b =>
-                {
-                    b.Navigation("Albums");
                 });
 
             modelBuilder.Entity("PlattaPlayer.Core.Models.Playlist", b =>

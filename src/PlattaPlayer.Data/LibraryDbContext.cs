@@ -39,12 +39,17 @@ public class LibraryDbContext : DbContext
         b.Entity<Album>(e =>
         {
             e.HasKey(x => x.Id);
-            e.HasIndex(x => new { x.AlbumArtistId, x.Title }).IsUnique();
+            e.HasIndex(x => new { x.ArtistCredit, x.Title }).IsUnique();
+            e.HasIndex(x => x.AlbumArtistId);
             e.HasIndex(x => x.SortTitle);
+            e.Property(x => x.ArtistCredit).IsRequired();
             e.HasOne(x => x.AlbumArtist)
-                .WithMany(a => a.Albums)
+                .WithMany()
                 .HasForeignKey(x => x.AlbumArtistId)
                 .OnDelete(DeleteBehavior.Cascade);
+            e.HasMany(x => x.Artists)
+                .WithMany(a => a.Albums)
+                .UsingEntity(j => j.ToTable("AlbumArtistCredits"));
         });
 
         b.Entity<Track>(e =>

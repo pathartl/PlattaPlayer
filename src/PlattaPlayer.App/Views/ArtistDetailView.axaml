@@ -67,10 +67,10 @@
         <!-- Discography grid: square art slots (contain-fit), newest first. -->
         <ctrl:ResponsiveCoverGrid Grid.Row="3" ItemsSource="{Binding Albums}"
                                   MinItemWidth="180" MinColumns="2" MaxColumns="8"
-                                  Spacing="24" RowSpacing="32" CaptionHeight="56" EdgePadding="0">
+                                  Spacing="8" RowSpacing="16" CaptionHeight="56" EdgePadding="0" ItemInset="10">
             <ctrl:ResponsiveCoverGrid.ItemTemplate>
                 <DataTemplate x:DataType="items:AlbumItemViewModel">
-                    <Button Classes="Plain" VerticalAlignment="Top"
+                    <Button Classes="Tile" VerticalAlignment="Top" ContextRequested="OnAlbumContextRequested"
                             Command="{Binding $parent[UserControl].((vm:ArtistDetailViewModel)DataContext).OpenAlbumCommand}"
                             CommandParameter="{Binding}" AutomationProperties.Name="{Binding Title}">
                         <StackPanel Spacing="12">

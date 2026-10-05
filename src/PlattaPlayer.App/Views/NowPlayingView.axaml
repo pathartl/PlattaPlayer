@@ -110,6 +110,11 @@
                                             <TextBlock Text="Random preset" VerticalAlignment="Center" />
                                         </StackPanel>
                                     </Button>
+                                    <Button Classes="Outline" HorizontalAlignment="Left"
+                                            Command="{Binding Visualization.RestartVisualizerCommand}"
+                                            ToolTip.Tip="Restart a frozen visualizer (Ctrl+R)">
+                                        <TextBlock Text="Restart visualizer" VerticalAlignment="Center" />
+                                    </Button>
                                 </StackPanel>
                             </Flyout>
                         </Button.Flyout>
@@ -169,8 +174,8 @@
 
         <!-- Bottom: art, title, badges, seek bar and controls. -->
         <StackPanel Margin="40,0,40,28" VerticalAlignment="Bottom" Spacing="22">
-            <StackPanel Orientation="Horizontal" Spacing="28">
-                <Button Classes="Plain" VerticalAlignment="Bottom"
+            <Grid ColumnDefinitions="Auto,*">
+                <Button Classes="Plain" VerticalAlignment="Bottom" Margin="0,0,28,0"
                         Command="{Binding GoToAlbumCommand}" CommandParameter="{Binding NowPlaying.AlbumId}"
                         ToolTip.Tip="Open album" AutomationProperties.Name="Open album">
                     <Border Classes="ArtSlot" Width="240" Height="240" CornerRadius="6">
@@ -181,10 +186,13 @@
                     </Border>
                 </Button>
 
-                <StackPanel VerticalAlignment="Bottom" Spacing="10" Margin="0,0,0,4">
-                    <TextBlock Name="TitleText" Text="{Binding NowPlaying.Title}" FontSize="44" LineHeight="46"
-                               FontWeight="SemiBold" LetterSpacing="-0.88" TextTrimming="CharacterEllipsis"
-                               Foreground="{StaticResource TextPrimaryBrush}" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Bottom" Spacing="10" Margin="0,0,0,4">
+                    <!-- Too-long titles hold, then scroll. -->
+                    <ctrl:Marquee HorizontalAlignment="Left">
+                        <TextBlock Name="TitleText" Text="{Binding NowPlaying.Title}" FontSize="44" LineHeight="46"
+                                   FontWeight="SemiBold" LetterSpacing="-0.88"
+                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                    </ctrl:Marquee>
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <Button Classes="Link Strong" FontSize="16"
                                 Command="{Binding GoToArtistCommand}" CommandParameter="{Binding NowPlaying.ArtistId}">
@@ -215,7 +223,7 @@
                         </Border>
                     </WrapPanel>
                 </StackPanel>
-            </StackPanel>
+            </Grid>
 
             <!-- Full-width seek bar -->
             <Grid Classes="Chrome" ColumnDefinitions="40,*,40">
@@ -240,6 +248,7 @@
                                 <MenuItem Header="Go to album" Command="{Binding GoToAlbumCommand}" CommandParameter="{Binding NowPlaying.AlbumId}" />
                                 <MenuItem Header="Go to artist" Command="{Binding GoToArtistCommand}" CommandParameter="{Binding NowPlaying.ArtistId}" />
                                 <MenuItem Header="Next visualizer preset" Command="{Binding Visualization.NextPresetCommand}" />
+                                <MenuItem Header="Restart visualizer" InputGesture="Ctrl+R" Command="{Binding Visualization.RestartVisualizerCommand}" />
                             </MenuFlyout>
                         </Button.Flyout>
                     </Button>
@@ -283,6 +292,11 @@
                             Command="{Binding ToggleLyricsCommand}"
                             ToolTip.Tip="Lyrics (Ctrl+L)" AutomationProperties.Name="Lyrics">
                         <ctrl:LineIcon Data="{StaticResource IconLyrics}" />
+                    </Button>
+                    <Button Classes="Icon Lg" Classes.Active="{Binding IsQueueOpen}"
+                            Command="{Binding ToggleQueueCommand}"
+                            ToolTip.Tip="Queue (Ctrl+Q)" AutomationProperties.Name="Queue">
+                        <ctrl:LineIcon Data="{StaticResource IconQueue}" />
                     </Button>
                     <Button Classes="Icon Lg" Command="{Binding NowPlaying.ToggleMuteCommand}"
                             ToolTip.Tip="Mute" AutomationProperties.Name="Mute">

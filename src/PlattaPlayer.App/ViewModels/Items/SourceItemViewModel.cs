@@ -12,6 +12,20 @@ public sealed partial class SourceItemViewModel : ObservableObject
     public string DisplayName => Config.DisplayName;
     public SourceType Type => Config.Type;
 
+    /// <summary>The source type as shown in the "Add source" menu.</summary>
+    public string TypeLabel => Type switch
+    {
+        SourceType.Jellyfin => "Jellyfin library",
+        _ => "Local path"
+    };
+
+    /// <summary>Segoe Fluent glyph for the source type: folder for local paths, globe for Jellyfin.</summary>
+    public string Glyph => Type switch
+    {
+        SourceType.Jellyfin => "",
+        _ => ""
+    };
+
     /// <summary>True while this source is being scanned (spins its reindex button).</summary>
     [ObservableProperty] private bool _isSyncing;
 }

@@ -10,7 +10,7 @@
     <UserControl.Styles>
         <Style Selector="TextBlock.JumpLetter">
             <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
-            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontSize" Value="13" />
             <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
@@ -23,7 +23,7 @@
         </Style>
     </UserControl.Styles>
 
-    <Grid ColumnDefinitions="*,28" RowDefinitions="Auto,*" Margin="28,32,0,0">
+    <Grid ColumnDefinitions="*,40" RowDefinitions="Auto,*" Margin="28,32,0,0">
 
         <!-- Header: title + stats, sort and grid/list toggle -->
         <Grid Grid.Column="0" ColumnDefinitions="*,Auto" Margin="12,0,12,28">
@@ -167,7 +167,7 @@
         <ItemsControl Grid.Column="1" Grid.RowSpan="2" ItemsSource="{Binding Letters}" Margin="0,0,8,0">
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:JumpLetter">
-                    <Button Classes="Plain Jump" Height="18" IsEnabled="{Binding IsAvailable}"
+                    <Button Classes="Plain Jump" Height="24" HorizontalAlignment="Stretch" IsEnabled="{Binding IsAvailable}"
                             Command="{Binding $parent[UserControl].((vm:ArtistsViewModel)DataContext).JumpToCommand}"
                             CommandParameter="{Binding}" AutomationProperties.Name="{Binding Text}">
                         <TextBlock Classes="JumpLetter" Classes.Dim="{Binding !IsAvailable}" Text="{Binding Text}" />

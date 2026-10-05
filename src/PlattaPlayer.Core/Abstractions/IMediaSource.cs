@@ -31,9 +31,9 @@ public interface ILocalFileMediaSource : IMediaSource
     /// <summary>Whether <paramref name="path"/> lies in one of the source's folders.</summary>
     bool Owns(string path);
 
-    /// <summary>Reads one file as <see cref="EnumerateTracksAsync"/> would, or null when it isn't a
-    /// supported media file (or no longer exists).</summary>
-    SourceTrack? ReadFile(string path);
+    /// <summary>Reads one file as <see cref="EnumerateTracksAsync"/> would: its track, or one per song of a
+    /// multi-song file. Empty when it isn't a supported media file (or no longer exists).</summary>
+    IReadOnlyList<SourceTrack> ReadFile(string path);
 }
 
 /// <summary>Factory that builds a live <see cref="IMediaSource"/> from a stored configuration.</summary>
