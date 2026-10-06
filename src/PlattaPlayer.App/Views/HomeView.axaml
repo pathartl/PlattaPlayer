@@ -3,125 +3,253 @@
              xmlns:vm="using:PlattaPlayer.App.ViewModels"
              xmlns:items="using:PlattaPlayer.App.ViewModels.Items"
              xmlns:conv="using:PlattaPlayer.App.Converters"
+             xmlns:ctrl="using:PlattaPlayer.App.Controls"
              x:Class="PlattaPlayer.App.Views.HomeView"
              x:DataType="vm:HomeViewModel">
 
-    <ScrollViewer Name="PageScroller" Padding="32,24">
-        <StackPanel Spacing="8">
-            <TextBlock Text="Home" Classes="PageTitle" />
+    <UserControl.Resources>
+        <!-- Album tile shared by the Recently played and Newly added shelves. -->
+        <DataTemplate x:Key="AlbumTile" x:DataType="items:AlbumItemViewModel">
+            <Button Classes="Tile" Width="196" VerticalAlignment="Top" ContextRequested="OnAlbumContextRequested"
+                    Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenAlbumCommand}"
+                    CommandParameter="{Binding}" AutomationProperties.Name="{Binding Title}">
+                <StackPanel Spacing="12">
+                    <Border Classes="ArtSlot" CornerRadius="4" Width="176" Height="176">
+                        <Panel>
+                            <ctrl:LineIcon Data="{StaticResource IconAlbum}" Size="40" Foreground="{StaticResource TextDisabledBrush}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           IsVisible="{Binding CoverPath, Converter={x:Static ObjectConverters.IsNull}}" />
+                            <Image Source="{Binding CoverPath, Converter={x:Static conv:CoverImageConverter.Instance}, ConverterParameter=400}" />
+                        </Panel>
+                    </Border>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Medium" TextTrimming="CharacterEllipsis">
+                            <TextBlock.Foreground>
+                                <MultiBinding Converter="{x:Static conv:PlayingBrushConverter.Strong}">
+                                    <Binding Path="Id" />
+                                    <Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).NowPlaying.AlbumId" />
+                                </MultiBinding>
+                            </TextBlock.Foreground>
+                        </TextBlock>
+                        <Button Classes="Link" CommandParameter="{Binding ArtistId}"
+                                Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).GoToArtistCommand}">
+                            <TextBlock Text="{Binding Artist}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Button>
+        </DataTemplate>
+    </UserControl.Resources>
 
-            <TextBlock Text="No music yet. Add a local folder in Settings to get started."
-                       Classes="Secondary" FontSize="15" Margin="0,8"
-                       IsVisible="{Binding !HasContent}" />
+    <ScrollViewer Name="PageScroller" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="40,32,28,32">
 
-            <StackPanel IsVisible="{Binding HasContent}" Spacing="8">
-                <TextBlock Text="Recently Added" Classes="SectionTitle" />
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                    <ItemsControl ItemsSource="{Binding RecentlyAdded}">
+            <!-- Header: greeting + library totals -->
+            <StackPanel Spacing="6" Margin="0,0,0,28">
+                <TextBlock Classes="H1" Text="{Binding Greeting}" />
+                <TextBlock Classes="Meta" Text="{Binding Stats}" IsVisible="{Binding !IsEmpty}" />
+            </StackPanel>
+
+            <TextBlock Text="No music yet. Add a music folder in Settings to get started."
+                       Classes="Secondary" FontSize="15" IsVisible="{Binding IsEmpty}" />
+
+            <StackPanel IsVisible="{Binding !IsEmpty}">
+
+                <!-- Quick links into each library section -->
+                <UniformGrid Columns="5" Margin="0,0,12,36">
+                    <UniformGrid.Styles>
+                        <Style Selector="Button.Card">
+                            <Setter Property="Margin" Value="0,0,12,0" />
+                            <Setter Property="Command" Value="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).NavigateCommand}" />
+                        </Style>
+                        <Style Selector="Button.Card ctrl|LineIcon">
+                            <Setter Property="Size" Value="22" />
+                            <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+                        </Style>
+                        <Style Selector="TextBlock.Label">
+                            <Setter Property="FontSize" Value="15" />
+                            <Setter Property="FontWeight" Value="Medium" />
+                            <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}" />
+                        </Style>
+                    </UniformGrid.Styles>
+                    <Button Classes="Card" CommandParameter="Artists">
+                        <StackPanel Spacing="14">
+                            <ctrl:LineIcon Data="{StaticResource IconArtist}" />
+                            <StackPanel Spacing="2">
+                                <TextBlock Classes="Label" Text="Artists" />
+                                <TextBlock Classes="Meta Mono" Text="{Binding ArtistCount}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="Card" CommandParameter="Albums">
+                        <StackPanel Spacing="14">
+                            <ctrl:LineIcon Data="{StaticResource IconAlbum}" />
+                            <StackPanel Spacing="2">
+                                <TextBlock Classes="Label" Text="Albums" />
+                                <TextBlock Classes="Meta Mono" Text="{Binding AlbumCount}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="Card" CommandParameter="Songs">
+                        <StackPanel Spacing="14">
+                            <ctrl:LineIcon Data="{StaticResource IconSong}" />
+                            <StackPanel Spacing="2">
+                                <TextBlock Classes="Label" Text="Songs" />
+                                <TextBlock Classes="Meta Mono" Text="{Binding SongCount}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="Card" CommandParameter="Genres">
+                        <StackPanel Spacing="14">
+                            <ctrl:LineIcon Data="{StaticResource IconGenre}" />
+                            <StackPanel Spacing="2">
+                                <TextBlock Classes="Label" Text="Genres" />
+                                <TextBlock Classes="Meta Mono" Text="{Binding GenreCount}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="Card" CommandParameter="Playlists">
+                        <StackPanel Spacing="14">
+                            <ctrl:LineIcon Data="{StaticResource IconPlaylist}" />
+                            <StackPanel Spacing="2">
+                                <TextBlock Classes="Label" Text="Playlists" />
+                                <TextBlock Classes="Meta Mono" Text="{Binding PlaylistCount}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+                </UniformGrid>
+
+                <!-- Recently played (albums of the latest plays) -->
+                <StackPanel IsVisible="{Binding HasRecentlyPlayed}" Margin="0,0,0,28">
+                    <TextBlock Classes="H2" Text="Recently played" Margin="0,0,0,8" />
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="-10,0,0,0">
+                        <ItemsControl ItemsSource="{Binding RecentlyPlayed}" ItemTemplate="{StaticResource AlbumTile}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="4" /></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+
+                <!-- Newly added -->
+                <StackPanel IsVisible="{Binding HasRecentlyAdded}" Margin="0,0,0,28">
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,0,12,8">
+                        <TextBlock Classes="H2" Text="Newly added" />
+                        <Button Grid.Column="1" Classes="Link" VerticalAlignment="Center" CommandParameter="Albums"
+                                Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).NavigateCommand}">
+                            <TextBlock Text="All albums" FontSize="13" />
+                        </Button>
+                    </Grid>
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="-10,0,0,0">
+                        <ItemsControl ItemsSource="{Binding RecentlyAdded}" ItemTemplate="{StaticResource AlbumTile}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="4" /></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+
+                <!-- Top genres -->
+                <StackPanel IsVisible="{Binding HasTopGenres}" Margin="0,0,0,28">
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,0,12,16">
+                        <TextBlock Classes="H2" Text="Genres" />
+                        <Button Grid.Column="1" Classes="Link" VerticalAlignment="Center" CommandParameter="Genres"
+                                Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).NavigateCommand}">
+                            <TextBlock Text="All genres" FontSize="13" />
+                        </Button>
+                    </Grid>
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding TopGenres}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="12" /></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="items:GenreItemViewModel">
+                                    <Button Classes="Card" Width="236" Margin="0,0,0,12"
+                                            Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenGenreCommand}"
+                                            CommandParameter="{Binding}" AutomationProperties.Name="{Binding Name}">
+                                        <StackPanel Spacing="14">
+                                            <Panel Height="44">
+                                                <ItemsControl ItemsSource="{Binding Covers}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="6" /></ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:DataType="x:String">
+                                                            <Border Classes="ArtSlot" Width="44" Height="44" CornerRadius="3">
+                                                                <Panel>
+                                                                    <Image Source="{Binding Converter={x:Static conv:CoverImageConverter.Instance}, ConverterParameter=120}" />
+                                                                </Panel>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <Border Classes="ArtSlot" Width="44" Height="44" CornerRadius="3" HorizontalAlignment="Left"
+                                                        IsVisible="{Binding !Covers.Count}">
+                                                    <ctrl:LineIcon Data="{StaticResource IconGenre}" Foreground="{StaticResource TextDisabledBrush}"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                            </Panel>
+                                            <StackPanel Spacing="4">
+                                                <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="Medium"
+                                                           Foreground="{StaticResource TextStrongBrush}" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding Meta}" FontSize="12" Foreground="#A3FFFFFF" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+
+                <!-- Most played songs: three columns of compact rows -->
+                <StackPanel IsVisible="{Binding HasMostPlayed}">
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,0,12,12">
+                        <TextBlock Classes="H2" Text="Most played" />
+                        <Button Grid.Column="1" Classes="Link" VerticalAlignment="Center" CommandParameter="Songs"
+                                Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).NavigateCommand}">
+                            <TextBlock Text="All songs" FontSize="13" />
+                        </Button>
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding MostPlayed}" Margin="-8,0,12,0">
                         <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="14" /></ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="items:AlbumItemViewModel">
-                                <Button Classes="Tile" Width="160" ContextRequested="OnAlbumContextRequested"
-                                        Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).GoToAlbumCommand}"
-                                        CommandParameter="{Binding Id}">
-                                    <StackPanel Spacing="8">
-                                        <Panel Width="140" Height="140">
-                                            <Border Background="{StaticResource SurfaceBrush}" CornerRadius="6">
-                                                <TextBlock Text="&#xE93C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                                                           FontSize="40" Foreground="{StaticResource TextTertiaryBrush}"
-                                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            </Border>
-                                            <Image Source="{Binding CoverPath, Converter={x:Static conv:CoverImageConverter.Instance}}"
-                                                   Stretch="UniformToFill">
-                                                <Image.Clip><RectangleGeometry Rect="0,0,140,140" RadiusX="6" RadiusY="6" /></Image.Clip>
-                                            </Image>
-                                        </Panel>
-                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" />
-                                        <Button Classes="Link" CommandParameter="{Binding ArtistId}"
-                                                Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).GoToArtistCommand}">
-                                            <TextBlock Text="{Binding Artist}" FontSize="12" TextTrimming="CharacterEllipsis" />
-                                        </Button>
-                                    </StackPanel>
-                                </Button>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-
-                <TextBlock Text="Recently Played" Classes="SectionTitle" />
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                    <ItemsControl ItemsSource="{Binding RecentlyPlayed}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="14" /></ItemsPanelTemplate>
+                            <ItemsPanelTemplate><UniformGrid Columns="3" /></ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="items:TrackItemViewModel">
-                                <Button Classes="Tile" Width="160" ContextRequested="OnTrackContextRequested"
-                                        Command="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).PlayCommand}"
-                                        CommandParameter="{Binding}">
-                                    <StackPanel Spacing="8">
-                                        <Panel Width="140" Height="140">
-                                            <Border Background="{StaticResource SurfaceBrush}" CornerRadius="6">
-                                                <TextBlock Text="&#xE8D6;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                                                           FontSize="40" Foreground="{StaticResource TextTertiaryBrush}"
-                                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            </Border>
-                                            <Image Source="{Binding CoverPath, Converter={x:Static conv:CoverImageConverter.Instance}}"
-                                                   Stretch="UniformToFill">
-                                                <Image.Clip><RectangleGeometry Rect="0,0,140,140" RadiusX="6" RadiusY="6" /></Image.Clip>
-                                            </Image>
-                                        </Panel>
-                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" />
-                                        <Button Classes="Link" CommandParameter="{Binding ArtistId}"
-                                                Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).GoToArtistCommand}">
-                                            <TextBlock Text="{Binding Artist}" FontSize="12" TextTrimming="CharacterEllipsis" />
-                                        </Button>
-                                    </StackPanel>
+                                <Button Classes="Row" ContextRequested="OnTrackContextRequested"
+                                        Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).PlayMostPlayedCommand}"
+                                        CommandParameter="{Binding}" AutomationProperties.Name="{Binding Title}">
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                                        <Border Classes="ArtSlot" Width="44" Height="44" CornerRadius="3">
+                                            <Panel>
+                                                <ctrl:LineIcon Data="{StaticResource IconSong}" Size="18" Foreground="{StaticResource TextDisabledBrush}"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                               IsVisible="{Binding CoverPath, Converter={x:Static ObjectConverters.IsNull}}" />
+                                                <Image Source="{Binding CoverPath, Converter={x:Static conv:CoverImageConverter.Instance}, ConverterParameter=120}" />
+                                            </Panel>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Medium" TextTrimming="CharacterEllipsis">
+                                                <TextBlock.Foreground>
+                                                    <MultiBinding Converter="{x:Static conv:PlayingBrushConverter.Strong}">
+                                                        <Binding Path="Id" />
+                                                        <Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).NowPlaying.TrackId" />
+                                                    </MultiBinding>
+                                                </TextBlock.Foreground>
+                                            </TextBlock>
+                                            <Button Classes="Link" CommandParameter="{Binding ArtistId}"
+                                                    Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).GoToArtistCommand}">
+                                                <TextBlock Text="{Binding Artist}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
                                 </Button>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </ScrollViewer>
-
-                <TextBlock Text="Most Played" Classes="SectionTitle" />
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                    <ItemsControl ItemsSource="{Binding MostPlayed}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="14" /></ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="items:TrackItemViewModel">
-                                <Button Classes="Tile" Width="160" ContextRequested="OnTrackContextRequested"
-                                        Command="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).PlayCommand}"
-                                        CommandParameter="{Binding}">
-                                    <StackPanel Spacing="8">
-                                        <Panel Width="140" Height="140">
-                                            <Border Background="{StaticResource SurfaceBrush}" CornerRadius="6">
-                                                <TextBlock Text="&#xE8D6;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                                                           FontSize="40" Foreground="{StaticResource TextTertiaryBrush}"
-                                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            </Border>
-                                            <Image Source="{Binding CoverPath, Converter={x:Static conv:CoverImageConverter.Instance}}"
-                                                   Stretch="UniformToFill">
-                                                <Image.Clip><RectangleGeometry Rect="0,0,140,140" RadiusX="6" RadiusY="6" /></Image.Clip>
-                                            </Image>
-                                        </Panel>
-                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" />
-                                        <Button Classes="Link" CommandParameter="{Binding ArtistId}"
-                                                Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).GoToArtistCommand}">
-                                            <TextBlock Text="{Binding Artist}" FontSize="12" TextTrimming="CharacterEllipsis" />
-                                        </Button>
-                                    </StackPanel>
-                                </Button>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
+                </StackPanel>
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

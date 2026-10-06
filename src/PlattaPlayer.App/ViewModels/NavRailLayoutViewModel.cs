@@ -50,11 +50,11 @@ public sealed partial class NavRailLayoutViewModel
 
     private List<NavRailItemViewModel> CreateDefaultItems(HashSet<string> hidden) =>
     [
+        new("Home", "Home", "IconHome", !hidden.Contains("Home"), OnChanged),
         new("Artists", "Artists", "IconArtist", !hidden.Contains("Artists"), OnChanged),
         new("Albums", "Albums", "IconAlbum", !hidden.Contains("Albums"), OnChanged),
         new("Songs", "Songs", "IconSong", !hidden.Contains("Songs"), OnChanged),
         new("Genres", "Genres", "IconGenre", !hidden.Contains("Genres"), OnChanged),
-        new("Home", "Recent", "IconRecent", !hidden.Contains("Home"), OnChanged),
         new NavRailPlaylistsItemViewModel("Playlists", "Playlists", "IconPlaylist", !hidden.Contains("Playlists"), OnChanged),
     ];
 

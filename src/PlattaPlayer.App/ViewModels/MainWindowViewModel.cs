@@ -327,8 +327,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
             HomeViewModel => "Home",
             ArtistsViewModel or ArtistDetailViewModel => "Artists",
             AlbumsViewModel => "Albums",
-            // Albums are reached from either section; keep whichever the user came from.
-            AlbumDetailViewModel => SelectedSection == "Albums" ? "Albums" : "Artists",
+            // Albums are reached from several sections; keep whichever the user came from.
+            AlbumDetailViewModel => SelectedSection is "Albums" or "Home" ? SelectedSection : "Artists",
             SongsViewModel => "Songs",
             GenresViewModel or GenreDetailViewModel => "Genres",
             PlaylistsViewModel => "Playlists",

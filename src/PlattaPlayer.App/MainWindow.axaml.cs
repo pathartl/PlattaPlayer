@@ -51,11 +51,12 @@ public partial class MainWindow : Window
     }
 
     // Maximized/fullscreen windows are edge-to-edge, so drop the hairline outline there, swap the
-    // Maximize glyph for Restore, and stop the visualizer rendering while minimized.
+    // Maximize glyph for Restore, and stop the visualizer rendering while minimized. On Windows the
+    // BorderOnly decorations already get a DWM-drawn 1px border, so our hairline would double it.
     private void UpdateChromeForWindowState()
     {
         var edgeToEdge = WindowState is WindowState.Maximized or WindowState.FullScreen;
-        RootBorder.BorderThickness = new Thickness(edgeToEdge ? 0 : 1);
+        RootBorder.BorderThickness = new Thickness(edgeToEdge || OperatingSystem.IsWindows() ? 0 : 1);
 
         var maximized = WindowState == WindowState.Maximized;
         MaximizeGlyph.Data = (Geometry)this.FindResource(maximized ? "CaptionRestore" : "CaptionMaximize")!;
@@ -115,7 +116,7 @@ public partial class MainWindow : Window
             Tap = vm.NowPlaying.AudioTap,
             Settings = vm.Visualization,
             // The glass panels: plugins that support it paint a blurred copy of the visualization behind them.
-            BlurTargets = new List<Visual> { NavRail, TransportBar, QueuePanel.GlassBackdrop },
+            BlurTargets = new List<Visual> { TitleBarGlass, NavRail, TransportBar, QueuePanel.GlassBackdrop },
             ReportName = name => Dispatcher.UIThread.Post(() => vm.Visualization.CurrentPresetName = name),
             // Private per-plugin data folder (presets, caches, error logs).
             DataDirectory = PlattaPlayer.Data.AppPaths.PluginDataDirectory(plugin.Id),

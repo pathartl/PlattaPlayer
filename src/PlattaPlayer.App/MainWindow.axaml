@@ -44,7 +44,12 @@
 
         <Grid RowDefinitions="32,*,Auto">
 
-            <!-- ===== Title bar (no background of its own: the visualizer shows through) ===== -->
+            <!-- ===== Title bar =====
+                 Glass like the rail and transport bar on library screens (a separate backdrop so it can be a
+                 blur target); bare over the visualizer in Now Playing. -->
+            <Border Grid.Row="0" Name="TitleBarGlass" Classes="Glass" IsVisible="{Binding IsLibraryVisible}"
+                    IsHitTestVisible="False"
+                    BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="0,0,0,1" />
             <Grid Grid.Row="0" Name="TitleBar" Background="Transparent" ColumnDefinitions="*,Auto"
                   chrome:WindowDecorationProperties.ElementRole="TitleBar">
                 <StackPanel Orientation="Horizontal" Spacing="10" Margin="14,0,0,0"
@@ -78,7 +83,7 @@
             <Grid Grid.Row="1" ColumnDefinitions="232,*,Auto">
 
                 <Border Name="NavRail" Classes="Glass" IsVisible="{Binding IsLibraryVisible}"
-                        BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,1,1,0">
+                        BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,1,0">
                     <DockPanel Margin="12,12,12,16">
 
                         <!-- Search -->
