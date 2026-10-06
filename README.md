@@ -2,6 +2,34 @@
 
 A modern desktop music player for Windows, written in C# targeting .NET 10 and Avalonia 12. PlattaPlayer aims to bring back the fun of music players with a focus on art and music visualizers. It also plays a wide range of music formats, from your more common audio codecs to MIDI and video-game music rips.
 
+<p align="center">
+  <img src="docs/screenshots/library/now-playing.png" alt="Now Playing" width="100%">
+</p>
+
+<table>
+  <tr>
+    <td width="50%" align="center"><img src="docs/screenshots/library/home.png" alt="Home"><br><sub>Home</sub></td>
+    <td width="50%" align="center"><img src="docs/screenshots/library/albums.png" alt="Albums"><br><sub>Albums</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><img src="docs/screenshots/library/artists.jpg" alt="Artists"><br><sub>Artists</sub></td>
+    <td width="50%" align="center"><img src="docs/screenshots/tag-editor.jpg" alt="Tag editor"><br><sub>Tag editor</sub></td>
+  </tr>
+</table>
+
+### Visualizers
+
+<table>
+  <tr>
+    <td width="50%" align="center"><img src="docs/screenshots/visualizations/milkdrop.webp" alt="MilkDrop visualizer"><br><sub>MilkDrop</sub></td>
+    <td width="50%" align="center"><img src="docs/screenshots/visualizations/wmp-alchemy.webp" alt="Windows Media Player Alchemy visualizer"><br><sub>Windows Media Player: Alchemy</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><img src="docs/screenshots/visualizations/wmp-battery.webp" alt="Windows Media Player Battery visualizer"><br><sub>Windows Media Player: Battery</sub></td>
+    <td width="50%" align="center"><img src="docs/screenshots/visualizations/psp.webp" alt="PSP visualizer"><br><sub>PSP</sub></td>
+  </tr>
+</table>
+
 ## Features
 
 - **Sources:** local folders, plus Jellyfin, Plex, Emby and Navidrome (or any other Subsonic-compatible server, such as Airsonic or gonic).
