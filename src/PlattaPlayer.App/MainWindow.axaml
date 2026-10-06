@@ -12,6 +12,7 @@
         x:Class="PlattaPlayer.App.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="PlattaPlayer"
+        Icon="avares://PlattaPlayer.App/Assets/AppIcon.ico"
         Width="1440" Height="900"
         MinWidth="1024" MinHeight="640"
         Background="{StaticResource WindowBackgroundBrush}"

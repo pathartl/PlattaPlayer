@@ -6,6 +6,7 @@
 
     <StreamGeometry x:Key="IconLogo">M3,12 a9,9 0 1 0 18,0 a9,9 0 1 0 -18,0 Z M8,12 a4,4 0 1 0 8,0 a4,4 0 1 0 -8,0 Z</StreamGeometry>
     <StreamGeometry x:Key="IconSearch">M4.5,11 a6.5,6.5 0 1 0 13,0 a6.5,6.5 0 1 0 -13,0 Z M20,20 l-4.2,-4.2</StreamGeometry>
+    <StreamGeometry x:Key="IconHome">M4,10.5 L12,4 l8,6.5 V19 a1,1 0 0 1 -1,1 h-4.5 v-5.5 h-5 V20 H5 a1,1 0 0 1 -1,-1 Z</StreamGeometry>
     <StreamGeometry x:Key="IconArtist">M8.5,8.5 a3.5,3.5 0 1 0 7,0 a3.5,3.5 0 1 0 -7,0 Z M5,20 c0.8,-3.6 3.6,-5.5 7,-5.5 s6.2,1.9 7,5.5</StreamGeometry>
     <StreamGeometry x:Key="IconAlbum">M5,3.5 h14 a1.5,1.5 0 0 1 1.5,1.5 v14 a1.5,1.5 0 0 1 -1.5,1.5 h-14 a1.5,1.5 0 0 1 -1.5,-1.5 v-14 a1.5,1.5 0 0 1 1.5,-1.5 Z M8.5,12 a3.5,3.5 0 1 0 7,0 a3.5,3.5 0 1 0 -7,0 Z</StreamGeometry>
     <StreamGeometry x:Key="IconSong">M9,18 V6 l10,-2 v12 M4,18 a2.5,2.5 0 1 0 5,0 a2.5,2.5 0 1 0 -5,0 Z M14,16 a2.5,2.5 0 1 0 5,0 a2.5,2.5 0 1 0 -5,0 Z</StreamGeometry>
