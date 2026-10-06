@@ -11,10 +11,10 @@ namespace PlattaPlayer.Playback;
 /// </summary>
 internal sealed class WaveformCache(string directory)
 {
-    // Query parameters that carry credentials rather than identify content (Jellyfin uses api_key). A
-    // re-login must not invalidate the cache, and the token must not leak into the key.
+    // Query parameters that carry credentials rather than identify content (Jellyfin uses api_key, Plex X-Plex-Token,
+    // Navidrome u/t/s/p). A re-login must not invalidate the cache, and the token must not leak into the key.
     private static readonly HashSet<string> CredentialParameters =
-        new(StringComparer.OrdinalIgnoreCase) { "api_key", "apikey", "token", "access_token" };
+        new(StringComparer.OrdinalIgnoreCase) { "api_key", "apikey", "token", "access_token", "X-Plex-Token", "u", "t", "s", "p" };
 
     /// <summary>
     /// The identity of what <paramref name="media"/> sounds like, or null when it cannot be pinned down.

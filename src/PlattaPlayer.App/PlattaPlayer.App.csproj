@@ -47,6 +47,9 @@
     <ProjectReference Include="..\PlattaPlayer.Data\PlattaPlayer.Data.csproj" />
     <ProjectReference Include="..\PlattaPlayer.Sources.Local\PlattaPlayer.Sources.Local.csproj" />
     <ProjectReference Include="..\PlattaPlayer.Sources.Jellyfin\PlattaPlayer.Sources.Jellyfin.csproj" />
+    <ProjectReference Include="..\PlattaPlayer.Sources.Plex\PlattaPlayer.Sources.Plex.csproj" />
+    <ProjectReference Include="..\PlattaPlayer.Sources.Emby\PlattaPlayer.Sources.Emby.csproj" />
+    <ProjectReference Include="..\PlattaPlayer.Sources.Navidrome\PlattaPlayer.Sources.Navidrome.csproj" />
     <ProjectReference Include="..\PlattaPlayer.Playback\PlattaPlayer.Playback.csproj" />
     <ProjectReference Include="..\PlattaPlayer.Platform.Windows\PlattaPlayer.Platform.Windows.csproj" />
     <ProjectReference Include="..\PlattaPlayer.Visualizations.Abstractions\PlattaPlayer.Visualizations.Abstractions.csproj" />

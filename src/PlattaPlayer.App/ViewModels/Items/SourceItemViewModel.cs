@@ -16,13 +16,16 @@ public sealed partial class SourceItemViewModel : ObservableObject
     public string TypeLabel => Type switch
     {
         SourceType.Jellyfin => "Jellyfin library",
+        SourceType.Plex => "Plex library",
+        SourceType.Emby => "Emby library",
+        SourceType.Navidrome => "Navidrome library",
         _ => "Local path"
     };
 
-    /// <summary>Segoe Fluent glyph for the source type: folder for local paths, globe for Jellyfin.</summary>
+    /// <summary>Segoe Fluent glyph for the source type: folder for local paths, globe for media servers.</summary>
     public string Glyph => Type switch
     {
-        SourceType.Jellyfin => "",
+        SourceType.Jellyfin or SourceType.Plex or SourceType.Emby or SourceType.Navidrome => "",
         _ => ""
     };
 

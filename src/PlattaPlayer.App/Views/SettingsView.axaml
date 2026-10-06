@@ -58,6 +58,21 @@
                                     <TextBlock Text="&#xE774;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" />
                                 </MenuItem.Icon>
                             </MenuItem>
+                            <MenuItem Header="Plex library" Command="{Binding BeginAddPlexCommand}">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="&#xE774;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Emby library" Command="{Binding BeginAddEmbyCommand}">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="&#xE774;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Navidrome library" Command="{Binding BeginAddNavidromeCommand}">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="&#xE774;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" />
+                                </MenuItem.Icon>
+                            </MenuItem>
                             <MenuItem Header="Local path" Click="OnAddLocalFolder">
                                 <MenuItem.Icon>
                                     <TextBlock Text="&#xE8B7;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" />
@@ -98,6 +113,92 @@
                     </StackPanel>
                     <TextBlock Text="{Binding JellyfinStatus}" Classes="Secondary" FontSize="13" TextWrapping="Wrap"
                                IsVisible="{Binding JellyfinStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Emby login, shown after picking "Emby library" from the Add source menu. -->
+            <Border Classes="Card" IsVisible="{Binding IsAddingEmby}">
+                <StackPanel Spacing="8" MaxWidth="420" HorizontalAlignment="Left">
+                    <TextBlock Text="Add Emby library" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                    <TextBox Text="{Binding EmbyServerUrl}" PlaceholderText="Server URL (e.g. http://192.168.1.10:8096)"
+                             IsEnabled="{Binding !IsConnecting}" />
+                    <TextBox Text="{Binding EmbyUsername}" PlaceholderText="Username"
+                             IsEnabled="{Binding !IsConnecting}" />
+                    <TextBox Text="{Binding EmbyPassword}" PlaceholderText="Password" PasswordChar="•"
+                             IsEnabled="{Binding !IsConnecting}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="&#xE703;  Connect" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                Command="{Binding ConnectEmbyCommand}" Background="{StaticResource AccentBrush}"
+                                Foreground="{StaticResource OnAccentBrush}" Padding="16,8" CornerRadius="4"
+                                IsEnabled="{Binding !IsConnecting}" />
+                        <Button Content="Cancel" Command="{Binding CancelAddEmbyCommand}"
+                                Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                Padding="16,8" CornerRadius="4" IsEnabled="{Binding !IsConnecting}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding EmbyStatus}" Classes="Secondary" FontSize="13" TextWrapping="Wrap"
+                               IsVisible="{Binding EmbyStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Navidrome sign-in, shown after picking "Navidrome library" from the Add source menu. -->
+            <Border Classes="Card" IsVisible="{Binding IsAddingNavidrome}">
+                <StackPanel Spacing="8" MaxWidth="420" HorizontalAlignment="Left">
+                    <TextBlock Text="Add Navidrome library" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                    <TextBlock Text="Also works with other Subsonic-compatible servers (Airsonic, gonic, …)."
+                               Classes="Secondary" FontSize="12" TextWrapping="Wrap" />
+                    <TextBox Text="{Binding NavidromeServerUrl}" PlaceholderText="Server URL (e.g. http://192.168.1.10:4533)"
+                             IsEnabled="{Binding !IsConnecting}" />
+                    <TextBox Text="{Binding NavidromeUsername}" PlaceholderText="Username"
+                             IsEnabled="{Binding !IsConnecting}" />
+                    <TextBox Text="{Binding NavidromePassword}" PlaceholderText="Password" PasswordChar="•"
+                             IsEnabled="{Binding !IsConnecting}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="&#xE703;  Connect" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                Command="{Binding ConnectNavidromeCommand}" Background="{StaticResource AccentBrush}"
+                                Foreground="{StaticResource OnAccentBrush}" Padding="16,8" CornerRadius="4"
+                                IsEnabled="{Binding !IsConnecting}" />
+                        <Button Content="Cancel" Command="{Binding CancelAddNavidromeCommand}"
+                                Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                Padding="16,8" CornerRadius="4" IsEnabled="{Binding !IsConnecting}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding NavidromeStatus}" Classes="Secondary" FontSize="13" TextWrapping="Wrap"
+                               IsVisible="{Binding NavidromeStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Plex sign-in, shown after picking "Plex library" from the Add source menu. -->
+            <Border Classes="Card" IsVisible="{Binding IsAddingPlex}">
+                <StackPanel Spacing="8" MaxWidth="420" HorizontalAlignment="Left">
+                    <TextBlock Text="Add Plex library" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                    <TextBox Text="{Binding PlexServerUrl}" PlaceholderText="Server URL (optional, e.g. http://192.168.1.10:32400)"
+                             IsEnabled="{Binding !IsConnecting}" />
+                    <TextBox Text="{Binding PlexUsername}" PlaceholderText="Plex username or email"
+                             IsEnabled="{Binding !IsConnecting}" />
+                    <TextBox Text="{Binding PlexPassword}" PlaceholderText="Password (append your 2FA code if enabled)" PasswordChar="•"
+                             IsEnabled="{Binding !IsConnecting}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="&#xE703;  Connect" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                Command="{Binding ConnectPlexCommand}" Background="{StaticResource AccentBrush}"
+                                Foreground="{StaticResource OnAccentBrush}" Padding="16,8" CornerRadius="4"
+                                IsEnabled="{Binding !IsConnecting}" />
+                        <Button Content="&#xE774;  Sign in with browser" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                Click="OnPlexBrowserSignIn" Background="{StaticResource SurfaceBrush}"
+                                Foreground="{StaticResource TextPrimaryBrush}" Padding="16,8" CornerRadius="4"
+                                IsEnabled="{Binding !IsConnecting}" />
+                        <!-- Stays enabled while waiting on the browser, where it abandons the sign-in. -->
+                        <Button Content="Cancel" Command="{Binding CancelAddPlexCommand}"
+                                Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                Padding="16,8" CornerRadius="4">
+                            <Button.IsEnabled>
+                                <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                                    <Binding Path="!IsConnecting" />
+                                    <Binding Path="IsAwaitingPlexBrowser" />
+                                </MultiBinding>
+                            </Button.IsEnabled>
+                        </Button>
+                    </StackPanel>
+                    <TextBlock Text="{Binding PlexStatus}" Classes="Secondary" FontSize="13" TextWrapping="Wrap"
+                               IsVisible="{Binding PlexStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
                 </StackPanel>
             </Border>
 
@@ -144,7 +245,7 @@
             <TextBlock Text="Streaming" Classes="SectionTitle" Margin="0,12,0,0" />
             <Border Classes="Card">
                 <StackPanel Spacing="8" MaxWidth="420" HorizontalAlignment="Left">
-                    <CheckBox Content="Show waveform on the seek bar for Jellyfin tracks"
+                    <CheckBox Content="Show waveform on the seek bar for media server tracks"
                               IsChecked="{Binding ShowRemoteWaveforms}" />
                     <TextBlock Classes="Secondary" FontSize="12" TextWrapping="Wrap"
                                Text="Downloads each track a second time in the background to draw it. Takes effect from the next track." />

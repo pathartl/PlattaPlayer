@@ -11,6 +11,9 @@ using PlattaPlayer.Data;
 using PlattaPlayer.Playback;
 using PlattaPlayer.Sources.Local;
 using PlattaPlayer.Sources.Jellyfin;
+using PlattaPlayer.Sources.Plex;
+using PlattaPlayer.Sources.Emby;
+using PlattaPlayer.Sources.Navidrome;
 
 namespace PlattaPlayer.App;
 
@@ -56,6 +59,12 @@ internal static class AppServices
         services.AddSingleton<IMediaSourceFactory>(_ => new LocalMediaSourceFactory(codecs));
         services.AddSingleton<IMediaSourceFactory, JellyfinMediaSourceFactory>();
         services.AddSingleton<JellyfinAuthenticator>();
+        services.AddSingleton<IMediaSourceFactory, PlexMediaSourceFactory>();
+        services.AddSingleton<PlexAuthenticator>();
+        services.AddSingleton<IMediaSourceFactory, EmbyMediaSourceFactory>();
+        services.AddSingleton<EmbyAuthenticator>();
+        services.AddSingleton<IMediaSourceFactory, NavidromeMediaSourceFactory>();
+        services.AddSingleton<NavidromeAuthenticator>();
 
         // OS media controls — Windows implementation is added by the platform module when present.
         services.AddSingleton<ISystemMediaControls>(_ => PlatformIntegration.CreateSystemMediaControls());

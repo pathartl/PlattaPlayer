@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -12,6 +13,9 @@ using PlattaPlayer.Codecs.Abstractions;
 using PlattaPlayer.Core.Abstractions;
 using PlattaPlayer.Core.Models;
 using PlattaPlayer.Sources.Jellyfin;
+using PlattaPlayer.Sources.Plex;
+using PlattaPlayer.Sources.Emby;
+using PlattaPlayer.Sources.Navidrome;
 
 namespace PlattaPlayer.App.ViewModels;
 
@@ -21,6 +25,9 @@ public sealed partial class SettingsViewModel : PageViewModelBase
     private readonly IMediaSourceManager _sources;
     private readonly ILibrarySyncService _sync;
     private readonly JellyfinAuthenticator _jellyfinAuth;
+    private readonly PlexAuthenticator _plexAuth;
+    private readonly EmbyAuthenticator _embyAuth;
+    private readonly NavidromeAuthenticator _navidromeAuth;
     private readonly CodecRegistry _codecs;
     private readonly IAppSettings _appSettings;
 
@@ -29,6 +36,9 @@ public sealed partial class SettingsViewModel : PageViewModelBase
         IMediaSourceManager sources,
         ILibrarySyncService sync,
         JellyfinAuthenticator jellyfinAuth,
+        PlexAuthenticator plexAuth,
+        EmbyAuthenticator embyAuth,
+        NavidromeAuthenticator navidromeAuth,
         CodecRegistry codecs,
         IAppSettings appSettings,
         VisualizationSettingsViewModel visualization,
@@ -39,6 +49,9 @@ public sealed partial class SettingsViewModel : PageViewModelBase
         _sources = sources;
         _sync = sync;
         _jellyfinAuth = jellyfinAuth;
+        _plexAuth = plexAuth;
+        _embyAuth = embyAuth;
+        _navidromeAuth = navidromeAuth;
         _codecs = codecs;
         _appSettings = appSettings;
         Visualization = visualization;
@@ -83,7 +96,7 @@ public sealed partial class SettingsViewModel : PageViewModelBase
         }
     }
 
-    /// <summary>Seek-bar waveforms for Jellyfin tracks (each track is fetched twice to draw one). Applies from the next track.</summary>
+    /// <summary>Seek-bar waveforms for media server tracks (each track is fetched twice to draw one). Applies from the next track.</summary>
     [ObservableProperty] private bool _showRemoteWaveforms;
 
     partial void OnShowRemoteWaveformsChanged(bool value)
@@ -167,6 +180,91 @@ public sealed partial class SettingsViewModel : PageViewModelBase
         JellyfinStatus = string.Empty;
     }
 
+    // Plex sign-in form. The server URL is optional: without it the account's servers are discovered.
+    [ObservableProperty] private string _plexServerUrl = string.Empty;
+    [ObservableProperty] private string _plexUsername = string.Empty;
+    [ObservableProperty] private string _plexPassword = string.Empty;
+    [ObservableProperty] private string _plexStatus = string.Empty;
+
+    /// <summary>True while the Plex sign-in form is open (picked from the "Add source" menu).</summary>
+    [ObservableProperty] private bool _isAddingPlex;
+
+    /// <summary>True while waiting for the user to approve the sign-in in their browser (it can be cancelled).</summary>
+    [ObservableProperty] private bool _isAwaitingPlexBrowser;
+
+    private CancellationTokenSource? _plexSignIn;
+
+    [RelayCommand]
+    private void BeginAddPlex()
+    {
+        PlexStatus = string.Empty;
+        IsAddingPlex = true;
+    }
+
+    [RelayCommand]
+    private void CancelAddPlex()
+    {
+        if (IsAwaitingPlexBrowser)
+        {
+            _plexSignIn?.Cancel();
+            return;
+        }
+        if (IsConnecting) return;
+        IsAddingPlex = false;
+        PlexPassword = string.Empty;
+        PlexStatus = string.Empty;
+    }
+
+    // Emby login form.
+    [ObservableProperty] private string _embyServerUrl = string.Empty;
+    [ObservableProperty] private string _embyUsername = string.Empty;
+    [ObservableProperty] private string _embyPassword = string.Empty;
+    [ObservableProperty] private string _embyStatus = string.Empty;
+
+    /// <summary>True while the Emby login form is open (picked from the "Add source" menu).</summary>
+    [ObservableProperty] private bool _isAddingEmby;
+
+    [RelayCommand]
+    private void BeginAddEmby()
+    {
+        EmbyStatus = string.Empty;
+        IsAddingEmby = true;
+    }
+
+    [RelayCommand]
+    private void CancelAddEmby()
+    {
+        if (IsConnecting) return;
+        IsAddingEmby = false;
+        EmbyPassword = string.Empty;
+        EmbyStatus = string.Empty;
+    }
+
+    // Navidrome sign-in form (any other Subsonic-compatible server works too).
+    [ObservableProperty] private string _navidromeServerUrl = string.Empty;
+    [ObservableProperty] private string _navidromeUsername = string.Empty;
+    [ObservableProperty] private string _navidromePassword = string.Empty;
+    [ObservableProperty] private string _navidromeStatus = string.Empty;
+
+    /// <summary>True while the Navidrome sign-in form is open (picked from the "Add source" menu).</summary>
+    [ObservableProperty] private bool _isAddingNavidrome;
+
+    [RelayCommand]
+    private void BeginAddNavidrome()
+    {
+        NavidromeStatus = string.Empty;
+        IsAddingNavidrome = true;
+    }
+
+    [RelayCommand]
+    private void CancelAddNavidrome()
+    {
+        if (IsConnecting) return;
+        IsAddingNavidrome = false;
+        NavidromePassword = string.Empty;
+        NavidromeStatus = string.Empty;
+    }
+
     public override async Task InitializeAsync()
     {
         Sources.Clear();
@@ -230,6 +328,157 @@ public sealed partial class SettingsViewModel : PageViewModelBase
         }
         finally
         {
+            IsConnecting = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ConnectEmby()
+    {
+        if (IsConnecting) return;
+        if (string.IsNullOrWhiteSpace(EmbyServerUrl) || string.IsNullOrWhiteSpace(EmbyUsername))
+        {
+            EmbyStatus = "Enter a server URL and username.";
+            return;
+        }
+
+        IsConnecting = true;
+        EmbyStatus = "Connecting…";
+        try
+        {
+            var settings = await _embyAuth.AuthenticateAsync(EmbyServerUrl, EmbyUsername, EmbyPassword);
+
+            var config = new SourceConfig
+            {
+                Type = SourceType.Emby,
+                DisplayName = $"Emby · {settings.Username}",
+                SettingsJson = JsonSerializer.Serialize(settings)
+            };
+            await _repository.UpsertSourceAsync(config);
+            _sources.Invalidate(config.Id);
+            var item = new SourceItemViewModel(config);
+            Sources.Add(item);
+
+            // The source now shows in the list (with its own scan progress), so close the form.
+            EmbyPassword = string.Empty;
+            EmbyStatus = string.Empty;
+            IsAddingEmby = false;
+            await RunSyncAsync(item);
+        }
+        catch (Exception ex)
+        {
+            EmbyStatus = $"Connection failed: {ex.Message}";
+        }
+        finally
+        {
+            IsConnecting = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ConnectNavidrome()
+    {
+        if (IsConnecting) return;
+        if (string.IsNullOrWhiteSpace(NavidromeServerUrl) || string.IsNullOrWhiteSpace(NavidromeUsername))
+        {
+            NavidromeStatus = "Enter a server URL and username.";
+            return;
+        }
+
+        IsConnecting = true;
+        NavidromeStatus = "Connecting…";
+        try
+        {
+            var settings = await _navidromeAuth.AuthenticateAsync(NavidromeServerUrl, NavidromeUsername, NavidromePassword);
+
+            var config = new SourceConfig
+            {
+                Type = SourceType.Navidrome,
+                DisplayName = $"Navidrome · {settings.Username}",
+                SettingsJson = JsonSerializer.Serialize(settings)
+            };
+            await _repository.UpsertSourceAsync(config);
+            _sources.Invalidate(config.Id);
+            var item = new SourceItemViewModel(config);
+            Sources.Add(item);
+
+            // The source now shows in the list (with its own scan progress), so close the form.
+            NavidromePassword = string.Empty;
+            NavidromeStatus = string.Empty;
+            IsAddingNavidrome = false;
+            await RunSyncAsync(item);
+        }
+        catch (Exception ex)
+        {
+            NavidromeStatus = $"Connection failed: {ex.Message}";
+        }
+        finally
+        {
+            IsConnecting = false;
+        }
+    }
+
+    [RelayCommand]
+    private Task ConnectPlex()
+    {
+        if (string.IsNullOrWhiteSpace(PlexUsername))
+        {
+            PlexStatus = "Enter your Plex username or email, or sign in with the browser.";
+            return Task.CompletedTask;
+        }
+        return AddPlexAsync("Signing in…", ct => _plexAuth.AuthenticateAsync(PlexServerUrl, PlexUsername, PlexPassword, ct));
+    }
+
+    /// <summary>Signs in to Plex by approving the request on plex.tv (invoked by the view, which opens the browser).</summary>
+    public Task ConnectPlexInBrowserAsync(Func<Uri, Task> openBrowser)
+    {
+        IsAwaitingPlexBrowser = true;
+        return AddPlexAsync("Approve the sign-in in your browser…",
+            ct => _plexAuth.AuthenticateInBrowserAsync(PlexServerUrl, openBrowser, ct));
+    }
+
+    private async Task AddPlexAsync(string status, Func<CancellationToken, Task<PlexSourceSettings>> signIn)
+    {
+        if (IsConnecting) return;
+        IsConnecting = true;
+        PlexStatus = status;
+        using var cts = _plexSignIn = new CancellationTokenSource();
+        try
+        {
+            var settings = await signIn(cts.Token);
+            IsAwaitingPlexBrowser = false;
+            PlexStatus = "Connecting…";
+
+            var config = new SourceConfig
+            {
+                Type = SourceType.Plex,
+                DisplayName = string.IsNullOrEmpty(settings.Username) ? "Plex" : $"Plex · {settings.Username}",
+                SettingsJson = JsonSerializer.Serialize(settings)
+            };
+            await _repository.UpsertSourceAsync(config);
+            _sources.Invalidate(config.Id);
+            var item = new SourceItemViewModel(config);
+            Sources.Add(item);
+
+            // The source now shows in the list (with its own scan progress), so close the form.
+            PlexPassword = string.Empty;
+            PlexStatus = string.Empty;
+            IsAddingPlex = false;
+            IsConnecting = false;
+            await RunSyncAsync(item);
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        {
+            PlexStatus = "Sign-in cancelled.";
+        }
+        catch (Exception ex)
+        {
+            PlexStatus = $"Connection failed: {ex.Message}";
+        }
+        finally
+        {
+            _plexSignIn = null;
+            IsAwaitingPlexBrowser = false;
             IsConnecting = false;
         }
     }

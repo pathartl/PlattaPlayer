@@ -4,7 +4,10 @@ namespace PlattaPlayer.Core.Models;
 public enum SourceType
 {
     Local,
-    Jellyfin
+    Jellyfin,
+    Plex,
+    Emby,
+    Navidrome
 }
 
 /// <summary>High-level playback engine state.</summary>

@@ -12,8 +12,11 @@
     <Project Path="src/PlattaPlayer.Data/PlattaPlayer.Data.csproj" />
     <Project Path="src/PlattaPlayer.Platform.Windows/PlattaPlayer.Platform.Windows.csproj" />
     <Project Path="src/PlattaPlayer.Playback/PlattaPlayer.Playback.csproj" />
+    <Project Path="src/PlattaPlayer.Sources.Emby/PlattaPlayer.Sources.Emby.csproj" />
     <Project Path="src/PlattaPlayer.Sources.Jellyfin/PlattaPlayer.Sources.Jellyfin.csproj" />
     <Project Path="src/PlattaPlayer.Sources.Local/PlattaPlayer.Sources.Local.csproj" />
+    <Project Path="src/PlattaPlayer.Sources.Plex/PlattaPlayer.Sources.Plex.csproj" />
+    <Project Path="src/PlattaPlayer.Sources.Navidrome/PlattaPlayer.Sources.Navidrome.csproj" />
     <Project Path="src/PlattaPlayer.Visualizations.Abstractions/PlattaPlayer.Visualizations.Abstractions.csproj" />
     <Project Path="src/PlattaPlayer.Visualizations.MilkDrop/PlattaPlayer.Visualizations.MilkDrop.csproj" />
     <Project Path="src/PlattaPlayer.Visualizations.MilkDrop.Plugin/PlattaPlayer.Visualizations.MilkDrop.Plugin.csproj" />

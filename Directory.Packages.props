@@ -17,6 +17,7 @@
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9" />
     <PackageVersion Include="Jellyfin.Sdk" Version="2025.10.21" />
     <!-- Transitive (via Jellyfin.Sdk): pin past GHSA-7j59-v9qr-6fq9 (fixed in 1.21.0+). -->
     <PackageVersion Include="Microsoft.Kiota.Abstractions" Version="1.22.2" />
@@ -35,6 +36,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageVersion>
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.9" />
+    <PackageVersion Include="Plex.Api" Version="4.1.2" />
     <PackageVersion Include="TagLibSharp" Version="2.3.0" />
   </ItemGroup>
 </Project>

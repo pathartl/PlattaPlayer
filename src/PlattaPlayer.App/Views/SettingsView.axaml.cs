@@ -36,6 +36,19 @@ public partial class SettingsView : UserControl
             await vm.AddLocalFolderAsync(path);
     }
 
+    /// <summary>Signs in to Plex in the system browser; the view model waits for the approval.</summary>
+    private async void OnPlexBrowserSignIn(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not SettingsViewModel vm)
+            return;
+
+        var launcher = TopLevel.GetTopLevel(this)?.Launcher;
+        if (launcher is null)
+            return;
+
+        await vm.ConnectPlexInBrowserAsync(uri => launcher.LaunchUriAsync(uri));
+    }
+
     /// <summary>Opens the folder a codec setting asks the user to fill (its path is the button's Tag).</summary>
     private async void OnOpenCodecFolder(object? sender, RoutedEventArgs e)
     {
